@@ -1,0 +1,29 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.0.14'
+}
+
+group 'ru.funduruk'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+sourceCompatibility = '21'
+targetCompatibility = '21'
+
+application {
+    mainClass = 'ru.funduruk.MainApplication'
+}
+dependencies {
+    implementation 'org.controlsfx:controlsfx:11.2.1'
+    implementation 'org.kordamp.ikonli:ikonli-javafx:12.2.0'
+    implementation 'org.kordamp.bootstrapfx:bootstrapfx-core:0.4.0'
+}
+
+javafx {
+    version = '21'
+    modules = ['javafx.controls', 'javafx.fxml']
+}
