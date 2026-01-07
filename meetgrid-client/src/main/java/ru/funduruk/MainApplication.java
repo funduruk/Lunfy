@@ -42,7 +42,7 @@ public class MainApplication extends Application {
         bgView.setPreserveRatio(false);
 
 
-        rootPane.getChildren().add(0, bgView);
+        rootPane.getChildren().addFirst(bgView);
 
 
         Image icon = new Image(Objects.requireNonNull(getClass().getResource("/image/logo/logo.png")).toExternalForm());
@@ -56,6 +56,7 @@ public class MainApplication extends Application {
         primaryStage.setScene(scene);
         primaryStage.setAlwaysOnTop(true);
         primaryStage.show();
+        primaryStage.setAlwaysOnTop(false);
         FadeTransition fade = new FadeTransition(Duration.millis(1500), rootPane);
         fade.setFromValue(0);
         fade.setToValue(1);

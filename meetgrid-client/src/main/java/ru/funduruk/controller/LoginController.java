@@ -70,7 +70,6 @@ public class LoginController {
 
     private void enableWindowDragging() {
         titleBar.setOnMousePressed(event -> {
-            Stage stage = (Stage) titleBar.getScene().getWindow();
             xOffset = event.getSceneX();
             yOffset = event.getSceneY();
         });
@@ -94,7 +93,6 @@ public class LoginController {
 
     private void enableWindowResize() {
         rootPane.setOnMouseMoved(event -> {
-            Stage stage = (Stage) rootPane.getScene().getWindow();
             if (isInResizeZone(event)) {
                 rootPane.setCursor(Cursor.SE_RESIZE);
             } else {

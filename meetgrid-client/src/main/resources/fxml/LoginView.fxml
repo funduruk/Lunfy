@@ -49,11 +49,14 @@
             <Label text="MeetGrid Login" style="-fx-font-size: 24px; -fx-text-fill: white;"/>
             <TextField fx:id="usernameField" promptText="Username" styleClass="text-field"/>
             <PasswordField fx:id="passwordField" promptText="Password" styleClass="password-field"/>
-            <Button text="Login" onAction="#handleLogin"/>
-            <Button text="Register" onAction="#handleRegister"/>
+            <HBox spacing="10" alignment="CENTER">
+            <Button text="Login" onAction="#handleLogin" styleClass="button-login"/>
+            <Button text="Register" onAction="#handleRegister" styleClass="button-login"/>
+            </HBox>
             <VBox fx:id="statusBox" styleClass="status-box" visible="false">
             <Label fx:id="statusLabel" style="-fx-text-fill: red;"/>
             </VBox>
+
         </VBox>
             <VBox alignment="CENTER">
                 <ImageView fx:id="logo" fitWidth="250" fitHeight="250" preserveRatio="true" pickOnBounds="true" smooth="true">
@@ -61,6 +64,7 @@
                 </ImageView>
             </VBox>
         </HBox>
+
     </center>
 
 </BorderPane>
