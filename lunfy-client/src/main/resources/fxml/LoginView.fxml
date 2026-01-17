@@ -5,12 +5,19 @@
 
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.image.Image?>
-<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="ru.funduruk.controller.LoginController"
-            fx:id="rootPane" prefWidth="900" prefHeight="600" stylesheets="@../css/style.css">
+<StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="ru.funduruk.controller.LoginController"
+           fx:id="root" prefWidth="900" prefHeight="600" stylesheets="@../css/style.css" >
 
-    <top>
+<BorderPane fx:id="rootPane">
+    <ImageView fx:id="backgroundLogin"
+               fitWidth="900"
+               fitHeight="600">
+        <Image url="@/image/background/login_background.jpg"/>
+    </ImageView>
+
+<top>
         <HBox fx:id="titleBar" alignment="CENTER_LEFT" spacing="10" styleClass="title-bar">
-            <Label text="MeetGrid" styleClass="title-label"/>
+            <Label text="lunfy" styleClass="title-label"/>
             <Region HBox.hgrow="ALWAYS"/>
             <Button onAction="#minimize" styleClass="button-bar">
                 <graphic>
@@ -44,20 +51,21 @@
 
     <center>
         <HBox fx:id="mainBox" styleClass="main-box">
-
-        <VBox fx:id="loginBox" styleClass="login-box">
-            <Label text="MeetGrid Login" style="-fx-font-size: 24px; -fx-text-fill: white;"/>
-            <TextField fx:id="usernameField" promptText="Username" styleClass="text-field"/>
-            <PasswordField fx:id="passwordField" promptText="Password" styleClass="password-field"/>
-            <HBox spacing="10" alignment="CENTER">
-            <Button text="Login" onAction="#handleLogin" styleClass="button-login"/>
-            <Button text="Register" onAction="#handleRegister" styleClass="button-login"/>
-            </HBox>
-            <VBox fx:id="statusBox" styleClass="status-box" visible="false">
-            <Label fx:id="statusLabel" style="-fx-text-fill: red;"/>
+           <VBox fx:id="loginWrapper">
+            <VBox fx:id="loginBox" styleClass="login-box">
+                <Label text="Welcome to lunfy" style="-fx-font-size: 24px; -fx-text-fill: white;"/>
+                <TextField fx:id="usernameField" promptText="Username" styleClass="text-field"/>
+                <PasswordField fx:id="passwordField" promptText="Password" styleClass="password-field"/>
+                <HBox spacing="10" alignment="CENTER">
+                <Button text="Login" onAction="#handleLogin" styleClass="button-login"/>
+                <Button text="Register" onAction="#handleRegister" styleClass="button-login"/>
+                </HBox>
+                <VBox fx:id="statusBox" styleClass="status-box" visible="false">
+                    <Label fx:id="statusLabel" style="-fx-text-fill: red;"/>
+                </VBox>
             </VBox>
+           </VBox>
 
-        </VBox>
             <VBox alignment="CENTER">
                 <ImageView fx:id="logo" fitWidth="250" fitHeight="250" preserveRatio="true" pickOnBounds="true" smooth="true">
                     <Image url="@/image/logo/logo.png"/>
@@ -68,3 +76,4 @@
     </center>
 
 </BorderPane>
+</StackPane>

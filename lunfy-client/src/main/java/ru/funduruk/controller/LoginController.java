@@ -1,21 +1,31 @@
 package ru.funduruk.controller;
 
+import javafx.animation.ParallelTransition;
+import javafx.animation.ScaleTransition;
+import javafx.animation.TranslateTransition;
 import javafx.fxml.FXML;
 import javafx.scene.Cursor;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Duration;
+import ru.funduruk.manager.SceneManager;
+
 
 public class LoginController {
 
 
     @FXML
     public BorderPane rootPane;
+
+    @FXML
+    public ImageView backgroundLogin;
 
     @FXML
     private TextField usernameField;
@@ -30,6 +40,13 @@ public class LoginController {
     VBox statusBox;
 
     @FXML
+    private ImageView logo;
+    @FXML
+    private HBox mainBox;
+    @FXML
+    private VBox loginWrapper;
+
+    @FXML
     private void handleLogin() {
         String username = usernameField.getText();
         String password = passwordField.getText();
@@ -40,10 +57,9 @@ public class LoginController {
             return;
         }
 
-
         if(username.equals("test") && password.equals("1234")) {
-            statusLabel.setText("Login successful!");
-            statusBox.setVisible(true);
+            playLoginSuccessAnimation();
+
         } else {
             statusLabel.setText("Invalid credentials");
             statusBox.setVisible(true);
@@ -66,6 +82,9 @@ public class LoginController {
     public void initialize() {
         enableWindowDragging();
         enableWindowResize();
+
+        backgroundLogin.fitWidthProperty().bind(rootPane.widthProperty());
+        backgroundLogin.fitHeightProperty().bind(rootPane.heightProperty());
     }
 
     private void enableWindowDragging() {
@@ -133,6 +152,52 @@ public class LoginController {
         stage.setMaximized(!stage.isMaximized());
     }
 
+    private void playLoginSuccessAnimation() {
+
+        double loginWidth = loginWrapper.getWidth();
+
+
+        ScaleTransition scale = new ScaleTransition(Duration.millis(400), loginWrapper);
+        scale.setFromX(1);
+        scale.setToX(0);
+        scale.setFromY(1);
+        scale.setToY(1);
+
+        ParallelTransition animation = getParallelTransition(loginWidth, scale);
+
+
+        animation.setOnFinished(e -> {
+            try {
+                wait(5000);
+            } catch (InterruptedException ex) {
+                throw new RuntimeException(ex);
+            }
+            SceneManager.setScene(
+                    "/fxml/GeneralView.fxml",
+                    "/css/style.css"
+            );
+        });
+
+        animation.play();
+    }
+
+    private ParallelTransition getParallelTransition(double loginWidth, ScaleTransition scale) {
+        TranslateTransition moveLeft =
+                new TranslateTransition(Duration.millis(400), loginWrapper);
+        moveLeft.setFromX(0);
+        moveLeft.setToX(-loginWidth / 2);
+
+        TranslateTransition logoMove =
+                new TranslateTransition(Duration.millis(400), logo);
+
+        logoMove.setToX(-(mainBox.getWidth() / 2 - logo.getFitWidth() / 2));
+
+        return new ParallelTransition(
+                scale,
+                moveLeft,
+                logoMove
+        );
+    }
 
 
 }
