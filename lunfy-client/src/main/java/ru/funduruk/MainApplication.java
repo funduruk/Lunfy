@@ -1,15 +1,9 @@
 package ru.funduruk;
 
-import javafx.animation.FadeTransition;
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.util.Duration;
 import ru.funduruk.manager.SceneManager;
 
 import java.util.Objects;
@@ -31,7 +25,7 @@ public class MainApplication extends Application {
         );
 
         // Setting Screen
-        stage.setTitle("MeetGrid");
+        stage.setTitle("lunfy");
         stage.setMinWidth(900);
         stage.setMinHeight(600);
         stage.initStyle(StageStyle.UNDECORATED);

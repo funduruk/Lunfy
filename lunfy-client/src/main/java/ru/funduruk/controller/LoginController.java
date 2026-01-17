@@ -4,18 +4,23 @@ import javafx.animation.ParallelTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.TranslateTransition;
 import javafx.fxml.FXML;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Cursor;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import ru.funduruk.manager.SceneManager;
+
+import java.util.Objects;
 
 
 public class LoginController {
@@ -46,6 +51,10 @@ public class LoginController {
     @FXML
     private VBox loginWrapper;
 
+    Rectangle2D screenBounds = Screen.getPrimary().getBounds();
+    double width = screenBounds.getWidth();
+    double height = screenBounds.getHeight();
+
     @FXML
     private void handleLogin() {
         String username = usernameField.getText();
@@ -56,7 +65,7 @@ public class LoginController {
             statusBox.setVisible(true);
             return;
         }
-
+        // TODO FIX LOGIN ANIMATION
         if(username.equals("test") && password.equals("1234")) {
             playLoginSuccessAnimation();
 
@@ -83,6 +92,15 @@ public class LoginController {
         enableWindowDragging();
         enableWindowResize();
 
+        String bgPath;
+
+        if(width <= 1280) bgPath = "/image/background/small-lunfy-background.png";
+        else if(width <= 1920) bgPath = "/image/background/medium-lunfy-background.png";
+        else if(width <= 2560) bgPath = "/image/background/large-lunfy-background.png";
+        else bgPath = "/image/background/max-lunfy-background.png";
+
+        Image bgImage = new Image(Objects.requireNonNull(getClass().getResource(bgPath)).toExternalForm());
+        backgroundLogin.setImage(bgImage);
         backgroundLogin.fitWidthProperty().bind(rootPane.widthProperty());
         backgroundLogin.fitHeightProperty().bind(rootPane.heightProperty());
     }
@@ -162,6 +180,11 @@ public class LoginController {
         scale.setToX(0);
         scale.setFromY(1);
         scale.setToY(1);
+
+        Image gif = new Image(
+                Objects.requireNonNull(getClass().getResource("/gif/loading.gif")).toExternalForm()
+        );
+        logo.setImage(gif);
 
         ParallelTransition animation = getParallelTransition(loginWidth, scale);
 

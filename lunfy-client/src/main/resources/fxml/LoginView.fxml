@@ -12,7 +12,6 @@
     <ImageView fx:id="backgroundLogin"
                fitWidth="900"
                fitHeight="600">
-        <Image url="@/image/background/login_background.jpg"/>
     </ImageView>
 
 <top>
