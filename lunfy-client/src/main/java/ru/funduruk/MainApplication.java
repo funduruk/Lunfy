@@ -15,11 +15,10 @@ public class MainApplication extends Application {
 
         SceneManager.init(stage);
 
-        // Icon
         stage.getIcons().add(
                 new Image(
                         Objects.requireNonNull(
-                                getClass().getResource("/image/logo/logo.png")
+                                SceneManager.class.getResource("/image/logo/logo.png")
                         ).toExternalForm()
                 )
         );
@@ -28,6 +27,7 @@ public class MainApplication extends Application {
         stage.setTitle("lunfy");
         stage.setMinWidth(900);
         stage.setMinHeight(600);
+        stage.setAlwaysOnTop(true);
         stage.initStyle(StageStyle.UNDECORATED);
 
         // login Screen
@@ -37,6 +37,8 @@ public class MainApplication extends Application {
         );
 
         stage.show();
+
+        stage.setAlwaysOnTop(false);
     }
 
     public static void main(String[] args) {

@@ -121,9 +121,10 @@ StackPane {
 
 .title-bar {
 
-    -fx-background-color: #38035c;
+    -fx-background-color: #232033;
+
     -fx-min-height: 20px;
-    -fx-pref-height: 20px;
+    -fx-pref-height: 25px;
     -fx-padding: 0 10 0 10;
 }
 

@@ -1,0 +1,65 @@
+BorderPane {
+    -fx-background-color: #1E1B29;
+    -fx-pref-height: 400;
+    -fx-pref-width: 600;
+
+
+}
+
+.general-main-box {
+    -fx-background-color:  #2C2740;
+    -fx-background-radius: 12;
+    -fx-background-insets: 0;
+
+    -fx-alignment: CENTER;
+
+    -fx-padding: 20;
+
+    -fx-min-width: 200;
+    -fx-min-height: 150;
+}
+
+.general-group-box {
+    -fx-background-color: #25213A;
+    -fx-background-radius: 12;
+
+    -fx-pref-width: 50;
+    -fx-max-width: 50;
+    -fx-min-height: 150;
+
+}
+
+.general-chat-box {
+    -fx-background-color: #221E33;
+    -fx-background-radius: 12;
+
+    -fx-pref-width: 200;
+    -fx-max-width: 200;
+    -fx-min-height: 150;
+
+}
+
+
+.main-btn {
+    -fx-background-color: transparent;
+    -fx-padding: 5;
+    -fx-background-radius: 12;
+}
+
+.friends-btn {
+    -fx-background-color: rgba(18, 18, 18, 0.51);
+    -fx-padding: .5;
+    -fx-pref-width: 200;
+    -fx-background-radius: 12;
+    -fx-font-size: 14;
+    -fx-text-fill: white;
+}
+
+.system-btns-box {
+    -fx-background-radius: 12;
+
+    -fx-pref-width: 200;
+    -fx-max-width: 200;
+    -fx-min-height: 150;
+
+}

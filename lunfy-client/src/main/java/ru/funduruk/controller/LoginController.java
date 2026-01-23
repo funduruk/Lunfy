@@ -19,8 +19,11 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import ru.funduruk.manager.SceneManager;
+import ru.funduruk.manager.TitleBarManager;
 
 import java.util.Objects;
+
+import static ru.funduruk.manager.TitleBarManager.maximizeWithoutTaskbar;
 
 
 public class LoginController {
@@ -46,14 +49,15 @@ public class LoginController {
 
     @FXML
     private ImageView logo;
+
     @FXML
     private HBox mainBox;
+
     @FXML
     private VBox loginWrapper;
 
     Rectangle2D screenBounds = Screen.getPrimary().getBounds();
     double width = screenBounds.getWidth();
-    double height = screenBounds.getHeight();
 
     @FXML
     private void handleLogin() {
@@ -65,7 +69,7 @@ public class LoginController {
             statusBox.setVisible(true);
             return;
         }
-        // TODO FIX LOGIN ANIMATION
+
         if(username.equals("test") && password.equals("1234")) {
             playLoginSuccessAnimation();
 
@@ -82,15 +86,11 @@ public class LoginController {
 
     @FXML private HBox titleBar;
 
-    private double xOffset = 0;
-    private double yOffset = 0;
-
-
 
     @FXML
     public void initialize() {
-        enableWindowDragging();
-        enableWindowResize();
+        TitleBarManager.enableWindowDragging(titleBar);
+        TitleBarManager.enableWindowResize(rootPane);
 
         String bgPath;
 
@@ -105,54 +105,8 @@ public class LoginController {
         backgroundLogin.fitHeightProperty().bind(rootPane.heightProperty());
     }
 
-    private void enableWindowDragging() {
-        titleBar.setOnMousePressed(event -> {
-            xOffset = event.getSceneX();
-            yOffset = event.getSceneY();
-        });
 
-        titleBar.setOnMouseDragged(event -> {
-            Stage stage = (Stage) titleBar.getScene().getWindow();
-            stage.setX(event.getScreenX() - xOffset);
-            stage.setY(event.getScreenY() - yOffset);
-        });
-    }
-
-    private boolean isInResizeZone(MouseEvent event) {
-        double mouseX = event.getX();
-        double mouseY = event.getY();
-        double width = rootPane.getWidth();
-        double height = rootPane.getHeight();
-        final int RESIZE_MARGIN = 10;
-
-        return mouseX > width - RESIZE_MARGIN || mouseY > height - RESIZE_MARGIN;
-    }
-
-    private void enableWindowResize() {
-        rootPane.setOnMouseMoved(event -> {
-            if (isInResizeZone(event)) {
-                rootPane.setCursor(Cursor.SE_RESIZE);
-            } else {
-                rootPane.setCursor(Cursor.DEFAULT);
-            }
-        });
-
-        rootPane.setOnMouseDragged(event -> {
-            Stage stage = (Stage) rootPane.getScene().getWindow();
-
-            if (rootPane.getCursor() == Cursor.SE_RESIZE) {
-                double newWidth = event.getX();
-                double newHeight = event.getY();
-
-
-                if (newWidth < stage.getMinWidth()) newWidth = stage.getMinWidth();
-                if (newHeight < stage.getMinHeight()) newHeight = stage.getMinHeight();
-
-                stage.setWidth(newWidth);
-                stage.setHeight(newHeight);
-            }
-        });
-    }
+    double prevX, prevY, prevW, prevH;
 
     @FXML
     private void close() {
@@ -161,13 +115,26 @@ public class LoginController {
 
     @FXML
     private void minimize() {
-        ((Stage) titleBar.getScene().getWindow()).setIconified(true);
+        Stage stage = (Stage) titleBar.getScene().getWindow();
+        stage.setX(prevX);
+        stage.setY(prevY);
+        stage.setWidth(prevW);
+        stage.setHeight(prevH);
     }
 
     @FXML
     private void maximize() {
         Stage stage = (Stage) titleBar.getScene().getWindow();
-        stage.setMaximized(!stage.isMaximized());
+        prevX = stage.getX();
+        prevY = stage.getY();
+        prevW = stage.getWidth();
+        prevH = stage.getHeight();
+
+        if (stage.isMaximized()) {
+            stage.setMaximized(false);
+        } else {
+            maximizeWithoutTaskbar(stage);
+        }
     }
 
     private void playLoginSuccessAnimation() {
@@ -190,11 +157,6 @@ public class LoginController {
 
 
         animation.setOnFinished(e -> {
-            try {
-                wait(5000);
-            } catch (InterruptedException ex) {
-                throw new RuntimeException(ex);
-            }
             SceneManager.setScene(
                     "/fxml/GeneralView.fxml",
                     "/css/style.css"

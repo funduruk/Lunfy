@@ -3,10 +3,13 @@ package ru.funduruk.manager;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.animation.FadeTransition;
+import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
+import java.io.IOException;
 import java.util.Objects;
 
 public class SceneManager {
@@ -16,31 +19,33 @@ public class SceneManager {
         stage = primaryStage;
     }
 
-    public static void setScene(String fxml, String css){
-        try{
-            FXMLLoader loader = new FXMLLoader(
-                    SceneManager.class.getResource(fxml)
+    public static void setScene(String fxml, String css) {
+
+
+        Scene scene;
+        Parent root;
+        try {
+            double w = stage.getWidth();
+            double h = stage.getHeight();
+
+            FXMLLoader loader = new FXMLLoader(SceneManager.class.getResource(fxml));
+            root = loader.load();
+
+            scene = new Scene(root, w, h);
+            scene.getStylesheets().add(
+                    Objects.requireNonNull(
+                            SceneManager.class.getResource(css)
+                    ).toExternalForm()
             );
-            Parent root = loader.load();
-
-            Scene scene = new Scene(root);
-
-            if(css != null){
-                scene.getStylesheets().add(
-                        Objects.requireNonNull(
-                                SceneManager.class.getResource(css)
-                        ).toExternalForm()
-                );
-            }
-
-            FadeTransition fade = new FadeTransition(Duration.millis(500), root);
-            fade.setFromValue(0);
-            fade.setToValue(1);
-
-            stage.setScene(scene);
-            fade.play();
-        } catch (Exception e){
-            e.printStackTrace();
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
         }
+
+        FadeTransition fade = new FadeTransition(Duration.millis(500), root);
+        fade.setFromValue(0);
+        fade.setToValue(1);
+
+        stage.setScene(scene);
+        fade.play();
     }
-}
+    }
