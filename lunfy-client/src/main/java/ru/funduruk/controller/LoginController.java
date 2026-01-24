@@ -5,13 +5,12 @@ import javafx.animation.ScaleTransition;
 import javafx.animation.TranslateTransition;
 import javafx.fxml.FXML;
 import javafx.geometry.Rectangle2D;
-import javafx.scene.Cursor;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -26,7 +25,7 @@ import java.util.Objects;
 import static ru.funduruk.manager.TitleBarManager.maximizeWithoutTaskbar;
 
 
-public class LoginController {
+public class LoginController extends Controller{
 
 
     @FXML
@@ -34,6 +33,7 @@ public class LoginController {
 
     @FXML
     public ImageView backgroundLogin;
+    public Button registerBtn;
 
     @FXML
     private TextField usernameField;
@@ -81,7 +81,10 @@ public class LoginController {
 
     @FXML
     private void handleRegister() {
-        statusLabel.setText("Register clicked!");
+        SceneManager.setScene(
+                "/fxml/RegisterView.fxml",
+                "/css/style.css"
+        );
     }
 
     @FXML private HBox titleBar;
@@ -89,8 +92,8 @@ public class LoginController {
 
     @FXML
     public void initialize() {
-        TitleBarManager.enableWindowDragging(titleBar);
-        TitleBarManager.enableWindowResize(rootPane);
+        super.initialize(rootPane, titleBar);
+        setupHoverAnimation(registerBtn);
 
         String bgPath;
 
@@ -183,6 +186,36 @@ public class LoginController {
                 logoMove
         );
     }
+
+    private void setupHoverAnimation(Button button) {
+
+        ScaleTransition scaleIn = new ScaleTransition(Duration.millis(200), button);
+        scaleIn.setToX(1.1);
+        scaleIn.setToY(1.1);
+
+        ScaleTransition scaleOut = new ScaleTransition(Duration.millis(200), button);
+        scaleOut.setToX(1);
+        scaleOut.setToY(1);
+
+        button.setOnMouseEntered(e -> {
+            button.setStyle(
+                    "-fx-background-color: #31638a;" +
+                            "-fx-border-color: #31638a;" +
+                            "-fx-font-size: 12px;"
+            );
+            scaleIn.playFromStart();
+        });
+
+        button.setOnMouseExited(e -> {
+            button.setStyle(
+                    "-fx-background-color: transparent;" +
+                            "-fx-border-color: transparent;" +
+                            "-fx-font-size: 10px;"
+            );
+            scaleOut.playFromStart();
+        });
+    }
+
 
 
 }

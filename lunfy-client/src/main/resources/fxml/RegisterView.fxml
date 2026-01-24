@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="ru.funduruk.controller.RegisterController"
+           fx:id="root" stylesheets="@../css/style.css" >
+
+    <BorderPane fx:id="rootPane">
+        <ImageView fx:id="background"
+                   fitWidth="900"
+                   fitHeight="600">
+        </ImageView>
+
+        <top>
+            <HBox fx:id="titleBar" alignment="CENTER_LEFT" spacing="10" styleClass="title-bar">
+                <Label text="lunfy" styleClass="title-label"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button onAction="#minimize" styleClass="button-bar">
+                    <graphic>
+                        <ImageView fitWidth="16" fitHeight="16" preserveRatio="true"
+                                   pickOnBounds="true" smooth="true"
+                                   fx:id="minimizeIcon">
+                            <Image url="@/image/icon/minimize.png"/>
+                        </ImageView>
+                    </graphic>
+                </Button>
+                <Button onAction="#maximize" styleClass="button-bar">
+                    <graphic>
+                        <ImageView fitWidth="16" fitHeight="16" preserveRatio="true"
+                                   pickOnBounds="true" smooth="true"
+                                   fx:id="maximizeIcon">
+                            <Image url="@/image/icon/maximize.png"/>
+                        </ImageView>
+                    </graphic>
+                </Button>
+                <Button onAction="#close" styleClass="button-bar">
+                    <graphic>
+                        <ImageView fitWidth="16" fitHeight="16" preserveRatio="true"
+                                   pickOnBounds="true" smooth="true"
+                                   fx:id="closeIcon">
+                            <Image url="@/image/icon/close.png"/>
+                        </ImageView>
+                    </graphic>
+                </Button>
+            </HBox>
+        </top>
+
+        <center>
+            <HBox fx:id="mainBox" styleClass="main-box">
+                <VBox fx:id="loginWrapper">
+                    <VBox fx:id="loginBox" styleClass="login-box">
+                        <Label text="Register" style="-fx-font-size: 24px; -fx-text-fill: white;"/>
+                        <TextField fx:id="usernameField" promptText="Username" styleClass="text-field"/>
+                        <TextField fx:id="emailField" promptText="email" styleClass="text-field"/>
+                        <PasswordField fx:id="passwordField" promptText="Password" styleClass="password-field"/>
+                        <HBox spacing="10" alignment="CENTER">
+                             <Button text="Register" onAction="#handleRegister" styleClass="button-login"/>
+                        </HBox>
+                        <VBox fx:id="statusBox" styleClass="status-box" visible="false">
+                            <Label fx:id="statusLabel" style="-fx-text-fill: red;"/>
+                        </VBox>
+                    </VBox>
+                </VBox>
+
+                <VBox alignment="CENTER">
+                    <ImageView fx:id="logo" fitWidth="250" fitHeight="250" preserveRatio="true" pickOnBounds="true" smooth="true">
+                        <Image url="@/image/logo/logo.png"/>
+                    </ImageView>
+                </VBox>
+            </HBox>
+
+        </center>
+
+    </BorderPane>
+</StackPane>

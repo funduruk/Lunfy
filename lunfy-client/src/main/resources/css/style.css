@@ -93,6 +93,19 @@ StackPane {
     -fx-font-size: 15px;
 }
 
+.button-register {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-size: 10px;
+    -fx-border-color: transparent;
+}
+
+.button-register:hover {
+    -fx-background-color: #31638a;
+    -fx-border-color: #31638a;
+    -fx-font-size: 13px;
+    -fx-border-radius: 10;
+}
 .button-bar {
     -fx-background-color: transparent ;
     -fx-text-fill: rgba(119, 86, 165, 0.87);
