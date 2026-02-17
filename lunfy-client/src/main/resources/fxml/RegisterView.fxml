@@ -5,6 +5,8 @@
 
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.image.Image?>
+<?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.shape.Circle?>
 <StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="ru.funduruk.controller.RegisterController"
            fx:id="root" stylesheets="@../css/style.css" >
 
@@ -50,8 +52,27 @@
 
         <center>
             <HBox fx:id="mainBox" styleClass="main-box">
-                <VBox fx:id="loginWrapper">
-                    <VBox fx:id="loginBox" styleClass="login-box">
+                <VBox fx:id="registerWrapper">
+                    <StackPane fx:id="backButton"
+                               prefWidth="12"
+                               prefHeight="12"
+                               StackPane.alignment="TOP_LEFT"
+                               style="-fx-cursor: hand; -fx-padding: 10;"
+                               styleClass="button-back">
+
+                        <Circle fx:id="backBg"
+                                radius="18"
+                                fill="rgba(255,255,255,0.15)"
+                                opacity="0"/>
+
+                        <SVGPath fx:id="backIcon"
+                                 content="M12 4 L6 10 L12 16"
+                                 stroke="white"
+                                 strokeWidth="2"
+                                 fill="transparent"/>
+                    </StackPane>
+
+                    <VBox fx:id="registerBox" styleClass="login-box">
                         <Label text="Register" style="-fx-font-size: 24px; -fx-text-fill: white;"/>
                         <TextField fx:id="usernameField" promptText="Username" styleClass="text-field"/>
                         <TextField fx:id="emailField" promptText="email" styleClass="text-field"/>

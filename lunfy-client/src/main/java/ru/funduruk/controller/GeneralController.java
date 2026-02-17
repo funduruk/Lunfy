@@ -16,7 +16,7 @@ public class GeneralController extends Controller{
 
 
     @FXML
-    public BorderPane generalPane;
+    public BorderPane rootPane;
     @FXML
     public StackPane generalRoot;
     public VBox groupBox;

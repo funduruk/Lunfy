@@ -8,7 +8,7 @@
 <?import javafx.scene.control.Button?>
 <StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="ru.funduruk.controller.GeneralController"
            fx:id="generalRoot" stylesheets="@../css/general_style.css" >
-    <BorderPane fx:id="generalPane">
+    <BorderPane fx:id="rootPane">
         <top>
             <HBox fx:id="titleBar" alignment="CENTER_LEFT" spacing="10" styleClass="title-bar">
                 <Label text="lunfy" styleClass="title-label"/>

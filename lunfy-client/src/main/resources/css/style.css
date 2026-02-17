@@ -132,6 +132,11 @@ StackPane {
     -fx-font-size: 12px;
 }
 
+.button-back {
+    -fx-background-color: transparent;
+    -fx-pref-width: 32;
+    -fx-pref-height: 32;
+}
 .title-bar {
 
     -fx-background-color: #232033;

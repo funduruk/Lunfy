@@ -1,0 +1,89 @@
+/* Левая панель */
+.chat-list {
+    -fx-pref-width: 220;
+    -fx-padding: 15;
+    -fx-spacing: 10;
+    -fx-background-color: #1e1e2f;
+}
+
+.chat-list-title {
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.chat-item {
+    -fx-spacing: 10;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 8;
+    -fx-background-radius: 10;
+}
+
+.chat-item:hover {
+    -fx-background-color: #31638a;
+}
+
+.chat-avatar {
+    -fx-background-color: #444;
+    -fx-background-radius: 18;
+}
+
+.chat-name {
+    -fx-text-fill: white;
+}
+
+/* Область чата */
+.chat-area {
+    -fx-background-color: #2b2b3c;
+}
+
+.message-scroll {
+    -fx-background-color: transparent;
+}
+
+.message-box {
+    -fx-padding: 15;
+}
+
+/* Сообщения */
+.message {
+    -fx-padding: 10 14;
+    -fx-background-radius: 14;
+    -fx-max-width: 400;
+}
+
+.message-in {
+    -fx-background-color: #3b3b5c;
+    -fx-text-fill: white;
+}
+
+.message-out {
+    -fx-background-color: #31638a;
+    -fx-text-fill: white;
+}
+
+/* Поле ввода */
+.input-bar {
+    -fx-padding: 10;
+    -fx-background-color: #1e1e2f;
+}
+
+.message-input {
+    -fx-background-radius: 12;
+    -fx-background-color: #3b3b5c;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: #aaa;
+}
+
+.send-button {
+    -fx-background-radius: 12;
+    -fx-background-color: #31638a;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+}
+
+.root {
+    -fx-font-family: "Segoe UI";
+    -fx-background-color: #28104a;
+}
+

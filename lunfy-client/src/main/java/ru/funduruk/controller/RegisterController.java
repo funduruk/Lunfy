@@ -1,5 +1,8 @@
 package ru.funduruk.controller;
 
+import javafx.animation.FadeTransition;
+import javafx.animation.ParallelTransition;
+import javafx.animation.ScaleTransition;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Rectangle2D;
@@ -10,10 +13,15 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.SVGPath;
 import javafx.stage.Popup;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import ru.funduruk.manager.FieldsManager;
+import ru.funduruk.manager.SceneManager;
 
 import java.util.Objects;
 
@@ -28,6 +36,13 @@ public class RegisterController extends Controller{
     public PasswordField passwordField;
     @FXML
     private HBox titleBar;
+
+    @FXML
+    private StackPane backButton;
+    @FXML
+    private Circle backBg;
+    @FXML
+    private SVGPath backIcon;
 
 
     Rectangle2D screenBounds = Screen.getPrimary().getBounds();
@@ -49,6 +64,26 @@ public class RegisterController extends Controller{
         background.setImage(bgImage);
         background.fitWidthProperty().bind(rootPane.widthProperty());
         background.fitHeightProperty().bind(rootPane.heightProperty());
+
+
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(200), backBg);
+        fadeIn.setToValue(1);
+
+        ScaleTransition scaleIn = new ScaleTransition(Duration.millis(200), backBg);
+        scaleIn.setFromX(0.85);
+        scaleIn.setFromY(0.85);
+        scaleIn.setToX(1);
+        scaleIn.setToY(1);
+
+        ParallelTransition show = new ParallelTransition(fadeIn, scaleIn);
+
+        FadeTransition fadeOut = new FadeTransition(Duration.millis(150), backBg);
+        fadeOut.setToValue(0);
+
+        backButton.setOnMouseEntered(e -> show.playFromStart());
+        backButton.setOnMouseExited(e -> fadeOut.playFromStart());
+
+        backButton.setOnMouseClicked(e -> goBackToLogin());
     }
 
 
@@ -133,6 +168,11 @@ public class RegisterController extends Controller{
                 bounds.getMaxY() + 2
         );
     }
+
+    private void goBackToLogin() {
+        SceneManager.setScene("/fxml/LoginView.fxml", "/css/style.css");
+    }
+
 
 
 }
