@@ -32,18 +32,15 @@
     -fx-text-fill: white;
 }
 
-/* Область чата */
+
 .chat-area {
     -fx-background-color: #2b2b3c;
 }
 
 .message-scroll {
-    -fx-background-color: transparent;
+    -fx-background-color: #2b2b3c;
 }
 
-.message-box {
-    -fx-padding: 15;
-}
 
 /* Сообщения */
 .message {
@@ -53,26 +50,38 @@
 }
 
 .message-in {
-    -fx-background-color: #3b3b5c;
+    -fx-background-color: #2f2b45;
     -fx-text-fill: white;
+    -fx-padding: 8 12;
+    -fx-background-radius: 12;
 }
 
 .message-out {
-    -fx-background-color: #31638a;
+    -fx-background-color: #4b6cff;
     -fx-text-fill: white;
+    -fx-padding: 8 12;
+    -fx-background-radius: 12;
 }
 
-/* Поле ввода */
+.message-box {
+    -fx-padding: 10;
+    -fx-background-color: rgba(39, 47, 101, 0.72);
+}
 .input-bar {
     -fx-padding: 10;
     -fx-background-color: #1e1e2f;
 }
 
-.message-input {
+.chat-input {
+    -fx-background-color: #1e1e2f;
     -fx-background-radius: 12;
-    -fx-background-color: #3b3b5c;
-    -fx-text-fill: white;
-    -fx-prompt-text-fill: #aaa;
+    -fx-padding: 10;
+    -fx-min-height: 40;
+}
+
+.chat-input-text {
+    -fx-font-size: 14px;
+    -fx-fill: white;
 }
 
 .send-button {

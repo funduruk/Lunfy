@@ -1,0 +1,27 @@
+.chat-item {
+    -fx-padding: 8;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+
+.chat-item:hover {
+    -fx-background-color: #2a2a2a;
+}
+
+.chat-item.active {
+    -fx-background-color: #3a3a3a;
+}
+
+.chat-avatar {
+    -fx-background-radius: 50%;
+}
+
+.chat-name {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.chat-last {
+    -fx-text-fill: #9a9a9a;
+    -fx-font-size: 11px;
+}

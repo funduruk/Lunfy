@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<HBox xmlns:fx="http://javafx.com/fxml" spacing="10" style="-fx-padding: 5; -fx-background-radius: 12; -fx-background-color: #2C2740;">
+    <ImageView fx:id="friendAvatar" fitWidth="40" fitHeight="40" preserveRatio="true">
+        <Image url="@/image/logo/logo.png"/>
+    </ImageView>
+    <Label fx:id="friendName" text="FriendName" style="-fx-text-fill: white; -fx-font-size: 14;"/>
+</HBox>

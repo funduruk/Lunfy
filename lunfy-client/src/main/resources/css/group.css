@@ -1,0 +1,12 @@
+.group-item {
+    -fx-background-radius: 50;
+    -fx-cursor: hand;
+}
+
+.group-item:hover {
+    -fx-effect: dropshadow(gaussian, rgba(120,140,255,0.6), 12, 0.4, 0, 0);
+}
+
+.group-item:selected {
+    -fx-effect: dropshadow(gaussian, rgba(90,120,255,0.9), 18, 0.6, 0, 0);
+}

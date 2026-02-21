@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<HBox xmlns:fx="http://javafx.com/fxml" spacing="10">
+    <ImageView fx:id="senderAvatar" fitWidth="30" fitHeight="30" preserveRatio="true">
+        <Image url="@/image/logo/logo.png"/>
+    </ImageView>
+    <VBox>
+        <Label fx:id="senderName" text="UserName" style="-fx-text-fill: white; -fx-font-size: 12;"/>
+        <Label fx:id="messageContent" text="Message text here" style="-fx-text-fill: white; -fx-font-size: 14;"/>
+        <Label fx:id="messageTime" text="12:45" style="-fx-text-fill: #888888; -fx-font-size: 10;"/>
+    </VBox>
+</HBox>

@@ -1,87 +1,84 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<?import javafx.scene.layout.*?>
-
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.image.Image?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Button?>
-<StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="ru.funduruk.controller.GeneralController"
-           fx:id="generalRoot" stylesheets="@../css/general_style.css" >
-    <BorderPane fx:id="rootPane">
-        <top>
-            <HBox fx:id="titleBar" alignment="CENTER_LEFT" spacing="10" styleClass="title-bar">
-                <Label text="lunfy" styleClass="title-label"/>
-                <Region HBox.hgrow="ALWAYS"/>
-                <Button onAction="#minimize" styleClass="button-bar">
-                    <graphic>
-                        <ImageView fitWidth="16" fitHeight="16" preserveRatio="true"
-                                   pickOnBounds="true" smooth="true"
-                                   fx:id="minimizeIcon">
-                            <Image url="@/image/icon/minimize.png"/>
-                        </ImageView>
-                    </graphic>
-                </Button>
-                <Button onAction="#maximize" styleClass="button-bar">
-                    <graphic>
-                        <ImageView fitWidth="16" fitHeight="16" preserveRatio="true"
-                                   pickOnBounds="true" smooth="true"
-                                   fx:id="maximizeIcon">
-                            <Image url="@/image/icon/maximize.png"/>
-                        </ImageView>
-                    </graphic>
-                </Button>
-                <Button onAction="#close" styleClass="button-bar">
-                    <graphic>
-                        <ImageView fitWidth="16" fitHeight="16" preserveRatio="true"
-                                   pickOnBounds="true" smooth="true"
-                                   fx:id="closeIcon">
-                            <Image url="@/image/icon/close.png"/>
-                        </ImageView>
-                    </graphic>
-                </Button>
-            </HBox>
-        </top>
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="ru.funduruk.controller.GeneralController"
+            fx:id="generalRoot"
+            stylesheets="@../css/general_style.css">
 
-        <center>
-            <StackPane style="-fx-padding: 20;">
+    <!-- TOP BAR -->
+    <top>
+        <HBox fx:id="titleBar" styleClass="title-bar">
+            <Label text="lunfy"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button onAction="#minimize" styleClass="button-bar">
+                <graphic>
+                    <ImageView fitWidth="16" fitHeight="16" preserveRatio="true"
+                               pickOnBounds="true" smooth="true"
+                               fx:id="minimizeIcon">
+                        <Image url="@/image/icon/minimize.png"/>
+                    </ImageView>
+                </graphic>
+            </Button>
 
-                <HBox fx:id="rootContent"
-                      spacing="15"
-                      alignment="CENTER_LEFT">
+            <Button onAction="#maximize" styleClass="button-bar">
+                <graphic>
+                    <ImageView fitWidth="16" fitHeight="16" preserveRatio="true"
+                               pickOnBounds="true" smooth="true"
+                               fx:id="maximizeIcon">
+                        <Image url="@/image/icon/maximize.png"/>
+                    </ImageView>
+                </graphic>
+            </Button>
+            <Button onAction="#close" styleClass="button-bar">
+                <graphic>
+                    <ImageView fitWidth="16" fitHeight="16" preserveRatio="true"
+                               pickOnBounds="true" smooth="true"
+                               fx:id="closeIcon">
+                        <Image url="@/image/icon/close.png"/>
+                    </ImageView>
+                </graphic>
+            </Button>
+        </HBox>
+    </top>
 
-                    <VBox fx:id="groupBox" styleClass="general-group-box" HBox.hgrow="ALWAYS">
-                        <Button fx:id="mainBtn" onAction="#handleMainScreen" styleClass="main-btn">
-                            <graphic>
-                                <ImageView fitWidth="40"
-                                           fitHeight="40"
-                                           preserveRatio="true">
-                                <Image url="@/image/logo/logo.png"/>
-                                </ImageView>
-                            </graphic>
-                        </Button>
-                    </VBox>
+    <!-- MAIN -->
+    <center>
 
-                    <VBox fx:id="chatBox" styleClass="general-chat-box" HBox.hgrow="ALWAYS">
-                        <VBox fx:id="systemBtns" styleClass="system-btns-box">
-                            <Button fx:id="friendsBtn" onAction="#handleFriendsBtn" styleClass="friends-btn" text = "Friends">
-                                <graphic>
-                                    <ImageView fitWidth="40"
-                                               fitHeight="40"
-                                               preserveRatio="true">
-                                        <Image url="@/image/logo/logo.png"/>
-                                    </ImageView>
-                                </graphic>
-                            </Button>
-                        </VBox>
-                    </VBox>
+        <HBox spacing="10" style="-fx-padding: 10;" styleClass="background-pane">
 
-                    <BorderPane fx:id="interfaceBox" styleClass="general-main-box" HBox.hgrow="ALWAYS">
+            <!-- GROUPS -->
+            <VBox fx:id="groupsPane"
+                  styleClass="groups-pane"
+                  prefWidth="60"/>
 
-                    </BorderPane>
-                </HBox>
-            </StackPane>
-        </center>
+            <!-- SIDEBAR -->
+            <VBox styleClass="sidebar-pane" prefWidth="220">
 
-    </BorderPane>
-</StackPane>
+                <Button text="Friends"
+                        fx:id="friendsBtn"
+                        onAction="#openFriends"
+                        styleClass="friends-btn"/>
+
+
+                <VBox fx:id="chatListPane"
+                      VBox.vgrow="ALWAYS"
+                      spacing="6"/>
+
+            </VBox>
+
+            <!-- CONTENT -->
+            <StackPane fx:id="contentPane"
+                       styleClass="content-pane"
+                       HBox.hgrow="ALWAYS"/>
+
+        </HBox>
+    </center>
+
+</BorderPane>

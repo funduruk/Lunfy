@@ -1,64 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.control.*?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
-            fx:controller="ru.funduruk.controller.ChatController"
-            fx:id="chatRootPain"
-            prefWidth="900"
-            prefHeight="600"
+            fx:controller="ru.funduruk.controller.ChatTabController"
             stylesheets="@../css/chat.css">
 
-    <!-- Левая панель (чаты / группы) -->
-    <left>
-        <VBox fx:id="chatList" styleClass="chat-list">
-            <Label text="Chats" styleClass="chat-list-title"/>
-
-            <!-- Пример чата -->
-            <HBox styleClass="chat-item">
-                <ImageView fitWidth="36" fitHeight="36"
-                           styleClass="chat-avatar"/>
-                <Label text="Test User" styleClass="chat-name"/>
-            </HBox>
-        </VBox>
-    </left>
-
-    <!-- Основная область -->
+    <!-- MESSAGES -->
     <center>
-        <BorderPane styleClass="chat-area">
-
-            <!-- Сообщения -->
-            <center>
-                <ScrollPane fitToWidth="true" styleClass="message-scroll">
-                    <VBox fx:id="messageBox" spacing="10" styleClass="message-box">
-
-                        <!-- Входящее сообщение -->
-                        <HBox alignment="CENTER_LEFT">
-                            <Label text="Привет!" styleClass="message message-in"/>
-                        </HBox>
-
-                        <!-- Исходящее сообщение -->
-                        <HBox alignment="CENTER_RIGHT">
-                            <Label text="Привет 👋" styleClass="message message-out"/>
-                        </HBox>
-
-                    </VBox>
-                </ScrollPane>
-            </center>
-
-            <!-- Поле ввода -->
-            <bottom>
-                <HBox spacing="10" styleClass="input-bar">
-                    <TextField fx:id="messageField"
-                               promptText="Type a message..."
-                               styleClass="message-input"/>
-                    <Button text="➤" styleClass="send-button"/>
-                </HBox>
-            </bottom>
-
-        </BorderPane>
+        <ScrollPane fx:id ="scrollPane" fitToWidth="true" styleClass="message-scroll" >
+            <VBox fx:id="chatList"
+                  spacing="8"
+                  styleClass="message-box"/>
+        </ScrollPane>
     </center>
+
+    <!-- INPUT -->
+    <bottom>
+        <HBox spacing="8" style="-fx-padding: 10;">
+            <TextArea fx:id="messageField"
+                       promptText="Type a message..."
+                      wrapText="true"
+                      prefRowCount="1"
+                      HBox.hgrow="ALWAYS"
+            />
+            <Button text="➤"
+                    fx:id="sendButton"
+                    onAction="#sendMessage"/>
+        </HBox>
+
+    </bottom>
 
 </BorderPane>

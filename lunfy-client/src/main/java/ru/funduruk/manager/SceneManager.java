@@ -20,8 +20,6 @@ public class SceneManager {
     }
 
     public static void setScene(String fxml, String css) {
-
-
         Scene scene;
         Parent root;
         try {

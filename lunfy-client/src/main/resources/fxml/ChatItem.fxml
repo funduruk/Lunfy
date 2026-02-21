@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
+
+<HBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="ru.funduruk.controller.ChatItemController"
+      fx:id="root"
+      alignment="CENTER_LEFT"
+      spacing="10"
+      styleClass="chat-item">
+
+    <ImageView fx:id="avatar"
+               fitWidth="36"
+               fitHeight="36"
+               styleClass="chat-avatar"/>
+
+    <VBox spacing="2">
+        <Label fx:id="chatName"
+               text="Username"
+               styleClass="chat-name"/>
+        <Label fx:id="lastMessage"
+               text="No messages yet"
+               styleClass="chat-last"/>
+    </VBox>
+
+</HBox>

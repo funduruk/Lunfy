@@ -1,0 +1,17 @@
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.TextField?>
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="ru.funduruk.controller.FriendsTabController"
+      spacing="10"
+      styleClass="friends-view">
+
+    <HBox spacing="8">
+        <TextField promptText="Username#ID"/>
+        <Button text="Add"/>
+    </HBox>
+
+    <VBox fx:id="friendsList"
+          spacing="6"/>
+</VBox>

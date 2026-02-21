@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.shape.Circle?>
+
+<StackPane xmlns:fx="http://javafx.com/fxml"
+           fx:id="root"
+           fx:controller="ru.funduruk.controller.GroupItemController"
+           styleClass="group-item"
+           prefWidth="48"
+           prefHeight="48">
+
+    <!-- маска круга -->
+    <clip>
+        <Circle radius="24" centerX="24" centerY="24"/>
+    </clip>
+
+    <ImageView fx:id="avatar"
+               fitWidth="48"
+               fitHeight="48"
+               preserveRatio="true"/>
+
+</StackPane>
