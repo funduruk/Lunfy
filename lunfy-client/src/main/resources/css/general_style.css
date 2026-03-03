@@ -70,3 +70,236 @@
     -fx-background-color: #2a2340;
 }
 
+/* ===== ПАНЕЛЬ ПРОФИЛЯ ===== */
+.profile-panel {
+    -fx-background-color: #2d2b40;
+    -fx-padding: 8 10;
+    -fx-cursor: hand;
+    -fx-background-radius: 0 0 12 0;
+}
+
+.profile-panel:hover {
+    -fx-background-color: #3a3760;
+}
+
+.avatar-container {
+    -fx-min-width: 36;
+    -fx-min-height: 36;
+    -fx-max-width: 36;
+    -fx-max-height: 36;
+    -fx-background-radius: 999;
+    -fx-background-color: #5a5480;
+}
+
+.profile-name {
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.profile-status {
+    -fx-text-fill: #aaa;
+    -fx-font-size: 11px;
+}
+
+.status-dot-online {
+    -fx-background-color: #3ba55d;
+    -fx-background-radius: 999;
+    -fx-min-width: 10;
+    -fx-min-height: 10;
+    -fx-max-width: 10;
+    -fx-max-height: 10;
+    -fx-translate-x: 12;
+    -fx-translate-y: 12;
+}
+
+/* ===== FRIENDS ===== */
+.friends-view {
+    -fx-background-color: #36325a;
+}
+
+.friends-header {
+    -fx-background-color: #3f3763;
+    -fx-padding: 12 16;
+    -fx-border-color: #2a2340;
+    -fx-border-width: 0 0 1 0;
+}
+
+.friends-title {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 15px;
+}
+
+.friends-search {
+    -fx-background-color: #2a2340;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: #888;
+    -fx-background-radius: 8;
+    -fx-padding: 6 10;
+}
+
+.add-friend-btn {
+    -fx-background-color: #5865f2;
+    -fx-text-fill: white;
+    -fx-background-radius: 8;
+    -fx-padding: 6 12;
+    -fx-cursor: hand;
+}
+
+.add-friend-btn:hover {
+    -fx-background-color: #4752c4;
+}
+
+.friends-tabs {
+    -fx-background-color: #3f3763;
+    -fx-padding: 6 16;
+    -fx-border-color: #2a2340;
+    -fx-border-width: 0 0 1 0;
+}
+
+.friends-tab {
+    -fx-background-color: transparent;
+    -fx-text-fill: #aaa;
+    -fx-background-radius: 6;
+    -fx-padding: 4 12;
+    -fx-cursor: hand;
+}
+
+.friends-tab:hover {
+    -fx-background-color: rgba(255,255,255,0.08);
+    -fx-text-fill: white;
+}
+
+.friends-tab-active {
+    -fx-background-color: rgba(255,255,255,0.12);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.friends-scroll {
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+}
+
+.friends-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+.friends-list {
+    -fx-padding: 8;
+}
+
+.friend-item {
+    -fx-background-color: transparent;
+    -fx-padding: 8 12;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+
+.friend-item:hover {
+    -fx-background-color: rgba(255,255,255,0.06);
+}
+
+.friend-action-btn {
+    -fx-background-color: #2a2340;
+    -fx-text-fill: white;
+    -fx-background-radius: 999;
+    -fx-min-width: 32;
+    -fx-min-height: 32;
+    -fx-cursor: hand;
+}
+
+.friend-action-btn:hover {
+    -fx-background-color: #5865f2;
+}
+
+.friend-remove-btn {
+    -fx-background-color: #2a2340;
+    -fx-text-fill: #aaa;
+    -fx-background-radius: 999;
+    -fx-min-width: 32;
+    -fx-min-height: 32;
+    -fx-cursor: hand;
+}
+
+.friend-remove-btn:hover {
+    -fx-background-color: #ed4245;
+    -fx-text-fill: white;
+}
+
+
+/* ===== GROUP VIEW ===== */
+.group-view {
+    -fx-background-color: #36325a;
+}
+
+.channel-pane {
+    -fx-background-color: #3f3763;
+    -fx-padding: 0;
+}
+
+.group-name-bar {
+    -fx-background-color: #3f3763;
+    -fx-padding: 12 16;
+    -fx-border-color: #2a2340;
+    -fx-border-width: 0 0 1 0;
+}
+
+.group-name-label {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+}
+
+.channel-category {
+    -fx-text-fill: #888;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 12 8 4 12;
+}
+
+.channel-list {
+    -fx-padding: 0 8;
+}
+
+.channel-item {
+    -fx-padding: 4 8;
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+}
+
+.channel-item:hover {
+    -fx-background-color: rgba(255,255,255,0.08);
+}
+
+.channel-item-active {
+    -fx-background-color: rgba(255,255,255,0.14);
+}
+
+.group-chat-pane {
+    -fx-background-color: #36325a;
+}
+
+.members-pane {
+    -fx-background-color: #3a3660;
+    -fx-padding: 8;
+    -fx-border-color: #2a2340;
+    -fx-border-width: 0 0 0 1;
+}
+
+.members-role-label {
+    -fx-text-fill: #888;
+    -fx-font-size: 10px;
+    -fx-padding: 8 4 4 4;
+}
+
+.member-item {
+    -fx-padding: 4 8;
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+}
+
+.member-item:hover {
+    -fx-background-color: rgba(255,255,255,0.06);
+}

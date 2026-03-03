@@ -1,17 +1,41 @@
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.control.TextField?>
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="ru.funduruk.controller.FriendsTabController"
-      spacing="10"
-      styleClass="friends-view">
+      spacing="0" styleClass="friends-view">
 
-    <HBox spacing="8">
-        <TextField promptText="Username#ID"/>
-        <Button text="Add"/>
+    <!-- HEADER -->
+    <HBox styleClass="friends-header" spacing="12" alignment="CENTER_LEFT">
+        <Label text="👥" style="-fx-font-size: 18px;"/>
+        <Label text="Друзья" styleClass="friends-title"/>
+
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <!-- Поиск -->
+        <TextField fx:id="searchField"
+                   promptText="Найти или добавить — Username#1234"
+                   prefWidth="260"
+                   styleClass="friends-search"/>
+        <Button fx:id="addBtn" text="Добавить друга"
+                onAction="#handleAdd"
+                styleClass="add-friend-btn"/>
     </HBox>
 
-    <VBox fx:id="friendsList"
-          spacing="6"/>
+    <!-- ВКЛАДКИ -->
+    <HBox styleClass="friends-tabs" spacing="4">
+        <Button fx:id="tabAll" text="Все" onAction="#showAll"
+                styleClass="friends-tab, friends-tab-active"/>
+        <Button fx:id="tabOnline" text="Онлайн" onAction="#showOnline"
+                styleClass="friends-tab"/>
+        <Button fx:id="tabIncoming" text="Входящие" onAction="#showIncoming"
+                styleClass="friends-tab"/>
+    </HBox>
+
+    <!-- СПИСОК -->
+    <ScrollPane fitToWidth="true" styleClass="friends-scroll" VBox.vgrow="ALWAYS">
+        <VBox fx:id="friendsList" spacing="2" styleClass="friends-list"/>
+    </ScrollPane>
+
 </VBox>

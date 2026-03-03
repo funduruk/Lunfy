@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class MeetgridApplication {
+public class LunfyServerApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(MeetgridApplication.class, args);
+        SpringApplication.run(LunfyServerApplication.class, args);
     }
 
 }

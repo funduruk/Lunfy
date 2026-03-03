@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.shape.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="ru.funduruk.controller.ProfileController"
+            stylesheets="@../css/style.css"
+            fx:id="rootPane">
+
+    <top>
+        <HBox fx:id="titleBar" styleClass="title-bar">
+            <Label text="lunfy"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button onAction="#close" styleClass="button-bar" text="✕"/>
+        </HBox>
+    </top>
+
+    <center>
+        <VBox alignment="CENTER" spacing="20" style="-fx-padding: 40; -fx-background-color: #1e1b2e;">
+
+            <!-- Баннер + аватарка -->
+            <StackPane>
+                <Rectangle width="400" height="120" arcWidth="12" arcHeight="12"
+                           fill="#31638a"/>
+                <StackPane StackPane.alignment="BOTTOM_LEFT"
+                           style="-fx-padding: 0 0 -30 20;">
+                    <Circle fx:id="avatarCircle" radius="40"
+                            style="-fx-fill: #2d2b40; -fx-stroke: #1e1b2e; -fx-stroke-width: 4;"/>
+                    <ImageView fx:id="avatarImage" fitWidth="80" fitHeight="80"
+                               preserveRatio="true" pickOnBounds="true"/>
+                </StackPane>
+            </StackPane>
+
+            <!-- Кнопка загрузки аватарки -->
+            <Button text="Загрузить аватарку" onAction="#uploadAvatar"
+                    styleClass="primary-btn"/>
+
+            <!-- Никнейм -->
+            <VBox spacing="4">
+                <Label text="Никнейм" styleClass="field-label"/>
+                <TextField fx:id="usernameField" promptText="Введи никнейм"
+                           styleClass="profile-field"/>
+            </VBox>
+
+            <!-- Статус -->
+            <VBox spacing="4">
+                <Label text="Статус" styleClass="field-label"/>
+                <ComboBox fx:id="statusCombo" styleClass="profile-field">
+                </ComboBox>
+            </VBox>
+
+            <!-- Био -->
+            <VBox spacing="4">
+                <Label text="О себе" styleClass="field-label"/>
+                <TextArea fx:id="bioField" promptText="Расскажи о себе..."
+                          prefRowCount="3" wrapText="true"
+                          styleClass="profile-field"/>
+            </VBox>
+
+            <!-- Кнопки -->
+            <HBox spacing="10" alignment="CENTER">
+                <Button text="Сохранить" onAction="#save" styleClass="primary-btn"/>
+                <Button text="Назад" onAction="#goBack" styleClass="secondary-btn"/>
+            </HBox>
+
+        </VBox>
+    </center>
+</BorderPane>

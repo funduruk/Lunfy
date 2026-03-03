@@ -38,9 +38,13 @@
 }
 
 .message-scroll {
-    -fx-background-color: #2b2b3c;
+    -fx-background: transparent;
+    -fx-background-color: rgba(39, 47, 101, 0.72);
 }
 
+.message-scroll .viewport {
+    -fx-background-color: rgba(39, 47, 101, 0.72);
+}
 
 /* Сообщения */
 .message {
@@ -83,6 +87,7 @@
     -fx-font-size: 14px;
     -fx-fill: white;
 }
+
 
 .send-button {
     -fx-background-radius: 12;

@@ -4,34 +4,12 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 
-<?import javafx.scene.shape.Circle?>
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="ru.funduruk.controller.GroupsTabController"
       spacing="12"
       alignment="TOP_CENTER"
       styleClass="groups-pane">
 
-    <!-- Заглушка: группа 1 -->
-    <Button styleClass="group-btn">
-        <graphic>
-            <ImageView fx:id="avatar1" fitWidth="36" fitHeight="36">
-                <Image url="@/image/logo/logo.png"/>
-                <clip>
-                    <Circle radius="18" centerX="18" centerY="18"/>
-                </clip>
-            </ImageView>
-        </graphic>
-    </Button>
-
-
-    <!-- Заглушка: группа 2 -->
-    <Button styleClass="group-btn">
-        <graphic>
-            <Label text="DEV" styleClass="group-text"/>
-        </graphic>
-    </Button>
-
-    <!-- Кнопка добавить -->
-    <Button styleClass="group-add-btn" text="+"/>
+    <VBox fx:id="groupsPane" spacing="12" alignment="TOP_CENTER"/>
 
 </VBox>

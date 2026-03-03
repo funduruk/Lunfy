@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
@@ -7,6 +8,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.image.Image?>
+
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="ru.funduruk.controller.GeneralController"
             fx:id="generalRoot"
@@ -26,7 +28,6 @@
                     </ImageView>
                 </graphic>
             </Button>
-
             <Button onAction="#maximize" styleClass="button-bar">
                 <graphic>
                     <ImageView fitWidth="16" fitHeight="16" preserveRatio="true"
@@ -50,7 +51,6 @@
 
     <!-- MAIN -->
     <center>
-
         <HBox spacing="10" style="-fx-padding: 10;" styleClass="background-pane">
 
             <!-- GROUPS -->
@@ -59,19 +59,33 @@
                   prefWidth="60"/>
 
             <!-- SIDEBAR -->
-            <VBox styleClass="sidebar-pane" prefWidth="220">
-
-                <Button text="Friends"
-                        fx:id="friendsBtn"
-                        onAction="#openFriends"
-                        styleClass="friends-btn"/>
-
-
-                <VBox fx:id="chatListPane"
-                      VBox.vgrow="ALWAYS"
-                      spacing="6"/>
-
-            </VBox>
+            <BorderPane styleClass="sidebar-pane" prefWidth="220">
+                <top>
+                    <Button text="Friends"
+                            fx:id="friendsBtn"
+                            onAction="#openFriends"
+                            styleClass="friends-btn"/>
+                </top>
+                <center>
+                    <VBox fx:id="chatListPane" spacing="6"/>
+                </center>
+                <bottom>
+                    <HBox fx:id="profilePanel" styleClass="profile-panel" spacing="8"
+                          onMouseClicked="#openProfile">
+                        <StackPane styleClass="avatar-container">
+                            <ImageView fx:id="profileAvatar" fitWidth="36" fitHeight="36"
+                                       pickOnBounds="true" preserveRatio="true"/>
+                            <StackPane fx:id="statusDot" styleClass="status-dot-online"
+                                       maxWidth="10" maxHeight="10"
+                                       StackPane.alignment="BOTTOM_RIGHT"/>
+                        </StackPane>
+                        <VBox spacing="2" VBox.vgrow="ALWAYS">
+                            <Label fx:id="profileUsername" text="username" styleClass="profile-name"/>
+                            <Label fx:id="profileStatus" text="Online" styleClass="profile-status"/>
+                        </VBox>
+                    </HBox>
+                </bottom>
+            </BorderPane>
 
             <!-- CONTENT -->
             <StackPane fx:id="contentPane"

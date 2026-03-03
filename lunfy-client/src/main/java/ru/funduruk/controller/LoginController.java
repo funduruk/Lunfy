@@ -106,6 +106,7 @@ public class LoginController extends Controller{
         backgroundLogin.setImage(bgImage);
         backgroundLogin.fitWidthProperty().bind(rootPane.widthProperty());
         backgroundLogin.fitHeightProperty().bind(rootPane.heightProperty());
+
     }
 
 

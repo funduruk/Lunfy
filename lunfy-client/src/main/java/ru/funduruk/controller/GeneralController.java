@@ -4,14 +4,18 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
-import ru.funduruk.model.Message;
+import ru.funduruk.manager.SceneManager;
+import ru.funduruk.model.MessageStore;
+import ru.funduruk.model.UserProfile;
+import ru.funduruk.net.WSClient;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 import static ru.funduruk.manager.TitleBarManager.maximizeWithoutTaskbar;
@@ -24,6 +28,9 @@ public class GeneralController {
     @FXML private VBox chatListPane;
     @FXML private StackPane contentPane;
     @FXML private javafx.scene.control.Button friendsBtn;
+    @FXML private ImageView profileAvatar;
+    @FXML private Label profileUsername;
+    @FXML private Label profileStatus;
 
     private double xOffset, yOffset;
 
@@ -31,38 +38,38 @@ public class GeneralController {
 
 
     @FXML
-    public void initialize() {
+    public void initialize() throws Exception {
         enableWindowDragging();
         enableWindowResize();
 
-        loadChatTab();
+        UserProfile profile = UserProfile.getInstance();
+        profileUsername.setText(profile.getUsername());
+        profileStatus.setText(profile.getStatus());
+        if (profile.getAvatarPath() != null) {
+            profileAvatar.setImage(new Image("file:" + profile.getAvatarPath()));
+        }
+
+        loadChatView();
+        loadGroupsView();
+        WSClient.connect("ws://localhost:8080/ws");
+
+        chatController.addChat("test-chat", "Test Chat");
+        addChat("test-chat", "Test Chat");
+        chatController.openChat("test-chat");
+        chatController.addMessageToChat("test-chat", "Me", "Hello!");
     }
 
-    private void loadChatTab() {
+    private Parent chatView;
+
+    private void loadChatView() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ChatView.fxml"));
-            Parent chatView = loader.load();
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/fxml/ChatView.fxml")
+            );
+            chatView = loader.load();
             chatController = loader.getController();
             contentPane.getChildren().setAll(chatView);
-
-            // === Тестовые данные ===
-            addChat("chat-1", "Alice");
-            addChat("chat-2", "Bob");
-            addChat("chat-3", "Charlie");
-
-            chatController.addMessageToChat("chat-1", "Alice", "Привет! Как дела?");
-            chatController.addMessageToChat("chat-1", "Me", "Привет, отлично!");
-            chatController.addMessageToChat("chat-2", "Bob", "Тестовое сообщение в чате Боба");
-
-            chatController.openChat("chat-1");
-
-            for (int i = 1; i <= 5; i++) {
-                javafx.scene.control.Label group = new javafx.scene.control.Label("G" + i);
-                group.setStyle("-fx-background-color: #555; -fx-text-fill: white; -fx-padding: 6; -fx-alignment: center; -fx-background-radius: 8;");
-                groupsPane.getChildren().add(group);
-            }
-
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -70,15 +77,24 @@ public class GeneralController {
     public void addChat(String chatId, String title) {
         Label chat = new Label(title);
         chat.getStyleClass().add("chat-item");
-        chat.setOnMouseClicked(e -> chatController.openChat(chatId));
+        chat.setOnMouseClicked(e -> {
+            contentPane.getChildren().setAll(chatView);
+            chatController.openChat(chatId);
+        });
         chatListPane.getChildren().add(chat);
-
-        chatController.chatsMessages.putIfAbsent(chatId, new ArrayList<>());
+        MessageStore.getInstance().ensureChat(chatId);
     }
 
     @FXML private void openFriends() {
-        System.out.println("Open friends...");
-
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/fxml/FriendsView.fxml")
+            );
+            Parent view = loader.load();
+            contentPane.getChildren().setAll(view);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML private void close() {
@@ -123,5 +139,27 @@ public class GeneralController {
                 stage.setHeight(e.getY());
             }
         });
+    }
+
+    public void openProfile() {
+        SceneManager.setScene("/fxml/ProfileView.fxml", "/css/style.css");
+    }
+
+    public void setContent(Parent view) {
+        contentPane.getChildren().setAll(view);
+    }
+
+    private void loadGroupsView() {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/fxml/GroupsTab.fxml")
+            );
+            Parent view = loader.load();
+            GroupsTabController ctrl = loader.getController();
+            ctrl.setGeneralController(this);
+            groupsPane.getChildren().setAll(view);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -1,2 +1,3 @@
 rootProject.name = 'meetgrid-client'
 
+includeBuild("../lunfy-common")
