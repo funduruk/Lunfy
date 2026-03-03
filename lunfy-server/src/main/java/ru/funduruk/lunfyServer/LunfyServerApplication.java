@@ -1,4 +1,4 @@
-package ru.funduruk.meetgridServer;
+package ru.funduruk.lunfyServer;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

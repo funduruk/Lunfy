@@ -1,1 +1,3 @@
-rootProject.name = 'meetgrid'
+rootProject.name = 'lunfy-server'
+
+includeBuild("../lunfy-common")

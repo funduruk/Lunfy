@@ -1,85 +1,84 @@
-package ru.funduruk.meetgridServer.ws;
+package ru.funduruk.lunfyServer.ws;
 
-import org.springframework.stereotype.Component;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
+import lombok.RequiredArgsConstructor;
+
+import org.funduruk.dto.ConnectDTO;
+import org.funduruk.dto.EnvelopeDTO;
+import org.funduruk.dto.MessageDTO;
+import org.funduruk.dto.TypingDTO;
+import org.springframework.web.socket.*;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
-import ru.funduruk.meetgridServer.dto.CallSignalDTO;
-import ru.funduruk.meetgridServer.dto.ChatMessageDTO;
-import ru.funduruk.meetgridServer.dto.EnvelopeDTO;
 import tools.jackson.databind.ObjectMapper;
 
-@Component
+@RequiredArgsConstructor
 public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     private final ObjectMapper mapper = new ObjectMapper();
-    private final SessionRegistry sessions;
+    private final SessionRegistry registry = new SessionRegistry();
 
-    public ChatWebSocketHandler(SessionRegistry sessions) {
-        this.sessions = sessions;
-    }
+
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
         System.out.println("Connected: " + session.getId());
+        registry.add(session.getId(), session);
+    }
+
+
+    // В ChatWebSocketHandler добавь:
+    @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+        registry.remove(session.getId());
+        System.out.println("Removed session: " + session.getId());
     }
 
     @Override
-    protected void handleTextMessage(WebSocketSession session, TextMessage message)
-            throws Exception {
+    public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
 
-        EnvelopeDTO envelope = mapper.readValue(
-                message.getPayload(), EnvelopeDTO.class
-        );
+        EnvelopeDTO env = mapper.readValue(message.getPayload(), EnvelopeDTO.class);
 
-        switch (envelope.getType()) {
-            case "CONNECT" -> handleConnect(session, envelope);
-            case "CHAT_MESSAGE" -> handleChatMessage(session, envelope);
-            case "TYPING" -> handleTyping(session, envelope);
-            case "CALL_OFFER", "CALL_ANSWER", "ICE_CANDIDATE" ->
-                    handleCallSignal(envelope);
+        switch (env.getType()) {
+
+            case "CONNECT" -> {
+                ConnectDTO dto =
+                        mapper.convertValue(env.getData(), ConnectDTO.class);
+                System.out.println("CONNECT: " + dto.getUserId());
+            }
+
+            case "CHAT_MESSAGE" -> {
+                MessageDTO dto =
+                        mapper.convertValue(env.getData(), MessageDTO.class);
+                System.out.println("MSG: " + dto.getText());
+                broadcast(env);
+            }
         }
     }
 
     private void handleConnect(WebSocketSession session, EnvelopeDTO env) {
-        String userId = (String) env.getPayload();
-        sessions.add(userId, session);
-    }
-
-    private void handleChatMessage(WebSocketSession session, EnvelopeDTO env)
-            throws Exception {
-
-        ChatMessageDTO msg = mapper.convertValue(
-                env.getPayload(), ChatMessageDTO.class
-        );
-
-        // пока просто рассылаем всем (потом по chatId)
-        broadcast(new EnvelopeDTO("CHAT_MESSAGE", msg));
-    }
-
-    private void handleTyping(WebSocketSession session, EnvelopeDTO env)
-            throws Exception {
-        broadcast(env);
-    }
-
-    private void handleCallSignal(EnvelopeDTO env) throws Exception {
-        CallSignalDTO dto = mapper.convertValue(
-                env.getPayload(), CallSignalDTO.class
-        );
-
-        WebSocketSession target = sessions.get(dto.getTo());
-        if (target != null && target.isOpen()) {
-            target.sendMessage(
-                    new TextMessage(mapper.writeValueAsString(env))
-            );
-        }
+        ConnectDTO dto = mapper.convertValue(env.getData(), ConnectDTO.class);
+        registry.add(dto.getUserId(), session);
+        System.out.println("User connected: " + dto.getUserId());
     }
 
     private void broadcast(EnvelopeDTO env) throws Exception {
         String json = mapper.writeValueAsString(env);
-        for (WebSocketSession s : sessions.all()) {
+        System.out.println("BROADCASTING TO " + registry.all().size() + " sessions: " + json);
+        for (WebSocketSession s : registry.all()) {
+            System.out.println("Session open: " + s.isOpen() + " id: " + s.getId());
             if (s.isOpen()) {
                 s.sendMessage(new TextMessage(json));
+            }
+        }
+    }
+
+    private void handleTyping(WebSocketSession session, EnvelopeDTO env) throws Exception {
+        TypingDTO dto = mapper.convertValue(env.getData(), TypingDTO.class);
+
+        for (WebSocketSession s : registry.all()) {
+            if (!s.getId().equals(session.getId())) {
+                s.sendMessage(new TextMessage(
+                        mapper.writeValueAsString(env)
+                ));
             }
         }
     }

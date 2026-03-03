@@ -1,4 +1,4 @@
-package ru.funduruk.meetgridServer.ws;
+package ru.funduruk.lunfyServer.ws;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
@@ -16,15 +16,9 @@ public class SessionRegistry {
         sessions.put(userId, session);
     }
 
-    public void remove(String userId) {
-        sessions.remove(userId);
-    }
-
-    public WebSocketSession get(String userId) {
-        return sessions.get(userId);
-    }
-
     public Collection<WebSocketSession> all() {
         return sessions.values();
     }
+
+    public void remove(String userId) { sessions.values().removeIf(s -> s.getId().equals(userId)); }
 }
