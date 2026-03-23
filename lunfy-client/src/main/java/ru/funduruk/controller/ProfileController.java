@@ -28,7 +28,6 @@ public class ProfileController extends Controller {
         statusCombo.getItems().addAll("Онлайн", "Не беспокоить", "Офлайн");
         statusCombo.setValue("Онлайн");
 
-        // Загружаем сохранённый профиль если есть
         UserProfile profile = UserProfile.getInstance();
         usernameField.setText(profile.getUsername());
         bioField.setText(profile.getBio());

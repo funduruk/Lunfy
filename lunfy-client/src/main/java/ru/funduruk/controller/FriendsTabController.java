@@ -58,7 +58,7 @@ public class FriendsTabController {
         String tag = parts[1];
 
         // TODO: отправить запрос на сервер
-        System.out.println("Добавляем друга: " + username + "#" + tag);
+        System.out.println("Add friend: " + username + "#" + tag);
         searchField.clear();
     }
 
@@ -75,7 +75,7 @@ public class FriendsTabController {
                 .toList();
 
         if (filtered.isEmpty()) {
-            Label empty = new Label("Никого нет 👀");
+            Label empty = new Label("Empty.. 👀");
             empty.setStyle("-fx-text-fill: #aaa; -fx-padding: 20; -fx-font-size: 13px;");
             friendsList.getChildren().add(empty);
             return;
@@ -108,7 +108,6 @@ public class FriendsTabController {
 
         avatarStack.getChildren().addAll(avatar, initials, statusDot);
 
-        // Имя и статус
         VBox info = new VBox(2);
         Label nameLabel = new Label(friend.getUsername() + "#" + friend.getTag());
         nameLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13px;");
@@ -119,10 +118,9 @@ public class FriendsTabController {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        // Кнопки
         Button msgBtn = new Button("💬");
         msgBtn.getStyleClass().add("friend-action-btn");
-        msgBtn.setOnAction(e -> System.out.println("Открыть чат с " + friend.getUsername()));
+        msgBtn.setOnAction(e -> openDirectMessage(friend));
 
         Button removeBtn = new Button("✕");
         removeBtn.getStyleClass().add("friend-remove-btn");
@@ -133,6 +131,15 @@ public class FriendsTabController {
 
         row.getChildren().addAll(avatarStack, info, spacer, msgBtn, removeBtn);
         return row;
+    }
+
+    private void openDirectMessage(Friend friend) {
+        String chatId = "dm-" + friend.getUsername().toLowerCase();
+
+        GeneralController general = GeneralController.getInstance();
+        general.addChatIfAbsent(chatId, friend.getUsername());
+
+        general.openChat(chatId);
     }
 
     private void updateTabStyles(Button active) {

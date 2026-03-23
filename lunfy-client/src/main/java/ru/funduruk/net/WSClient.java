@@ -37,10 +37,11 @@ public class WSClient {
                         System.out.println("DATA = " + env.getData());
 
                         if ("CHAT_MESSAGE".equals(env.getType())) {
-                            MessageDTO msg = mapper.convertValue(
-                                    env.getData(),
-                                    MessageDTO.class
-                            );
+                            String dataJson = mapper.writeValueAsString(env.getData());
+                            MessageDTO msg = mapper.readValue(dataJson, MessageDTO.class);
+
+                            System.out.println("dataJson: " + dataJson);
+                            System.out.println("msg.timestamp: " + msg.getTimestamp());
 
                             msg.setMine(false);
                             ChatEventBus.fireMessage(msg);

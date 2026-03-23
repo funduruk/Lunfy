@@ -20,7 +20,7 @@
     <center>
         <VBox alignment="CENTER" spacing="20" style="-fx-padding: 40; -fx-background-color: #1e1b2e;">
 
-            <!-- Баннер + аватарка -->
+            <!-- Info -->
             <StackPane>
                 <Rectangle width="400" height="120" arcWidth="12" arcHeight="12"
                            fill="#31638a"/>
@@ -33,25 +33,25 @@
                 </StackPane>
             </StackPane>
 
-            <!-- Кнопка загрузки аватарки -->
+            <!-- Load avatar button -->
             <Button text="Загрузить аватарку" onAction="#uploadAvatar"
                     styleClass="primary-btn"/>
 
-            <!-- Никнейм -->
+            <!-- username -->
             <VBox spacing="4">
                 <Label text="Никнейм" styleClass="field-label"/>
                 <TextField fx:id="usernameField" promptText="Введи никнейм"
                            styleClass="profile-field"/>
             </VBox>
 
-            <!-- Статус -->
+            <!-- status -->
             <VBox spacing="4">
                 <Label text="Статус" styleClass="field-label"/>
                 <ComboBox fx:id="statusCombo" styleClass="profile-field">
                 </ComboBox>
             </VBox>
 
-            <!-- Био -->
+            <!-- about me -->
             <VBox spacing="4">
                 <Label text="О себе" styleClass="field-label"/>
                 <TextArea fx:id="bioField" promptText="Расскажи о себе..."
@@ -59,7 +59,7 @@
                           styleClass="profile-field"/>
             </VBox>
 
-            <!-- Кнопки -->
+            <!-- Buttons -->
             <HBox spacing="10" alignment="CENTER">
                 <Button text="Сохранить" onAction="#save" styleClass="primary-btn"/>
                 <Button text="Назад" onAction="#goBack" styleClass="secondary-btn"/>

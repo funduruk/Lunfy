@@ -6,36 +6,33 @@
       fx:controller="ru.funduruk.controller.GroupViewController"
       styleClass="group-view">
 
-    <!-- ЛЕВАЯ ПАНЕЛЬ: каналы -->
-    <VBox styleClass="channel-pane" prefWidth="200" minWidth="200">
-
-        <!-- Название группы -->
+    <!-- Left Panel: Channels -->
+    <VBox fx:id="channelPanel" styleClass="channel-pane" prefWidth="200" minWidth="200">
         <HBox styleClass="group-name-bar" alignment="CENTER_LEFT">
             <Label fx:id="groupNameLabel" text="Группа" styleClass="group-name-label"/>
             <Region HBox.hgrow="ALWAYS"/>
+            <Button fx:id="hideChannelsBtn" text="‹" onAction="#toggleChannelPanel"
+                    styleClass="panel-toggle-btn"/>
         </HBox>
-
-        <!-- Текстовые каналы -->
         <Label text="ТЕКСТОВЫЕ КАНАЛЫ" styleClass="channel-category"/>
         <VBox fx:id="textChannelList" spacing="2" styleClass="channel-list"/>
-
-        <!-- Голосовые каналы -->
         <Label text="ГОЛОСОВЫЕ КАНАЛЫ" styleClass="channel-category"/>
         <VBox fx:id="voiceChannelList" spacing="2" styleClass="channel-list"/>
-
         <Region VBox.vgrow="ALWAYS"/>
     </VBox>
 
-    <!-- ЦЕНТР: чат -->
+    <!-- Center: Chat -->
     <StackPane fx:id="chatPane" HBox.hgrow="ALWAYS" styleClass="group-chat-pane"/>
 
-    <!-- ПРАВАЯ ПАНЕЛЬ: участники -->
-    <VBox styleClass="members-pane" prefWidth="200" minWidth="200">
-        <Label text="УЧАСТНИКИ" styleClass="channel-category"/>
-
+    <!-- Right Panel: members -->
+    <VBox fx:id="membersPanel" styleClass="members-pane" prefWidth="200" minWidth="200">
+        <HBox alignment="CENTER_LEFT">
+            <Button fx:id="hideMembersBtn" text="›" onAction="#toggleMembersPanel"
+                    styleClass="panel-toggle-btn"/>
+            <Label text="УЧАСТНИКИ" styleClass="channel-category"/>
+        </HBox>
         <Label text="— Администраторы —" styleClass="members-role-label"/>
         <VBox fx:id="adminsList" spacing="2"/>
-
         <Label text="— Участники —" styleClass="members-role-label"/>
         <VBox fx:id="membersList" spacing="4"/>
     </VBox>

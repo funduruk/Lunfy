@@ -2,6 +2,7 @@ package ru.funduruk.lunfyServer.ws;
 
 import lombok.RequiredArgsConstructor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.funduruk.dto.ConnectDTO;
 import org.funduruk.dto.EnvelopeDTO;
 import org.funduruk.dto.MessageDTO;
@@ -10,6 +11,7 @@ import org.springframework.web.socket.*;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import tools.jackson.databind.ObjectMapper;
 
+@Slf4j
 @RequiredArgsConstructor
 public class ChatWebSocketHandler extends TextWebSocketHandler {
 
@@ -20,16 +22,14 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
-        System.out.println("Connected: " + session.getId());
+        log.info("Connected: {}", session.getId());
         registry.add(session.getId(), session);
     }
 
-
-    // В ChatWebSocketHandler добавь:
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         registry.remove(session.getId());
-        System.out.println("Removed session: " + session.getId());
+        log.info("Removed session: {}", session.getId());
     }
 
     @Override
@@ -71,6 +71,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         }
     }
 
+    //TODO
     private void handleTyping(WebSocketSession session, EnvelopeDTO env) throws Exception {
         TypingDTO dto = mapper.convertValue(env.getData(), TypingDTO.class);
 

@@ -1,10 +1,8 @@
 package ru.funduruk.model;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Setter
-@Getter
+@Data
 public class UserProfile {
     private static UserProfile instance;
 

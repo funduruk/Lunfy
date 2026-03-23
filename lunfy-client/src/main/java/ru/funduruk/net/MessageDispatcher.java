@@ -35,10 +35,10 @@ public class MessageDispatcher {
     }
 
     private static void handleTyping(EnvelopeDTO env) {
-        // позже
+        // TODO
     }
 
     private static void handleCall(EnvelopeDTO env) {
-        // позже (WebRTC)
+        // TODO (WebRTC)
     }
 }

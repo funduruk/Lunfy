@@ -54,7 +54,7 @@ public class GroupsTabController {
 
         Button addBtn = new Button("+");
         addBtn.getStyleClass().add("group-add-btn");
-        addBtn.setOnAction(e -> System.out.println("TODO: создать группу"));
+        addBtn.setOnAction(e -> openCreateGroupPopup(addBtn));
         groupsPane.getChildren().add(addBtn);
     }
 
@@ -73,5 +73,123 @@ public class GroupsTabController {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void openCreateGroupPopup(Button anchor) {
+        javafx.stage.Popup popup = new javafx.stage.Popup();
+        popup.setAutoHide(true);
+
+        VBox content = new VBox(8);
+        content.setStyle("""
+        -fx-background-color: #2d2b40;
+        -fx-padding: 14;
+        -fx-background-radius: 10;
+        -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 10, 0, 0, 4);
+    """);
+        content.setPrefWidth(240);
+        content.setMaxWidth(240);
+
+        Label title = new Label("Создать сообщество");
+        title.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13px;");
+
+        javafx.scene.control.TextField nameField = new javafx.scene.control.TextField();
+        nameField.setPromptText("Название сообщества");
+        nameField.setStyle("""
+        -fx-background-color: #1e1b2e;
+        -fx-text-fill: white;
+        -fx-prompt-text-fill: #888;
+        -fx-background-radius: 6;
+        -fx-padding: 6 10;
+    """);
+
+        Label channelsLabel = new Label("Текстовые каналы (через запятую):");
+        channelsLabel.setStyle("-fx-text-fill: #aaa; -fx-font-size: 11px;");
+
+        javafx.scene.control.TextField channelsField = new javafx.scene.control.TextField();
+        channelsField.setPromptText("general, random, новости");
+        channelsField.setText("general");
+        channelsField.setStyle("""
+        -fx-background-color: #1e1b2e;
+        -fx-text-fill: white;
+        -fx-prompt-text-fill: #888;
+        -fx-background-radius: 6;
+        -fx-padding: 6 10;
+    """);
+
+        Label voiceLabel = new Label("Голосовые каналы (через запятую):");
+        voiceLabel.setStyle("-fx-text-fill: #aaa; -fx-font-size: 11px;");
+
+        javafx.scene.control.TextField voiceField = new javafx.scene.control.TextField();
+        voiceField.setPromptText("Голосовой, Музыка");
+        voiceField.setText("Голосовой");
+        voiceField.setStyle("""
+        -fx-background-color: #1e1b2e;
+        -fx-text-fill: white;
+        -fx-prompt-text-fill: #888;
+        -fx-background-radius: 6;
+        -fx-padding: 6 10;
+    """);
+
+        Label errorLabel = new Label("");
+        errorLabel.setStyle("-fx-text-fill: #ff4d4f; -fx-font-size: 11px;");
+
+        Button createBtn = new Button("Создать");
+        createBtn.setStyle("""
+        -fx-background-color: #5865f2;
+        -fx-text-fill: white;
+        -fx-background-radius: 6;
+        -fx-padding: 6 16;
+        -fx-cursor: hand;
+        -fx-font-weight: bold;
+    """);
+
+        createBtn.setOnAction(ev -> {
+            String name = nameField.getText().trim();
+            if (name.isBlank()) {
+                errorLabel.setText("Введи название сообщества");
+                return;
+            }
+
+            String groupId = "g-" + System.currentTimeMillis();
+            Group group = new Group(groupId, name);
+
+            String[] textChannels = channelsField.getText().split(",");
+            for (String ch : textChannels) {
+                String chName = ch.trim();
+                if (!chName.isBlank()) {
+                    group.getTextChannels().add(
+                            new ChatChannel(groupId + "-" + chName, chName, false)
+                    );
+                }
+            }
+
+            String[] voiceChannels = voiceField.getText().split(",");
+            for (String ch : voiceChannels) {
+                String chName = ch.trim();
+                if (!chName.isBlank()) {
+                    group.getVoiceChannels().add(
+                            new ChatChannel(groupId + "-voice-" + chName, chName, true)
+                    );
+                }
+            }
+
+            group.getMembers().add(new GroupMember(
+                    ru.funduruk.model.UserProfile.getInstance().getUsername(),
+                    "ADMIN", true
+            ));
+
+            groups.add(group);
+            renderGroups();
+            popup.hide();
+
+            openGroup(group);
+        });
+
+        content.getChildren().addAll(title, nameField, channelsLabel, channelsField,
+                voiceLabel, voiceField, errorLabel, createBtn);
+        popup.getContent().add(content);
+
+        var bounds = anchor.localToScreen(anchor.getBoundsInLocal());
+        popup.show(anchor.getScene().getWindow(), bounds.getMaxX() + 8, bounds.getMinY());
     }
 }

@@ -2,34 +2,62 @@
 
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.shape.*?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="ru.funduruk.controller.ChatTabController"
             stylesheets="@../css/chat.css">
 
-    <!-- MESSAGES -->
+    <!-- TOP BAR -->
+    <top>
+        <HBox styleClass="chat-top-bar" spacing="10" alignment="CENTER_LEFT">
+
+            <!-- Avatar + name -->
+            <StackPane onMouseClicked="#openFriendProfile" styleClass="chat-avatar-container">
+                <Circle fx:id="avatarCircle" radius="18" styleClass="chat-avatar-circle"/>
+                <ImageView fx:id="chatAvatar" fitWidth="36" fitHeight="36"
+                           preserveRatio="true" pickOnBounds="true"/>
+                <Label fx:id="chatAvatarInitial" styleClass="chat-avatar-initial"/>
+            </StackPane>
+
+            <VBox spacing="2" onMouseClicked="#openFriendProfile" styleClass="chat-name-box">
+                <Label fx:id="chatName" text="Чат" styleClass="chat-top-name"/>
+                <Label fx:id="chatStatusLabel" text="онлайн" styleClass="chat-top-status"/>
+            </VBox>
+
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <!-- buttons -->
+            <Button fx:id="callBtn" text="📞" styleClass="chat-top-btn"
+                    onAction="#startCall"/>
+            <Button fx:id="videoBtn" text="📹" styleClass="chat-top-btn"
+                    onAction="#startVideoCall"/>
+            <Button fx:id="muteBtn" text="🔔" styleClass="chat-top-btn"
+                    onAction="#toggleMute"/>
+            <Button fx:id="settingsBtn" text="⚙" styleClass="chat-top-btn"
+                    onAction="#openChatSettings"/>
+
+        </HBox>
+    </top>
+
+    <!-- Messages -->
     <center>
-        <ScrollPane fx:id ="scrollPane" fitToWidth="true" styleClass="message-scroll" >
-            <VBox fx:id="chatList"
-                  spacing="8"
-                  styleClass="message-box"/>
+        <ScrollPane fx:id="scrollPane" fitToWidth="true" styleClass="message-scroll">
+            <VBox fx:id="chatList" spacing="8" styleClass="message-box"/>
         </ScrollPane>
     </center>
 
-    <!-- INPUT -->
+    <!-- Input -->
     <bottom>
         <HBox spacing="8" style="-fx-padding: 10;">
             <TextArea fx:id="messageField"
-                       promptText="Type a message..."
+                      promptText="Type a message..."
                       wrapText="true"
                       prefRowCount="1"
-                      HBox.hgrow="ALWAYS"
-            />
-            <Button text="➤"
-                    fx:id="sendButton"
-                    onAction="#sendMessage"/>
+                      HBox.hgrow="ALWAYS"/>
+            <Button text="➤" fx:id="sendButton" onAction="#sendMessage"/>
         </HBox>
-
     </bottom>
 
 </BorderPane>

@@ -30,4 +30,8 @@ public class MessageStore {
     public void ensureChat(String chatId) {
         messages.putIfAbsent(chatId, new ArrayList<>());
     }
+
+    public void clearChat(String chatId) {
+        messages.remove(chatId);
+    }
 }

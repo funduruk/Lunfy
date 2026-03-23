@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.shape.*?>
+
+<HBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="ru.funduruk.controller.GroupDMController">
+
+    <!-- Chat -->
+    <BorderPane HBox.hgrow="ALWAYS">
+        <top>
+            <HBox styleClass="chat-top-bar" spacing="10" alignment="CENTER_LEFT">
+                <StackPane styleClass="chat-avatar-container">
+                    <Circle radius="18" styleClass="chat-avatar-circle"/>
+                    <Label fx:id="groupInitial" styleClass="chat-avatar-initial"/>
+                </StackPane>
+                <VBox spacing="2">
+                    <Label fx:id="groupNameLabel" text="Группа" styleClass="chat-top-name"/>
+                    <Label fx:id="membersCountLabel" text="2 участника" styleClass="chat-top-status"/>
+                </VBox>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="➕" styleClass="chat-top-btn" onAction="#addMember"/>
+                <Button text="🔔" fx:id="muteBtnGDM" styleClass="chat-top-btn" onAction="#toggleMute"/>
+                <Button text="⚙" styleClass="chat-top-btn" onAction="#openSettings"/>
+            </HBox>
+        </top>
+        <center>
+            <ScrollPane fx:id="scrollPane" fitToWidth="true" styleClass="message-scroll">
+                <VBox fx:id="chatList" spacing="8" styleClass="message-box"/>
+            </ScrollPane>
+        </center>
+        <bottom>
+            <HBox spacing="8" style="-fx-padding: 10;">
+                <TextArea fx:id="messageField"
+                          promptText="Написать в группу..."
+                          wrapText="true" prefRowCount="1"
+                          HBox.hgrow="ALWAYS"/>
+                <Button text="➤" onAction="#sendMessage"/>
+            </HBox>
+        </bottom>
+    </BorderPane>
+
+    <!-- Member List -->
+    <VBox fx:id="membersPanel" styleClass="members-pane" prefWidth="180">
+        <Label text="УЧАСТНИКИ" styleClass="channel-category"/>
+        <VBox fx:id="membersList" spacing="4" style="-fx-padding: 8;"/>
+    </VBox>
+
+</HBox>

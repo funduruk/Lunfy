@@ -11,7 +11,7 @@
            prefWidth="48"
            prefHeight="48">
 
-    <!-- маска круга -->
+    <!-- Circle mask -->
     <clip>
         <Circle radius="24" centerX="24" centerY="24"/>
     </clip>

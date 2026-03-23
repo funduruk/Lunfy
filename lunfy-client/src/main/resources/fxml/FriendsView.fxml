@@ -6,14 +6,14 @@
       fx:controller="ru.funduruk.controller.FriendsTabController"
       spacing="0" styleClass="friends-view">
 
-    <!-- HEADER -->
+    <!-- Header -->
     <HBox styleClass="friends-header" spacing="12" alignment="CENTER_LEFT">
         <Label text="👥" style="-fx-font-size: 18px;"/>
         <Label text="Друзья" styleClass="friends-title"/>
 
         <Region HBox.hgrow="ALWAYS"/>
 
-        <!-- Поиск -->
+        <!-- Search -->
         <TextField fx:id="searchField"
                    promptText="Найти или добавить — Username#1234"
                    prefWidth="260"
@@ -23,7 +23,7 @@
                 styleClass="add-friend-btn"/>
     </HBox>
 
-    <!-- ВКЛАДКИ -->
+    <!-- tabs -->
     <HBox styleClass="friends-tabs" spacing="4">
         <Button fx:id="tabAll" text="Все" onAction="#showAll"
                 styleClass="friends-tab, friends-tab-active"/>
@@ -33,7 +33,7 @@
                 styleClass="friends-tab"/>
     </HBox>
 
-    <!-- СПИСОК -->
+    <!-- List -->
     <ScrollPane fitToWidth="true" styleClass="friends-scroll" VBox.vgrow="ALWAYS">
         <VBox fx:id="friendsList" spacing="2" styleClass="friends-list"/>
     </ScrollPane>

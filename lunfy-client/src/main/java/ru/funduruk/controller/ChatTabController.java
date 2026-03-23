@@ -7,9 +7,12 @@ import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
@@ -17,12 +20,15 @@ import lombok.Getter;
 import org.funduruk.dto.EnvelopeDTO;
 import org.funduruk.dto.MessageDTO;
 import org.funduruk.dto.TypingDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.funduruk.model.MessageStore;
 import ru.funduruk.net.ChatEventBus;
 import ru.funduruk.net.WSClient;
 
 public class ChatTabController {
 
+    private static final Logger log = LoggerFactory.getLogger(ChatTabController.class);
     public ScrollPane scrollPane;
     @FXML private VBox chatList;
     @FXML private TextArea messageField;
@@ -30,7 +36,7 @@ public class ChatTabController {
     private String currentChatId = null;
 
 
-    private Label typingIndicator = new Label("Friend is typing...");
+    private final Label typingIndicator = new Label("Friend is typing...");
 
     @Getter
     public static ChatTabController instance;
@@ -39,9 +45,7 @@ public class ChatTabController {
 
     @FXML
     public void initialize() {
-
-
-        System.out.println("ChatTabController INITIALIZED");
+        log.info("ChatTabController INITIALIZED");
 
         scrollPane.setFitToWidth(true);
         chatList.setFillWidth(true);
@@ -70,14 +74,12 @@ public class ChatTabController {
 
         ChatEventBus.setOnMessage(msg -> {
 
-            System.out.println("UI RECEIVED MESSAGE: " + msg.getText());
-            Platform.runLater(() -> {
 
-                addMessageToChat(
-                        msg.getChatId(),
-                        msg.getSender(),
-                        msg.getText()
-                );
+            log.trace("UI RECEIVED MESSAGE: {}", msg.getText());
+
+            Platform.runLater(() -> {
+                MessageStore.getInstance().addMessage(msg.getChatId(), msg);
+                if (msg.getChatId().equals(currentChatId)) addMessage(msg);
             });
         });
 
@@ -85,20 +87,11 @@ public class ChatTabController {
         messageField.textProperty().addListener((obs, old, val) -> {
             long now = System.currentTimeMillis();
 
-            if (now - lastTypingSent > 500) { // throttle
-//                sendTyping(true);
+            if (now - lastTypingSent > 500) {
                 lastTypingSent = now;
             }
         });
     }
-
-//    private void sendTyping(boolean typing) {
-//        TypingDTO dto = new TypingDTO();
-//        dto.setChatId(currentChatId);
-//        dto.setUserId("user-1");
-//
-//        WSClient.send("TYPING", dto);
-//    }
 
     public void addChat(String chatId, String title) {
         MessageStore.getInstance().ensureChat(chatId);
@@ -139,8 +132,8 @@ public class ChatTabController {
         msg.setChatId(currentChatId);
         msg.setSender("user-1");
         msg.setText(text);
-        msg.setTimeStamp(System.currentTimeMillis());
-        System.out.println("\n\n CURRENT TIME: " + msg.getTimeStamp() + "\n\n");
+        msg.setTimestamp(System.currentTimeMillis());
+        System.out.println("\n\n CURRENT TIME: " + msg.getTimestamp() + "\n\n");
         msg.setMine(true);
 
         WSClient.send(new EnvelopeDTO("CHAT_MESSAGE", msg));
@@ -151,12 +144,12 @@ public class ChatTabController {
     private void addMessage(MessageDTO msg) {
         boolean mine = MY_USER_ID.equals(msg.getSender());
         System.out.println("addMessage: sender=" + msg.getSender() + " mine=" + mine + " text=" + msg.getText());
-        // Время
-        String time = java.time.Instant.ofEpochMilli(msg.getTimeStamp())
+
+        String time = java.time.Instant.ofEpochMilli(msg.getTimestamp())
                 .atZone(java.time.ZoneId.systemDefault())
                 .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
+        System.out.println("TIMESTAMP IN addMessage: " + msg.getTimestamp());
 
-        // Никнейм + время
         HBox metaBox = new HBox(6);
         Label senderLabel = new Label(msg.getSender());
         senderLabel.setStyle("-fx-text-fill: #ffffff; -fx-font-size: 10px;");
@@ -164,7 +157,6 @@ public class ChatTabController {
         timeLabel.setStyle("-fx-text-fill: #ffffff; -fx-font-size: 10px;");
         metaBox.getChildren().addAll(senderLabel, timeLabel);
 
-        // Текст сообщения
         Label messageLabel = new Label(msg.getText());
         messageLabel.setWrapText(true);
         messageLabel.setMaxWidth(300);
@@ -173,11 +165,9 @@ public class ChatTabController {
                 : "-fx-background-color: #221E33; -fx-text-fill: white; -fx-padding: 6 10; -fx-background-radius: 12;"
         );
 
-        // Контейнер никнейм + сообщение
         VBox vbox = new VBox(2);
         vbox.getChildren().addAll(metaBox, messageLabel);
 
-        // Обёртка для выравнивания
         HBox wrapper = new HBox();
         wrapper.setPadding(new javafx.geometry.Insets(4, 10, 4, 10));
         HBox.setHgrow(wrapper, javafx.scene.layout.Priority.ALWAYS);
@@ -244,11 +234,13 @@ public class ChatTabController {
         Platform.runLater(() -> addMessage(msg));
     }
 
+    //TODO
     public void showTyping(String chatId, boolean isTyping) {
         if (!chatId.equals(currentChatId)) return;
         Platform.runLater(() -> typingIndicator.setVisible(isTyping));
     }
 
+    //TODO
     public void onTyping(TypingDTO dto) {
         if (!dto.getChatId().equals(currentChatId)) return;
 
@@ -266,5 +258,80 @@ public class ChatTabController {
         PauseTransition delay = new PauseTransition(Duration.seconds(3));
         delay.setOnFinished(e -> typingIndicator.setVisible(false));
         delay.play();
+    }
+
+    @FXML private Label chatName;
+    @FXML private Label chatStatusLabel;
+    @FXML private ImageView chatAvatar;
+    @FXML private Label chatAvatarInitial;
+    @FXML private Button muteBtn;
+    @FXML private Button settingsBtn;
+
+    private boolean muted = false;
+    private String currentFriendUsername = null;
+
+    public void setChatInfo(String name, String avatarPath) {
+        currentFriendUsername = name;
+        chatName.setText(name);
+        chatAvatarInitial.setText(name.substring(0, 1).toUpperCase());
+
+        if (avatarPath != null) {
+            chatAvatar.setImage(new Image("file:" + avatarPath));
+            chatAvatarInitial.setVisible(false);
+        } else {
+            chatAvatar.setImage(null);
+            chatAvatarInitial.setVisible(true);
+        }
+    }
+
+    @FXML
+    private void openFriendProfile() {
+        if (currentFriendUsername == null) return;
+        System.out.println("Open profile: " + currentFriendUsername);
+        // TODO: открыть профиль друга
+    }
+
+    @FXML
+    private void startCall() {
+        System.out.println("Later..!");
+    }
+
+    @FXML
+    private void startVideoCall() {
+        System.out.println("Later..!");
+    }
+
+    @FXML
+    private void toggleMute() {
+        muted = !muted;
+        muteBtn.setText(muted ? "🔕" : "🔔");
+        log.info("Notify {}", muted ? "off" : "on");
+    }
+
+    @FXML
+    private void openChatSettings() {
+        javafx.scene.control.ContextMenu menu = new javafx.scene.control.ContextMenu();
+
+        javafx.scene.control.MenuItem deleteChat = new javafx.scene.control.MenuItem("🗑 Удалить чат");
+        deleteChat.setOnAction(e -> deleteCurrentChat());
+
+        javafx.scene.control.MenuItem muteItem = new javafx.scene.control.MenuItem(
+                muted ? "🔔 On notify" : "🔕 Off notify"
+        );
+        muteItem.setOnAction(e -> toggleMute());
+
+        menu.getItems().addAll(muteItem, deleteChat);
+        menu.show(settingsBtn,
+                javafx.geometry.Side.BOTTOM, 0, 0);
+    }
+
+    private void deleteCurrentChat() {
+        if (currentChatId == null) return;
+        MessageStore.getInstance().clearChat(currentChatId);
+        chatList.getChildren().clear();
+        GeneralController.getInstance().removeChat(currentChatId);
+        currentChatId = null;
+        chatName.setText("Chat");
+        chatAvatarInitial.setText("?");
     }
 }

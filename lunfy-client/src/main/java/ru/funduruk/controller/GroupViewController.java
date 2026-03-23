@@ -1,9 +1,11 @@
 package ru.funduruk.controller;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Circle;
@@ -28,7 +30,6 @@ public class GroupViewController {
         renderChannels();
         renderMembers();
 
-        // Открываем первый текстовый канал по умолчанию
         if (!group.getTextChannels().isEmpty()) {
             openChannel(group.getTextChannels().get(0));
         }
@@ -64,7 +65,6 @@ public class GroupViewController {
     }
 
     private void openChannel(ChatChannel channel) {
-        // Подсветка активного канала
         textChannelList.getChildren().forEach(n -> n.getStyleClass().remove("channel-item-active"));
         voiceChannelList.getChildren().forEach(n -> n.getStyleClass().remove("channel-item-active"));
 
@@ -114,5 +114,51 @@ public class GroupViewController {
 
         row.getChildren().addAll(dot, name);
         return row;
+    }
+
+    @FXML private VBox channelPanel;
+    @FXML private VBox membersPanel;
+    @FXML private Button hideChannelsBtn;
+    @FXML private Button hideMembersBtn;
+
+    private boolean channelPanelVisible = true;
+    private boolean membersPanelVisible = true;
+
+    @FXML
+    private void toggleChannelPanel() {
+        channelPanelVisible = !channelPanelVisible;
+
+        if (channelPanelVisible) {
+            channelPanel.setPrefWidth(200);
+            channelPanel.setMinWidth(200);
+            channelPanel.getChildren().forEach(n -> n.setVisible(true));
+            hideChannelsBtn.setText("‹");
+        } else {
+            channelPanel.setPrefWidth(64);
+            channelPanel.setMinWidth(64);
+            channelPanel.getChildren().forEach(n -> {
+                if (n != channelPanel.getChildren().get(0)) n.setVisible(false);
+            });
+            hideChannelsBtn.setText("›");
+        }
+    }
+
+    @FXML
+    private void toggleMembersPanel() {
+        membersPanelVisible = !membersPanelVisible;
+
+        if (membersPanelVisible) {
+            membersPanel.setPrefWidth(200);
+            membersPanel.setMinWidth(200);
+            membersPanel.getChildren().forEach(n -> n.setVisible(true));
+            hideMembersBtn.setText("›");
+        } else {
+            membersPanel.setPrefWidth(32);
+            membersPanel.setMinWidth(32);
+            membersPanel.getChildren().forEach(n -> {
+                if (n != membersPanel.getChildren().get(0)) n.setVisible(false);
+            });
+            hideMembersBtn.setText("‹");
+        }
     }
 }

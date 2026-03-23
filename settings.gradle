@@ -1,0 +1,2 @@
+rootProject.name = 'Lunfy'
+include 'lunfy-client', 'lunfy-server', 'lunfy-common'

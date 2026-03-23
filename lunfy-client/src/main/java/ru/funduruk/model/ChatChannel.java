@@ -3,8 +3,6 @@ package ru.funduruk.model;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.nio.channels.Channel;
-
 @Getter
 @Setter
 public class ChatChannel{

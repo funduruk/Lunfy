@@ -1,4 +1,4 @@
-/* Левая панель */
+/* Left panel */
 .chat-list {
     -fx-pref-width: 220;
     -fx-padding: 15;
@@ -46,7 +46,7 @@
     -fx-background-color: rgba(39, 47, 101, 0.72);
 }
 
-/* Сообщения */
+/* Messages */
 .message {
     -fx-padding: 10 14;
     -fx-background-radius: 14;
@@ -99,5 +99,58 @@
 .root {
     -fx-font-family: "Segoe UI";
     -fx-background-color: #28104a;
+}
+
+.chat-top-bar {
+    -fx-background-color: #2d2b40;
+    -fx-padding: 8 16;
+    -fx-border-color: #1e1b2e;
+    -fx-border-width: 0 0 1 0;
+}
+
+.chat-top-name {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+}
+
+.chat-top-status {
+    -fx-text-fill: #3ba55d;
+    -fx-font-size: 11px;
+}
+
+.chat-avatar-container {
+    -fx-cursor: hand;
+    -fx-min-width: 36;
+    -fx-min-height: 36;
+    -fx-max-width: 36;
+    -fx-max-height: 36;
+}
+
+.chat-avatar-circle {
+    -fx-fill: #5a5480;
+}
+
+.chat-avatar-initial {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+}
+
+.chat-name-box {
+    -fx-cursor: hand;
+}
+
+.chat-top-btn {
+    -fx-background-color: #7073ba;
+    -fx-font-size: 16px;
+    -fx-cursor: hand;
+    -fx-padding: 4 8;
+    -fx-background-radius: 6;
+}
+
+.chat-top-btn:hover {
+    -fx-background-color: rgba(255,255,255,0.1);
 }
 
