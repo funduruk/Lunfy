@@ -1,5 +1,7 @@
 package ru.funduruk.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -19,6 +21,7 @@ import ru.funduruk.manager.SceneManager;
 import ru.funduruk.model.GroupDM;
 import ru.funduruk.model.MessageStore;
 import ru.funduruk.model.UserProfile;
+import ru.funduruk.net.ApiClient;
 import ru.funduruk.net.WSClient;
 
 import java.util.ArrayList;
@@ -50,28 +53,51 @@ public class GeneralController {
 
     @FXML
     public void initialize() throws Exception {
-        instance = this;
         enableWindowDragging();
         enableWindowResize();
-
+        instance = this;
         UserProfile profile = UserProfile.getInstance();
-        profileUsername.setText(profile.getUsername());
+        profileUsername.setText(profile.getUsername() + "#" + profile.getTag());
         profileStatus.setText(profile.getStatus());
-        if (profile.getAvatarPath() != null) {
-            profileAvatar.setImage(new Image("file:" + profile.getAvatarPath()));
-        }
 
         loadChatView();
         loadGroupsView();
-        WSClient.connect("ws://localhost:8080/ws");
+        loadChatsFromFriends();
 
-        chatController.addChat("test-chat", "Test Chat");
-        addChat("test-chat", "Test Chat");
-        chatController.openChat("test-chat");
-        chatController.addMessageToChat("test-chat", "Me", "Hello!");
+        WSClient.connect("ws://localhost:8080/ws?username=" + ApiClient.getCurrentUsername()
+                + "&token=" + ApiClient.getToken());
     }
 
     private Parent chatView;
+
+    private void loadChatsFromFriends() {
+        new Thread(() -> {
+            try {
+                String response = ApiClient.getRaw("/api/friends");
+                ObjectMapper mapper = new ObjectMapper();
+                List<Map<String, Object>> friends = mapper.readValue(response,
+                        new com.fasterxml.jackson.core.type.TypeReference<>() {});
+
+                Platform.runLater(() -> {
+                    for (Map<String, Object> f : friends) {
+                        String friendUsername = (String) f.get("username");
+                        String chatId = buildDmChatId(
+                                ApiClient.getCurrentUsername(), friendUsername
+                        );
+                        addChatIfAbsent(chatId, friendUsername);
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    private String buildDmChatId(String user1, String user2) {
+        String[] users = {user1.toLowerCase(), user2.toLowerCase()};
+        java.util.Arrays.sort(users);
+        return "dm-" + users[0] + "-" + users[1];
+    }
 
     private void loadChatView() {
         try {
@@ -188,13 +214,49 @@ public class GeneralController {
     }
 
     public void openChat(String chatId) {
-        if (groupDMViews.containsKey(chatId)) {
-            contentPane.getChildren().setAll(groupDMViews.get(chatId));
-        } else {
-            contentPane.getChildren().setAll(chatView);
-            chatController.openChat(chatId);
-            chatController.setChatInfo(chatId.replace("dm-", ""), null);
-        }
+        contentPane.getChildren().setAll(chatView);
+        chatController.setChatInfo(chatId.replace("dm-", ""), null);
+
+        new Thread(() -> {
+            try {
+                System.out.println("Loading history for: " + chatId);
+                String response = ApiClient.getRaw("/api/chats/" + chatId + "/messages");
+                System.out.println("History response: " + response);
+
+                ObjectMapper mapper = new ObjectMapper();
+                List<Map<String, Object>> messages = mapper.readValue(response,
+                        new com.fasterxml.jackson.core.type.TypeReference<>() {});
+
+                Platform.runLater(() -> {
+                    // Очищаем кэш перед загрузкой
+                    MessageStore.getInstance().clearChat(chatId);
+                    MessageStore.getInstance().ensureChat(chatId);
+
+                    for (Map<String, Object> m : messages) {
+                        org.funduruk.dto.MessageDTO msg = new org.funduruk.dto.MessageDTO();
+                        msg.setChatId(chatId);
+                        msg.setSender((String) m.get("sender"));
+                        msg.setText((String) m.get("text"));
+                        msg.setMine(ApiClient.getCurrentUsername().equals(msg.getSender()));
+
+                        String ts = (String) m.get("timestamp");
+                        try {
+                            msg.setTimestamp(java.time.LocalDateTime.parse(ts)
+                                    .atZone(java.time.ZoneId.systemDefault())
+                                    .toInstant().toEpochMilli());
+                        } catch (Exception ignored) {}
+
+                        MessageStore.getInstance().addMessage(chatId, msg);
+                    }
+                    // Открываем чат после загрузки истории
+                    chatController.openChat(chatId);
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+                // Если сервер недоступен — просто открываем из кэша
+                Platform.runLater(() -> chatController.openChat(chatId));
+            }
+        }).start();
     }
 
     public void removeChat(String chatId) {
@@ -281,7 +343,7 @@ public class GeneralController {
     private void createGroupDM(String name, List<String> members) {
         String chatId = "gdm-" + System.currentTimeMillis();
         GroupDM gdm = new GroupDM(chatId, name, new ArrayList<>(members));
-        gdm.getMembers().add("user-1");
+        gdm.getMembers().add(ApiClient.getCurrentUsername());
 
         try {
             FXMLLoader loader = new FXMLLoader(

@@ -19,7 +19,10 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import ru.funduruk.manager.SceneManager;
 import ru.funduruk.manager.TitleBarManager;
+import ru.funduruk.model.UserProfile;
+import ru.funduruk.net.ApiClient;
 
+import java.util.Map;
 import java.util.Objects;
 
 import static ru.funduruk.manager.TitleBarManager.maximizeWithoutTaskbar;
@@ -64,19 +67,37 @@ public class LoginController extends Controller{
         String username = usernameField.getText();
         String password = passwordField.getText();
 
-        if(username.isEmpty() || password.isEmpty()) {
-            statusLabel.setText("Username and password required");
+        if (username.isEmpty() || password.isEmpty()) {
+            statusLabel.setText("Введите имя пользователя и пароль");
             statusBox.setVisible(true);
             return;
         }
 
-        if(username.equals("test") && password.equals("1234")) {
-            playLoginSuccessAnimation();
+        // Запрос в отдельном потоке чтобы не блокировать UI
+        new Thread(() -> {
+            try {
+                Map<String, Object> result = ApiClient.login(username, password);
 
-        } else {
-            statusLabel.setText("Invalid credentials");
-            statusBox.setVisible(true);
-        }
+                javafx.application.Platform.runLater(() -> {
+                    if (result.containsKey("token")) {
+                        // Сохраняем данные в UserProfile
+                        UserProfile profile = UserProfile.getInstance();
+                        profile.setUsername((String) result.get("username"));
+                        profile.setTag((String) result.get("tag"));
+
+                        playLoginSuccessAnimation();
+                    } else {
+                        statusLabel.setText((String) result.getOrDefault("error", "Ошибка входа"));
+                        statusBox.setVisible(true);
+                    }
+                });
+            } catch (Exception e) {
+                javafx.application.Platform.runLater(() -> {
+                    statusLabel.setText("Нет соединения с сервером");
+                    statusBox.setVisible(true);
+                });
+            }
+        }).start();
     }
 
     @FXML

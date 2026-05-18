@@ -7,29 +7,54 @@ import org.funduruk.dto.ConnectDTO;
 import org.funduruk.dto.EnvelopeDTO;
 import org.funduruk.dto.MessageDTO;
 import org.funduruk.dto.TypingDTO;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import org.springframework.web.socket.*;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
+import ru.funduruk.lunfyServer.entity.User;
+import ru.funduruk.lunfyServer.repository.UserRepository;
+import ru.funduruk.lunfyServer.service.MessageService;
+import ru.funduruk.lunfyServer.util.AESUtil;
 import tools.jackson.databind.ObjectMapper;
 
+@Component
 @Slf4j
 @RequiredArgsConstructor
 public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     private final ObjectMapper mapper = new ObjectMapper();
     private final SessionRegistry registry = new SessionRegistry();
+    private final UserRepository userRepository;
+    private final MessageService messageService;
 
 
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
-        log.info("Connected: {}", session.getId());
-        registry.add(session.getId(), session);
+        String username = getUsername(session);
+        if (username != null) {
+            registry.add(username, session);
+            System.out.println("Connected: " + username);
+        }
+    }
+
+    private String getUsername(WebSocketSession session) {
+        String query = session.getUri().getQuery();
+        if (query == null) return null;
+        for (String param : query.split("&")) {
+            String[] kv = param.split("=");
+            if (kv.length == 2 && kv[0].equals("username")) return kv[1];
+        }
+        return null;
     }
 
     @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
-        registry.remove(session.getId());
-        log.info("Removed session: {}", session.getId());
+    public void afterConnectionClosed(WebSocketSession session, org.springframework.web.socket.CloseStatus status) {
+        String username = getUsername(session);
+        if (username != null) {
+            registry.remove(username);
+            log.info("Removed session: {}", username);
+        }
     }
 
     @Override
@@ -46,11 +71,33 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             }
 
             case "CHAT_MESSAGE" -> {
-                MessageDTO dto =
-                        mapper.convertValue(env.getData(), MessageDTO.class);
-                System.out.println("MSG: " + dto.getText());
-                broadcast(env);
+                String dataJson = mapper.writeValueAsString(env.getData());
+                MessageDTO dto = mapper.readValue(dataJson, MessageDTO.class);
+
+                User sender = userRepository.findByUsername(dto.getSender()).orElse(null);
+                if (sender != null) {
+                    messageService.save(sender, dto.getChatId(), dto.getText());
+                }
+
+                String chatId = dto.getChatId();
+
+                if (chatId.startsWith("dm-")) {
+                    String[] parts = chatId.replace("dm-", "").split("-");
+                    if (parts.length == 2) {
+                        sendToUser(parts[0], env);
+                        sendToUser(parts[1], env);
+                    }
+                } else {
+                    broadcast(env);
+                }
             }
+        }
+    }
+
+    private void sendToUser(String username, EnvelopeDTO env) throws Exception {
+        WebSocketSession session = registry.getByUsername(username);
+        if (session != null && session.isOpen()) {
+            session.sendMessage(new TextMessage(mapper.writeValueAsString(env)));
         }
     }
 

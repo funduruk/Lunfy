@@ -10,6 +10,7 @@ public class UserProfile {
     private String bio = "";
     private String status = "Онлайн";
     private String avatarPath = null;
+    private String tag;
 
     private UserProfile() {}
 

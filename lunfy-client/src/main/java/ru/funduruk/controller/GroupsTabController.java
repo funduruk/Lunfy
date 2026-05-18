@@ -1,5 +1,7 @@
 package ru.funduruk.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -10,13 +12,16 @@ import lombok.Setter;
 import ru.funduruk.model.ChatChannel;
 import ru.funduruk.model.Group;
 import ru.funduruk.model.GroupMember;
+import ru.funduruk.net.ApiClient;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class GroupsTabController {
 
-    @FXML private VBox groupsPane;
+    @FXML
+    private VBox groupsPane;
 
     private final List<Group> groups = new ArrayList<>();
     @Setter
@@ -24,17 +29,47 @@ public class GroupsTabController {
 
     @FXML
     public void initialize() {
+        loadGroupsFromServer();
+    }
 
-        Group g1 = new Group("g1", "Lunfy Dev");
-        g1.getTextChannels().add(new ChatChannel("g1-general", "general", false));
-        g1.getTextChannels().add(new ChatChannel("g1-random", "random", false));
-        g1.getVoiceChannels().add(new ChatChannel("g1-voice", "Голосовой", true));
-        g1.getMembers().add(new GroupMember("funduruk", "ADMIN", true));
-        g1.getMembers().add(new GroupMember("Alice", "MEMBER", true));
-        g1.getMembers().add(new GroupMember("Bob", "MEMBER", false));
-        groups.add(g1);
+    private void loadGroupsFromServer() {
+        new Thread(() -> {
+            try {
+                String response = ApiClient.getRaw("/api/groups");
+                ObjectMapper mapper = new ObjectMapper();
+                List<Map<String, Object>> data = mapper.readValue(response,
+                        new com.fasterxml.jackson.core.type.TypeReference<>() {
+                        });
 
-        renderGroups();
+                Platform.runLater(() -> {
+                    groups.clear();
+                    for (Map<String, Object> g : data) {
+                        String groupId = String.valueOf(g.get("id"));
+                        String name = (String) g.get("name");
+
+                        Group group = new Group(groupId, name);
+
+                        List<Map<String, Object>> channels =
+                                (List<Map<String, Object>>) g.get("channels");
+
+                        for (Map<String, Object> ch : channels) {
+                            String chId = String.valueOf(ch.get("id"));
+                            String chName = (String) ch.get("name");
+                            boolean isVoice = "VOICE".equals(ch.get("type"));
+                            ChatChannel channel = new ChatChannel(chId, chName, isVoice);
+
+                            if (isVoice) group.getVoiceChannels().add(channel);
+                            else group.getTextChannels().add(channel);
+                        }
+
+                        groups.add(group);
+                    }
+                    renderGroups();
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     private void renderGroups() {
@@ -44,7 +79,10 @@ public class GroupsTabController {
             Button btn = new Button();
             btn.getStyleClass().add("group-btn");
 
-            Label lbl = new Label(group.getName().substring(0, 2).toUpperCase());
+            String initials = group.getName().length() >= 2
+                    ? group.getName().substring(0, 2).toUpperCase()
+                    : group.getName().substring(0, 1).toUpperCase();
+            Label lbl = new Label(initials);
             lbl.getStyleClass().add("group-text");
             btn.setGraphic(lbl);
 
@@ -66,6 +104,7 @@ public class GroupsTabController {
             Parent view = loader.load();
             GroupViewController ctrl = loader.getController();
             ctrl.setGroup(group);
+            ctrl.setGeneralController(generalController);
 
             if (generalController != null) {
                 generalController.setContent(view);
@@ -150,39 +189,42 @@ public class GroupsTabController {
                 return;
             }
 
-            String groupId = "g-" + System.currentTimeMillis();
-            Group group = new Group(groupId, name);
+            List<String> textChs = java.util.Arrays.stream(
+                            channelsField.getText().split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isBlank())
+                    .collect(java.util.stream.Collectors.toList());
 
-            String[] textChannels = channelsField.getText().split(",");
-            for (String ch : textChannels) {
-                String chName = ch.trim();
-                if (!chName.isBlank()) {
-                    group.getTextChannels().add(
-                            new ChatChannel(groupId + "-" + chName, chName, false)
-                    );
+            List<String> voiceChs = java.util.Arrays.stream(
+                            voiceField.getText().split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isBlank())
+                    .collect(java.util.stream.Collectors.toList());
+
+            new Thread(() -> {
+                try {
+                    Map<String, Object> body = new java.util.HashMap<>();
+                    body.put("name", name);
+                    body.put("textChannels", textChs);
+                    body.put("voiceChannels", voiceChs);
+
+                    String json = new ObjectMapper().writeValueAsString(body);
+                    String response = ApiClient.postRaw("/api/groups", json);
+                    Map<String, Object> result = new ObjectMapper().readValue(
+                            response, new com.fasterxml.jackson.core.type.TypeReference<>() {});
+
+                    Platform.runLater(() -> {
+                        if (result.containsKey("error")) {
+                            errorLabel.setText((String) result.get("error"));
+                        } else {
+                            popup.hide();
+                            loadGroupsFromServer();
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            }
-
-            String[] voiceChannels = voiceField.getText().split(",");
-            for (String ch : voiceChannels) {
-                String chName = ch.trim();
-                if (!chName.isBlank()) {
-                    group.getVoiceChannels().add(
-                            new ChatChannel(groupId + "-voice-" + chName, chName, true)
-                    );
-                }
-            }
-
-            group.getMembers().add(new GroupMember(
-                    ru.funduruk.model.UserProfile.getInstance().getUsername(),
-                    "ADMIN", true
-            ));
-
-            groups.add(group);
-            renderGroups();
-            popup.hide();
-
-            openGroup(group);
+            }).start();
         });
 
         content.getChildren().addAll(title, nameField, channelsLabel, channelsField,

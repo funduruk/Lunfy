@@ -1,14 +1,18 @@
 package ru.funduruk.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Circle;
 import ru.funduruk.model.Friend;
+import ru.funduruk.net.ApiClient;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class FriendsTabController {
 
@@ -21,12 +25,35 @@ public class FriendsTabController {
 
     @FXML
     public void initialize() {
-        allFriends.add(new Friend("Alice", "1234", "Онлайн", true));
-        allFriends.add(new Friend("Bob", "5678", "Офлайн", false));
-        allFriends.add(new Friend("Charlie", "9999", "Не беспокоить", true));
-
         searchField.textProperty().addListener((obs, old, val) -> renderList());
-        renderList();
+
+        loadFriendsFromServer();
+    }
+
+    private void loadFriendsFromServer() {
+        new Thread(() -> {
+            try {
+                String response = ApiClient.getRaw("/api/friends");
+                ObjectMapper mapper = new ObjectMapper();
+                List<Map<String, Object>> data = mapper.readValue(response,
+                        new com.fasterxml.jackson.core.type.TypeReference<>() {});
+
+                Platform.runLater(() -> {
+                    allFriends.clear();
+                    for (Map<String, Object> f : data) {
+                        allFriends.add(new Friend(
+                                (String) f.get("username"),
+                                (String) f.get("tag"),
+                                (String) f.getOrDefault("status", "OFFLINE"),
+                                "ONLINE".equals(f.get("status"))
+                        ));
+                    }
+                    renderList();
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     @FXML private void showAll() {
@@ -44,7 +71,7 @@ public class FriendsTabController {
     @FXML private void showIncoming() {
         currentTab = "INCOMING";
         updateTabStyles(tabIncoming);
-        renderList();
+        loadIncomingRequests();
     }
 
     @FXML private void handleAdd() {
@@ -57,9 +84,25 @@ public class FriendsTabController {
         String username = parts[0];
         String tag = parts[1];
 
-        // TODO: отправить запрос на сервер
-        System.out.println("Add friend: " + username + "#" + tag);
-        searchField.clear();
+        new Thread(() -> {
+            try {
+                Map<String, Object> result = ApiClient.post(
+                        "/api/friends/request",
+                        Map.of("username", username, "tag", tag)
+                );
+                Platform.runLater(() -> {
+                    if (result.containsKey("error")) {
+                        showError((String) result.get("error"));
+                    } else {
+                        searchField.clear();
+                        searchField.setStyle("");
+                        loadFriendsFromServer();
+                    }
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> showError("Нет соединения с сервером"));
+            }
+        }).start();
     }
 
     private void renderList() {
@@ -134,12 +177,18 @@ public class FriendsTabController {
     }
 
     private void openDirectMessage(Friend friend) {
-        String chatId = "dm-" + friend.getUsername().toLowerCase();
-
+        String chatId = buildDmChatId(ApiClient.getCurrentUsername(), friend.getUsername());
         GeneralController general = GeneralController.getInstance();
-        general.addChatIfAbsent(chatId, friend.getUsername());
+        if (general != null) {
+            general.addChatIfAbsent(chatId, friend.getUsername());
+            general.openChat(chatId);
+        }
+    }
 
-        general.openChat(chatId);
+    private String buildDmChatId(String user1, String user2) {
+        String[] users = {user1.toLowerCase(), user2.toLowerCase()};
+        java.util.Arrays.sort(users);
+        return "dm-" + users[0] + "-" + users[1];
     }
 
     private void updateTabStyles(Button active) {
@@ -152,5 +201,79 @@ public class FriendsTabController {
     private void showError(String msg) {
         searchField.setStyle("-fx-border-color: #ff4d4f;");
         searchField.setPromptText(msg);
+    }
+
+    private void loadIncomingRequests() {
+        new Thread(() -> {
+            try {
+                String response = ApiClient.getRaw("/api/friends/incoming");
+                ObjectMapper mapper = new ObjectMapper();
+                List<Map<String, Object>> data = mapper.readValue(response,
+                        new com.fasterxml.jackson.core.type.TypeReference<>() {});
+
+                Platform.runLater(() -> {
+                    if (data.isEmpty()) return;
+
+                    // Показываем входящие заявки отдельным блоком
+                    friendsList.getChildren().clear();
+
+                    Label incomingLabel = new Label("ВХОДЯЩИЕ ЗАЯВКИ");
+                    incomingLabel.setStyle("-fx-text-fill: #888; -fx-font-size: 10px; -fx-font-weight: bold; -fx-padding: 8 4 4 4;");
+                    friendsList.getChildren().add(incomingLabel);
+
+                    for (Map<String, Object> req : data) {
+                        HBox row = new HBox(8);
+                        row.setAlignment(Pos.CENTER_LEFT);
+                        row.setStyle("-fx-padding: 4 8;");
+
+                        Label name = new Label(req.get("from") + "#" + req.get("tag"));
+                        name.setStyle("-fx-text-fill: white; -fx-font-size: 13px;");
+
+                        Region spacer = new Region();
+                        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+                        Long id = ((Number) req.get("id")).longValue();
+
+                        Button acceptBtn = new Button("✓");
+                        acceptBtn.setStyle("-fx-background-color: #3ba55d; -fx-text-fill: white; -fx-background-radius: 6; -fx-cursor: hand;");
+                        acceptBtn.setOnAction(e -> acceptRequest(id));
+
+                        Button declineBtn = new Button("✕");
+                        declineBtn.setStyle("-fx-background-color: #ed4245; -fx-text-fill: white; -fx-background-radius: 6; -fx-cursor: hand;");
+                        declineBtn.setOnAction(e -> declineRequest(id));
+
+                        row.getChildren().addAll(name, spacer, acceptBtn, declineBtn);
+                        friendsList.getChildren().add(row);
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    private void acceptRequest(Long id) {
+        new Thread(() -> {
+            try {
+                ApiClient.post("/api/friends/" + id + "/accept", Map.of());
+                Platform.runLater(() -> {
+                    loadFriendsFromServer();
+                    loadIncomingRequests();
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    private void declineRequest(Long id) {
+        new Thread(() -> {
+            try {
+                ApiClient.post("/api/friends/" + id + "/decline", Map.of());
+                Platform.runLater(this::loadIncomingRequests);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 }

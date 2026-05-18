@@ -24,6 +24,12 @@ public class GroupViewController {
 
     private Group group;
 
+    private GeneralController generalController;
+
+    public void setGeneralController(GeneralController ctrl) {
+        this.generalController = ctrl;
+    }
+
     public void setGroup(Group group) {
         this.group = group;
         groupNameLabel.setText(group.getName());
@@ -65,24 +71,11 @@ public class GroupViewController {
     }
 
     private void openChannel(ChatChannel channel) {
-        textChannelList.getChildren().forEach(n -> n.getStyleClass().remove("channel-item-active"));
-        voiceChannelList.getChildren().forEach(n -> n.getStyleClass().remove("channel-item-active"));
-
         if (!channel.isVoice()) {
-            try {
-                FXMLLoader loader = new FXMLLoader(
-                        getClass().getResource("/fxml/ChatView.fxml")
-                );
-                Parent view = loader.load();
-                ChatTabController ctrl = loader.getController();
-                ctrl.addChat(channel.getId(), channel.getName());
-                ctrl.openChat(channel.getId());
-                chatPane.getChildren().setAll(view);
-            } catch (Exception e) {
-                e.printStackTrace();
+            if (generalController != null) {
+                generalController.openChat(channel.getId());
             }
         } else {
-            // TODO: голосовой канал
             Label placeholder = new Label("🔊 Голосовой канал — скоро!");
             placeholder.setStyle("-fx-text-fill: #aaa; -fx-font-size: 16px;");
             chatPane.getChildren().setAll(placeholder);

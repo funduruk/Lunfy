@@ -23,6 +23,7 @@ import org.funduruk.dto.TypingDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.funduruk.model.MessageStore;
+import ru.funduruk.net.ApiClient;
 import ru.funduruk.net.ChatEventBus;
 import ru.funduruk.net.WSClient;
 
@@ -130,7 +131,7 @@ public class ChatTabController {
 
         MessageDTO msg = new MessageDTO();
         msg.setChatId(currentChatId);
-        msg.setSender("user-1");
+        msg.setSender(ApiClient.getCurrentUsername());
         msg.setText(text);
         msg.setTimestamp(System.currentTimeMillis());
         System.out.println("\n\n CURRENT TIME: " + msg.getTimestamp() + "\n\n");
@@ -139,7 +140,7 @@ public class ChatTabController {
         WSClient.send(new EnvelopeDTO("CHAT_MESSAGE", msg));
         messageField.clear();
     }
-    private static final String MY_USER_ID = "user-1";
+    private static final String MY_USER_ID = ApiClient.getCurrentUsername();
 
     private void addMessage(MessageDTO msg) {
         boolean mine = MY_USER_ID.equals(msg.getSender());

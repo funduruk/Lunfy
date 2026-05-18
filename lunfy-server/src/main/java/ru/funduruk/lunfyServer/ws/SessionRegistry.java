@@ -9,16 +9,21 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class SessionRegistry {
-
     private final Map<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
 
-    public void add(String userId, WebSocketSession session) {
-        sessions.put(userId, session);
+    public void add(String username, WebSocketSession session) {
+        sessions.put(username, session);
+    }
+
+    public void remove(String username) {
+        sessions.values().removeIf(s -> s.getId().equals(username));
     }
 
     public Collection<WebSocketSession> all() {
         return sessions.values();
     }
 
-    public void remove(String userId) { sessions.values().removeIf(s -> s.getId().equals(userId)); }
+    public WebSocketSession getByUsername(String username) {
+        return sessions.get(username);
+    }
 }

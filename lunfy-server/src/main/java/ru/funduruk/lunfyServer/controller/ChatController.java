@@ -1,16 +1,43 @@
 package ru.funduruk.lunfyServer.controller;
 
-import org.funduruk.dto.EnvelopeDTO;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.stereotype.Controller;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+import ru.funduruk.lunfyServer.entity.Message;
+import ru.funduruk.lunfyServer.service.MessageService;
 
-@Controller
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping("/api/chats")
+@RequiredArgsConstructor
 public class ChatController {
 
-    @MessageMapping("/chat")
-    @SendTo("/topic/messages")
-    public EnvelopeDTO sendMessage(EnvelopeDTO envelope) {
-        return envelope;
+    private final MessageService messageService;
+
+    @GetMapping("/{chatId}/messages")
+    public ResponseEntity<?> getHistory(@PathVariable String chatId) {
+        List<Message> messages = messageService.getHistory(chatId);
+
+        List<Map<String, Object>> result = messages.stream()
+                .filter(m -> !m.isDeleted())
+                .map(m -> Map.<String, Object>of(
+                        "id", m.getId(),
+                        "sender", m.getSender().getUsername(),
+                        "text", m.getText(),
+                        "timestamp", m.getTimestamp().toString()
+                ))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(result);
+    }
+
+    @DeleteMapping("/messages/{messageId}")
+    public ResponseEntity<?> deleteMessage(@PathVariable Long messageId) {
+        messageService.deleteMessage(messageId);
+        return ResponseEntity.ok(Map.of("message", "Сообщение удалено"));
     }
 }

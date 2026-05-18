@@ -7,6 +7,12 @@ plugins {
 group 'ru.funduruk'
 version '1.0-SNAPSHOT'
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
 repositories {
     mavenCentral()
 }
@@ -21,14 +27,14 @@ dependencies {
     implementation 'org.controlsfx:controlsfx:11.2.1'
     implementation 'org.kordamp.ikonli:ikonli-javafx:12.2.0'
     implementation 'org.kordamp.bootstrapfx:bootstrapfx-core:0.4.0'
-    compileOnly 'org.projectlombok:lombok:1.18.30'
-    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+    compileOnly 'org.projectlombok:lombok:1.18.34'
+    annotationProcessor 'org.projectlombok:lombok:1.18.34'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.0'
     implementation("org.java-websocket:Java-WebSocket:1.6.0")
 
     implementation("org.apache.logging.log4j:log4j-core:2.25.3")
 
-    implementation("ru.funduruk:lunfy-common")
+    implementation 'ru.funduruk:lunfy-common'
 }
 
 javafx {

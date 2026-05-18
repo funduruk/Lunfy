@@ -22,7 +22,10 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import ru.funduruk.manager.FieldsManager;
 import ru.funduruk.manager.SceneManager;
+import ru.funduruk.model.UserProfile;
+import ru.funduruk.net.ApiClient;
 
+import java.util.Map;
 import java.util.Objects;
 
 import static ru.funduruk.manager.TitleBarManager.maximizeWithoutTaskbar;
@@ -36,7 +39,7 @@ public class RegisterController extends Controller{
     public PasswordField passwordField;
     @FXML
     private HBox titleBar;
-
+    @FXML Label statusLabel;
     @FXML
     private StackPane backButton;
     @FXML
@@ -121,28 +124,40 @@ public class RegisterController extends Controller{
     private Popup popup;
 
     public void handleRegister(ActionEvent actionEvent) {
+        String username = usernameField.getText().trim();
+        String email = emailField.getText().trim();
+        String password = passwordField.getText();
 
-        Label errorLabel = new Label("");
-        errorLabel.setStyle("""
-        -fx-background-color: #ff4d4f;
-        -fx-text-fill: white;
-        -fx-padding: 6 10;
-        -fx-background-radius: 6;
-    """);
-
-        popup = new Popup();
-        popup.getContent().add(errorLabel);
-        popup.setAutoHide(true);
-
-        if(!FieldsManager.checkPassword(passwordField.getText())) {
-            errorLabel.setText("The password must be 8 characters long and contain at least one letter and one number.");
-            showPopup(passwordField);
+        if (!FieldsManager.checkPassword(password)) {
+            statusLabel.setText("Пароль должен содержать минимум 8 символов, заглавную букву, цифру и спецсимвол");
+            return;
         }
-        if(!FieldsManager.checkEmail(emailField.getText())) {
-            errorLabel.setText("The email must be a valid email address.");
-            showPopup(emailField);
+        if (!FieldsManager.checkEmail(email)) {
+            statusLabel.setText("Введите корректный email");
+            return;
         }
 
+        new Thread(() -> {
+            try {
+                Map<String, Object> result = ApiClient.register(username, email, password);
+
+                javafx.application.Platform.runLater(() -> {
+                    if (result.containsKey("token")) {
+                        UserProfile profile = UserProfile.getInstance();
+                        profile.setUsername((String) result.get("username"));
+                        profile.setTag((String) result.get("tag"));
+
+                        SceneManager.setScene("/fxml/GeneralView.fxml", "/css/style.css");
+                    } else {
+                        statusLabel.setText((String) result.getOrDefault("error", "Ошибка регистрации"));
+                    }
+                });
+            } catch (Exception e) {
+                javafx.application.Platform.runLater(() ->
+                        statusLabel.setText("Нет соединения с сервером")
+                );
+            }
+        }).start();
     }
 
     private void showPopup(TextField field) {
