@@ -40,4 +40,14 @@ public class ChatController {
         messageService.deleteMessage(messageId);
         return ResponseEntity.ok(Map.of("message", "Сообщение удалено"));
     }
+
+    @DeleteMapping("/{chatId}")
+    public ResponseEntity<?> deleteChat(@PathVariable String chatId) {
+        try {
+            messageService.deleteByChatId(chatId);
+            return ResponseEntity.ok(Map.of("message", "Чат удалён"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 }

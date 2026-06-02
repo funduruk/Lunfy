@@ -36,4 +36,8 @@ public class MessageService {
             messageRepository.save(m);
         });
     }
+
+    public void deleteByChatId(String chatId) {
+        messageRepository.deleteByChatId(chatId);
+    }
 }

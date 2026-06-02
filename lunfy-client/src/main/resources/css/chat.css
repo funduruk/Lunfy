@@ -1,110 +1,23 @@
-/* Left panel */
-.chat-list {
-    -fx-pref-width: 220;
-    -fx-padding: 15;
-    -fx-spacing: 10;
-    -fx-background-color: #1e1e2f;
-}
-
-.chat-list-title {
-    -fx-text-fill: white;
-    -fx-font-size: 16px;
-    -fx-font-weight: bold;
-}
-
-.chat-item {
-    -fx-spacing: 10;
-    -fx-alignment: CENTER_LEFT;
-    -fx-padding: 8;
-    -fx-background-radius: 10;
-}
-
-.chat-item:hover {
-    -fx-background-color: #31638a;
-}
-
-.chat-avatar {
-    -fx-background-color: #444;
-    -fx-background-radius: 18;
-}
-
-.chat-name {
-    -fx-text-fill: white;
-}
-
-
-.chat-area {
-    -fx-background-color: #2b2b3c;
-}
+/* ===== CHAT.CSS — импортирует общий стиль ===== */
 
 .message-scroll {
     -fx-background: transparent;
-    -fx-background-color: rgba(39, 47, 101, 0.72);
+    -fx-background-color: transparent;
 }
 
 .message-scroll .viewport {
-    -fx-background-color: rgba(39, 47, 101, 0.72);
-}
-
-/* Messages */
-.message {
-    -fx-padding: 10 14;
-    -fx-background-radius: 14;
-    -fx-max-width: 400;
-}
-
-.message-in {
-    -fx-background-color: #2f2b45;
-    -fx-text-fill: white;
-    -fx-padding: 8 12;
-    -fx-background-radius: 12;
-}
-
-.message-out {
-    -fx-background-color: #4b6cff;
-    -fx-text-fill: white;
-    -fx-padding: 8 12;
-    -fx-background-radius: 12;
+    -fx-background-color: transparent;
 }
 
 .message-box {
     -fx-padding: 10;
-    -fx-background-color: rgba(39, 47, 101, 0.72);
-}
-.input-bar {
-    -fx-padding: 10;
-    -fx-background-color: #1e1e2f;
-}
-
-.chat-input {
-    -fx-background-color: #1e1e2f;
-    -fx-background-radius: 12;
-    -fx-padding: 10;
-    -fx-min-height: 40;
-}
-
-.chat-input-text {
-    -fx-font-size: 14px;
-    -fx-fill: white;
-}
-
-
-.send-button {
-    -fx-background-radius: 12;
-    -fx-background-color: #31638a;
-    -fx-text-fill: white;
-    -fx-font-size: 16px;
-}
-
-.root {
-    -fx-font-family: "Segoe UI";
-    -fx-background-color: #28104a;
+    -fx-background-color: #2b2845;
 }
 
 .chat-top-bar {
-    -fx-background-color: #2d2b40;
-    -fx-padding: 8 16;
-    -fx-border-color: #1e1b2e;
+    -fx-background-color: #221f3b;
+    -fx-padding: 10 16;
+    -fx-border-color: #13112b;
     -fx-border-width: 0 0 1 0;
 }
 
@@ -129,7 +42,7 @@
 }
 
 .chat-avatar-circle {
-    -fx-fill: #5a5480;
+    -fx-fill: #5865f2;
 }
 
 .chat-avatar-initial {
@@ -143,14 +56,91 @@
 }
 
 .chat-top-btn {
-    -fx-background-color: #7073ba;
-    -fx-font-size: 16px;
+    -fx-background-color: rgba(255,255,255,0.06);
+    -fx-text-fill: #aaa;
+    -fx-font-size: 15px;
     -fx-cursor: hand;
-    -fx-padding: 4 8;
-    -fx-background-radius: 6;
+    -fx-padding: 6 10;
+    -fx-background-radius: 8;
+    -fx-min-width: 36;
+    -fx-min-height: 36;
 }
 
 .chat-top-btn:hover {
-    -fx-background-color: rgba(255,255,255,0.1);
+    -fx-background-color: rgba(255,255,255,0.12);
+    -fx-text-fill: white;
 }
 
+.chat-item {
+    -fx-padding: 6 10;
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+    -fx-text-fill: #aaa;
+    -fx-font-size: 13px;
+}
+
+.chat-item:hover {
+    -fx-background-color: rgba(255,255,255,0.07);
+    -fx-text-fill: white;
+}
+
+/* TextArea — поле ввода сообщения */
+.text-area {
+    -fx-background-color: rgba(255,255,255,0.07);
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: rgba(255,255,255,0.08);
+    -fx-border-width: 1;
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-family: "Segoe UI";
+}
+
+.text-area .content {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+}
+
+.text-area:focused {
+    -fx-border-color: #5865f2;
+}
+
+/* Убираем стандартный фон скроллпейна внутри TextArea */
+.text-area .scroll-pane {
+    -fx-background-color: transparent;
+}
+
+.text-area .scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+.text-area .scroll-pane .content {
+    -fx-background-color: transparent;
+}
+
+.message-input {
+    -fx-background-color: rgba(255,255,255,0.07);
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: rgba(255,255,255,0.08);
+    -fx-border-width: 1;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: #555;
+    -fx-font-size: 13px;
+    -fx-font-family: "Segoe UI";
+}
+
+.message-input .content {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+}
+
+.message-input:focused {
+    -fx-border-color: #5865f2;
+}
+
+.message-input .scroll-pane,
+.message-input .scroll-pane .viewport,
+.message-input .scroll-pane .content {
+    -fx-background-color: transparent;
+}

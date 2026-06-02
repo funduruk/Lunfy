@@ -7,6 +7,7 @@ import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
+import java.util.Map;
 
 public class WSClient {
 
@@ -39,13 +40,25 @@ public class WSClient {
                         if ("CHAT_MESSAGE".equals(env.getType())) {
                             String dataJson = mapper.writeValueAsString(env.getData());
                             MessageDTO msg = mapper.readValue(dataJson, MessageDTO.class);
-
-                            System.out.println("dataJson: " + dataJson);
-                            System.out.println("msg.timestamp: " + msg.getTimestamp());
-
-                            msg.setMine(false);
-                            ChatEventBus.fireMessage(msg);
+                            System.out.println("AFTER CONVERT timestamp: " + msg.getTimestamp());
+                            msg.setMine("user-1".equals(msg.getSender()));
                             System.out.println("FIRED TO EVENT BUS: " + msg.getText());
+                            ChatEventBus.fireMessage(msg);
+
+                        } else if ("DELETE_MESSAGE".equals(env.getType())) {
+                            String dataJson = mapper.writeValueAsString(env.getData());
+                            MessageDTO msg = mapper.readValue(dataJson, MessageDTO.class);
+                            ChatEventBus.fireDeleteMessage(msg);
+                        }  else if ("DELETE_CHAT".equals(env.getType())) {
+                        String dataJson = mapper.writeValueAsString(env.getData());
+                        MessageDTO msg = mapper.readValue(dataJson, MessageDTO.class);
+                        ChatEventBus.fireDeleteChat(msg.getChatId());
+                        } else if ("GROUP_MEMBER_KICKED".equals(env.getType()) ||
+                                "GROUP_ROLE_CHANGED".equals(env.getType())) {
+                            String dataJson = mapper.writeValueAsString(env.getData());
+                            Map<String, Object> data = mapper.readValue(dataJson,
+                                    new com.fasterxml.jackson.core.type.TypeReference<>() {});
+                            ChatEventBus.fireGroupMemberUpdate(env.getType(), data);
                         }
 
                     } catch (Exception e) {

@@ -69,4 +69,34 @@ public class GroupService {
     public List<GroupMember> getMembersByUser(Long userId) {
         return groupMemberRepository.findByUserId(userId);
     }
+
+    public void setRole(Long groupId, String username, GroupMember.Role role) {
+        groupMemberRepository.findByGroupId(groupId).stream()
+                .filter(m -> m.getUser().getUsername().equals(username))
+                .findFirst()
+                .ifPresent(m -> {
+                    m.setRole(role);
+                    groupMemberRepository.save(m);
+                });
+    }
+
+    public void kickMember(Long groupId, String username) {
+        groupMemberRepository.findByGroupId(groupId).stream()
+                .filter(m -> m.getUser().getUsername().equals(username))
+                .findFirst()
+                .ifPresent(groupMemberRepository::delete);
+    }
+
+    public Group findById(Long id) {
+        return groupRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Группа не найдена"));
+    }
+
+    public Group save(Group group) {
+        return groupRepository.save(group);
+    }
+
+    public void delete(Long groupId) {
+        groupRepository.deleteById(groupId);
+    }
 }

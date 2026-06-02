@@ -45,7 +45,8 @@ public class FriendsTabController {
                                 (String) f.get("username"),
                                 (String) f.get("tag"),
                                 (String) f.getOrDefault("status", "OFFLINE"),
-                                "ONLINE".equals(f.get("status"))
+                                "ONLINE".equals(f.get("status")),
+                                ((Number) f.getOrDefault("id", 0)).longValue()
                         ));
                     }
                     renderList();
@@ -168,8 +169,17 @@ public class FriendsTabController {
         Button removeBtn = new Button("✕");
         removeBtn.getStyleClass().add("friend-remove-btn");
         removeBtn.setOnAction(e -> {
-            allFriends.remove(friend);
-            renderList();
+            new Thread(() -> {
+                try {
+                    ApiClient.delete("/api/friends/" + friend.getFriendshipId());
+                    Platform.runLater(() -> {
+                        allFriends.remove(friend);
+                        renderList();
+                    });
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }).start();
         });
 
         row.getChildren().addAll(avatarStack, info, spacer, msgBtn, removeBtn);

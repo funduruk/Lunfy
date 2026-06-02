@@ -7,7 +7,9 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.VBox;
+import lombok.Getter;
 import lombok.Setter;
 import ru.funduruk.model.ChatChannel;
 import ru.funduruk.model.Group;
@@ -27,9 +29,13 @@ public class GroupsTabController {
     @Setter
     private GeneralController generalController;
 
+    @Getter
+    private static GroupsTabController instance;
+
     @FXML
     public void initialize() {
         loadGroupsFromServer();
+        instance = this;
     }
 
     private void loadGroupsFromServer() {
@@ -46,6 +52,7 @@ public class GroupsTabController {
                     for (Map<String, Object> g : data) {
                         String groupId = String.valueOf(g.get("id"));
                         String name = (String) g.get("name");
+                        String avatarPath = (String) g.get("avatarPath");
 
                         Group group = new Group(groupId, name);
 
@@ -55,6 +62,7 @@ public class GroupsTabController {
                         for (Map<String, Object> ch : channels) {
                             String chId = String.valueOf(ch.get("id"));
                             String chName = (String) ch.get("name");
+                            group.setAvatarPath(avatarPath);
                             boolean isVoice = "VOICE".equals(ch.get("type"));
                             ChatChannel channel = new ChatChannel(chId, chName, isVoice);
 
@@ -72,26 +80,64 @@ public class GroupsTabController {
         }).start();
     }
 
-    private void renderGroups() {
+    public void renderGroups() {
         groupsPane.getChildren().clear();
 
         for (Group group : groups) {
             Button btn = new Button();
             btn.getStyleClass().add("group-btn");
 
-            String initials = group.getName().length() >= 2
-                    ? group.getName().substring(0, 2).toUpperCase()
-                    : group.getName().substring(0, 1).toUpperCase();
-            Label lbl = new Label(initials);
-            lbl.getStyleClass().add("group-text");
-            btn.setGraphic(lbl);
+            if (group.getAvatarPath() != null && !group.getAvatarPath().isBlank()) {
+                // Аватарка группы
+                javafx.scene.image.ImageView avatar = new javafx.scene.image.ImageView(
+                        new javafx.scene.image.Image("file:" + group.getAvatarPath())
+                );
+                avatar.setFitWidth(42);
+                avatar.setFitHeight(42);
+                avatar.setPreserveRatio(true);
+
+                // Обрезаем в круг
+                javafx.scene.shape.Circle clip = new javafx.scene.shape.Circle(21, 21, 21);
+                avatar.setClip(clip);
+                btn.setGraphic(avatar);
+            } else {
+                // Текстовая иконка если аватарки нет
+                String initials = group.getName().length() >= 2
+                        ? group.getName().substring(0, 2).toUpperCase()
+                        : group.getName().substring(0, 1).toUpperCase();
+                Label lbl = new Label(initials);
+                lbl.getStyleClass().add("group-text");
+                btn.setGraphic(lbl);
+            }
+
+            // Tooltip с названием группы
+            Tooltip tooltip = new Tooltip(group.getName());
+            tooltip.setStyle("""
+            -fx-background-color: #13112b;
+            -fx-text-fill: white;
+            -fx-font-size: 12px;
+            -fx-background-radius: 6;
+            -fx-padding: 4 8;
+        """);
+            tooltip.setShowDelay(javafx.util.Duration.millis(300));
+            Tooltip.install(btn, tooltip);
 
             btn.setOnAction(e -> openGroup(group));
             groupsPane.getChildren().add(btn);
         }
 
+        // Кнопка создать группу
         Button addBtn = new Button("+");
         addBtn.getStyleClass().add("group-add-btn");
+        Tooltip addTooltip = new Tooltip("Создать сообщество");
+        addTooltip.setStyle("""
+        -fx-background-color: #13112b;
+        -fx-text-fill: white;
+        -fx-font-size: 12px;
+        -fx-background-radius: 6;
+        -fx-padding: 4 8;
+    """);
+        Tooltip.install(addBtn, addTooltip);
         addBtn.setOnAction(e -> openCreateGroupPopup(addBtn));
         groupsPane.getChildren().add(addBtn);
     }
@@ -234,4 +280,19 @@ public class GroupsTabController {
         var bounds = anchor.localToScreen(anchor.getBoundsInLocal());
         popup.show(anchor.getScene().getWindow(), bounds.getMaxX() + 8, bounds.getMinY());
     }
+
+    public static boolean isCurrentUserAdminInGroup(String channelId) {
+        // Проверяем все группы текущего пользователя
+        for (Group g : instance.groups) {
+            boolean channelInGroup = g.getTextChannels().stream()
+                    .anyMatch(ch -> ch.getId().equals(channelId));
+            if (channelInGroup) {
+                return g.getMembers().stream()
+                        .anyMatch(m -> m.getUsername().equals(ApiClient.getCurrentUsername())
+                                && m.isAdmin());
+            }
+        }
+        return false;
+    }
+
 }

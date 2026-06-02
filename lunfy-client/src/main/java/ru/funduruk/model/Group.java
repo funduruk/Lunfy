@@ -9,7 +9,7 @@ import java.util.List;
 public class Group {
     private String id;
     private String name;
-    private String iconPath;
+    private String avatarPath;
     private List<ChatChannel> textChannels = new ArrayList<>();
     private List<ChatChannel> voiceChannels = new ArrayList<>();
     private List<GroupMember> members = new ArrayList<>();

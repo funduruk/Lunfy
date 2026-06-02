@@ -13,6 +13,7 @@
             <Region HBox.hgrow="ALWAYS"/>
             <Button fx:id="hideChannelsBtn" text="‹" onAction="#toggleChannelPanel"
                     styleClass="panel-toggle-btn"/>
+            <Button text="⚙" styleClass="panel-toggle-btn" onAction="#openGroupSettings"/>
         </HBox>
         <Label text="ТЕКСТОВЫЕ КАНАЛЫ" styleClass="channel-category"/>
         <VBox fx:id="textChannelList" spacing="2" styleClass="channel-list"/>
@@ -30,7 +31,11 @@
             <Button fx:id="hideMembersBtn" text="›" onAction="#toggleMembersPanel"
                     styleClass="panel-toggle-btn"/>
             <Label text="УЧАСТНИКИ" styleClass="channel-category"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <!-- Кнопка добавления участника -->
+            <Button text="+" onAction="#addMember" styleClass="panel-toggle-btn"/>
         </HBox>
+        <Label fx:id="membersCountLabel" text="" styleClass="members-role-label"/>
         <Label text="— Администраторы —" styleClass="members-role-label"/>
         <VBox fx:id="adminsList" spacing="2"/>
         <Label text="— Участники —" styleClass="members-role-label"/>

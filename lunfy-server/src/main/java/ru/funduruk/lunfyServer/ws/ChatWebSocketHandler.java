@@ -28,6 +28,9 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     private final MessageService messageService;
 
 
+    public void sendToUserByUsername(String username, EnvelopeDTO env) throws Exception {
+        sendToUser(username, env);
+    }
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
@@ -91,6 +94,46 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                     broadcast(env);
                 }
             }
+
+            case "DELETE_MESSAGE" -> {
+                String dataJson = mapper.writeValueAsString(env.getData());
+                MessageDTO dto = mapper.readValue(dataJson, MessageDTO.class);
+
+                // Удаляем из БД
+                messageService.deleteMessage(dto.getId());
+
+                // Рассылаем участникам чата
+                String chatId = dto.getChatId();
+                if (chatId.startsWith("dm-")) {
+                    String[] parts = chatId.replace("dm-", "").split("-");
+                    if (parts.length == 2) {
+                        sendToUser(parts[0], env);
+                        sendToUser(parts[1], env);
+                    }
+                } else {
+                    broadcast(env);
+                }
+            }
+
+            case "DELETE_CHAT" -> {
+                String dataJson = mapper.writeValueAsString(env.getData());
+                MessageDTO dto = mapper.readValue(dataJson, MessageDTO.class);
+                String chatId = dto.getChatId();
+
+                // Удаляем из БД
+                messageService.deleteByChatId(chatId);
+
+                // Рассылаем участникам
+                if (chatId.startsWith("dm-")) {
+                    String[] parts = chatId.replace("dm-", "").split("-");
+                    if (parts.length == 2) {
+                        sendToUser(parts[0], env);
+                        sendToUser(parts[1], env);
+                    }
+                } else {
+                    broadcast(env);
+                }
+            }
         }
     }
 
@@ -130,4 +173,6 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             }
         }
     }
+
+
 }

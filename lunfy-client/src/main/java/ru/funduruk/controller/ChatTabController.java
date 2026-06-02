@@ -7,10 +7,7 @@ import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -84,6 +81,19 @@ public class ChatTabController {
             });
         });
 
+        ChatEventBus.setOnDeleteMessage(msg -> {
+            Platform.runLater(() -> {
+                MessageStore.getInstance().getMessages(msg.getChatId())
+                        .removeIf(m -> m.getId() == msg.getId());
+
+                if (msg.getChatId().equals(currentChatId)) {
+                    chatList.getChildren().clear();
+                    for (MessageDTO m : MessageStore.getInstance().getMessages(currentChatId)) {
+                        addMessage(m);
+                    }
+                }
+            });
+        });
 
         messageField.textProperty().addListener((obs, old, val) -> {
             long now = System.currentTimeMillis();
@@ -91,6 +101,20 @@ public class ChatTabController {
             if (now - lastTypingSent > 500) {
                 lastTypingSent = now;
             }
+        });
+
+        ChatEventBus.setOnDeleteChat(chatId -> {
+            Platform.runLater(() -> {
+                MessageStore.getInstance().clearChat(chatId);
+                if (chatId.equals(currentChatId)) {
+                    chatList.getChildren().clear();
+                    currentChatId = null;
+                    if (chatName != null) chatName.setText("Чат");
+                    if (chatAvatarInitial != null) chatAvatarInitial.setText("?");
+                }
+                GeneralController general = GeneralController.getInstance();
+                if (general != null) general.removeChat(chatId);
+            });
         });
     }
 
@@ -184,12 +208,73 @@ public class ChatTabController {
 
         wrapper.getChildren().add(vbox);
 
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem deleteItem = new MenuItem("🗑 Удалить сообщение");
+        deleteItem.setStyle("-fx-text-fill: #ed4245;");
+        deleteItem.setOnAction(e -> deleteMessage(msg, wrapper));
+
+
+        boolean canDelete = mine || isAdminInCurrentChat();
+        if (canDelete) {
+            contextMenu.getItems().add(deleteItem);
+        }
+
+        if (!contextMenu.getItems().isEmpty()) {
+            wrapper.setOnMouseClicked(e -> {
+                if (e.getButton() == javafx.scene.input.MouseButton.SECONDARY) {
+                    contextMenu.show(wrapper, e.getScreenX(), e.getScreenY());
+                }
+            });
+        }
+
+        wrapper.setOnMouseClicked(e -> {
+            if (e.getButton() == javafx.scene.input.MouseButton.SECONDARY) {
+                contextMenu.show(wrapper, e.getScreenX(), e.getScreenY());
+            }
+        });
+
         int idx = chatList.getChildren().indexOf(typingIndicator);
         if (idx >= 0) chatList.getChildren().add(idx, wrapper);
         else chatList.getChildren().add(wrapper);
 
         playAppearAnimation(wrapper);
         scrollToBottom();
+    }
+
+    private boolean isAdminInCurrentChat() {
+        if (currentChatId == null) return false;
+        // Для групповых каналов проверяем роль
+        // chatId канала это числовой ID — проверяем через GroupsTabController
+        return GroupsTabController.isCurrentUserAdminInGroup(currentChatId);
+    }
+
+    private void deleteMessage(MessageDTO msg, HBox wrapper) {
+        new Thread(() -> {
+            try {
+                // Отправляем запрос на сервер
+                if (msg.getId() != 0) {
+                    ApiClient.delete("/api/chats/messages/" + msg.getId());
+                }
+
+                // Удаляем локально из кэша
+                MessageStore.getInstance().getMessages(msg.getChatId())
+                        .removeIf(m -> m.getId() == msg.getId()
+                                && m.getText().equals(msg.getText()));
+
+                Platform.runLater(() -> {
+                    chatList.getChildren().remove(wrapper);
+                });
+
+                // Уведомляем собеседника через WebSocket
+                org.funduruk.dto.EnvelopeDTO env = new org.funduruk.dto.EnvelopeDTO(
+                        "DELETE_MESSAGE", msg
+                );
+                ru.funduruk.net.WSClient.send(env);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     private void playAppearAnimation(HBox node) {
@@ -328,11 +413,20 @@ public class ChatTabController {
 
     private void deleteCurrentChat() {
         if (currentChatId == null) return;
-        MessageStore.getInstance().clearChat(currentChatId);
+
+        String chatIdToDelete = currentChatId;
+
+        // Отправляем через WebSocket — сервер сам удалит из БД и уведомит собеседника
+        org.funduruk.dto.MessageDTO msg = new org.funduruk.dto.MessageDTO();
+        msg.setChatId(chatIdToDelete);
+        ru.funduruk.net.WSClient.send(new org.funduruk.dto.EnvelopeDTO("DELETE_CHAT", msg));
+
+        // Очищаем локально
+        MessageStore.getInstance().clearChat(chatIdToDelete);
         chatList.getChildren().clear();
-        GeneralController.getInstance().removeChat(currentChatId);
+        GeneralController.getInstance().removeChat(chatIdToDelete);
         currentChatId = null;
-        chatName.setText("Chat");
-        chatAvatarInitial.setText("?");
+        if (chatName != null) chatName.setText("Чат");
+        if (chatAvatarInitial != null) chatAvatarInitial.setText("?");
     }
 }

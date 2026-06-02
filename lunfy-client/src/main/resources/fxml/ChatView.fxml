@@ -52,9 +52,10 @@
     <bottom>
         <HBox spacing="8" style="-fx-padding: 10;">
             <TextArea fx:id="messageField"
-                      promptText="Type a message..."
+                      promptText="Написать сообщение..."
                       wrapText="true"
                       prefRowCount="1"
+                      styleClass="message-input"
                       HBox.hgrow="ALWAYS"/>
             <Button text="➤" fx:id="sendButton" onAction="#sendMessage"/>
         </HBox>

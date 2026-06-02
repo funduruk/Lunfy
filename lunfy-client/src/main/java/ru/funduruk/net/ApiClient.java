@@ -111,4 +111,17 @@ public class ApiClient {
 
         return response.body();
     }
+
+    public static void delete(String path) throws Exception {
+        HttpRequest.Builder builder = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + path))
+                .header("Content-Type", "application/json")
+                .DELETE();
+
+        if (token != null) {
+            builder.header("Authorization", "Bearer " + token);
+        }
+
+        client.send(builder.build(), HttpResponse.BodyHandlers.ofString());
+    }
 }

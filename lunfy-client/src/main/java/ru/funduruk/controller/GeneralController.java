@@ -215,7 +215,26 @@ public class GeneralController {
 
     public void openChat(String chatId) {
         contentPane.getChildren().setAll(chatView);
-        chatController.setChatInfo(chatId.replace("dm-", ""), null);
+        contentPane.getChildren().setAll(chatView);
+
+        // Определяем имя собеседника из chatId вида "dm-user1-user2"
+        String chatName = chatId;
+        if (chatId.startsWith("dm-")) {
+            String[] parts = chatId.replace("dm-", "").split("-");
+            // Берём ту часть которая не является текущим пользователем
+            String currentUser = ApiClient.getCurrentUsername().toLowerCase();
+            for (String part : parts) {
+                if (!part.equals(currentUser)) {
+                    chatName = part;
+                    break;
+                }
+            }
+            // Делаем первую букву заглавной
+            chatName = chatName.substring(0, 1).toUpperCase() + chatName.substring(1);
+        }
+
+        final String finalChatName = chatName;
+        chatController.setChatInfo(finalChatName, null);
 
         new Thread(() -> {
             try {
@@ -234,6 +253,7 @@ public class GeneralController {
 
                     for (Map<String, Object> m : messages) {
                         org.funduruk.dto.MessageDTO msg = new org.funduruk.dto.MessageDTO();
+                        msg.setId(((Number) m.getOrDefault("id", 0)).longValue());
                         msg.setChatId(chatId);
                         msg.setSender((String) m.get("sender"));
                         msg.setText((String) m.get("text"));
@@ -364,5 +384,4 @@ public class GeneralController {
             e.printStackTrace();
         }
     }
-
 }

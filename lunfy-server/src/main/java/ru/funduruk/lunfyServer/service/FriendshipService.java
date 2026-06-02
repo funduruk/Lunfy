@@ -53,4 +53,8 @@ public class FriendshipService {
         all.addAll(asReceiver);
         return all;
     }
+
+    public void remove(Long friendshipId) {
+        friendshipRepository.deleteById(friendshipId);
+    }
 }

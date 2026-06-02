@@ -76,6 +76,7 @@ public class FriendController {
                             : f.getSender();
 
                     return Map.<String, Object>of(
+                            "id", f.getId(),
                             "username", friend.getUsername(),
                             "tag", friend.getTag(),
                             "status", friend.getStatus().name()
@@ -85,4 +86,16 @@ public class FriendController {
 
         return ResponseEntity.ok(result);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> removeFriend(@PathVariable Long id) {
+        try {
+            friendshipService.remove(id);
+            return ResponseEntity.ok(Map.of("message", "Друг удалён"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+
 }
