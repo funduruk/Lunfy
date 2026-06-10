@@ -120,10 +120,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                 MessageDTO dto = mapper.readValue(dataJson, MessageDTO.class);
                 String chatId = dto.getChatId();
 
-                // Удаляем из БД
                 messageService.deleteByChatId(chatId);
 
-                // Рассылаем участникам
                 if (chatId.startsWith("dm-")) {
                     String[] parts = chatId.replace("dm-", "").split("-");
                     if (parts.length == 2) {

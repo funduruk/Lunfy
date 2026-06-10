@@ -12,6 +12,7 @@ public class ChatEventBus {
     private static Consumer<MessageDTO> deleteListener;
     private static Consumer<String> deleteChatListener;
     private static BiConsumer<String, Map<String, Object>> groupMemberUpdateListener;
+    private static Consumer<Map<String, Object>> groupDMCreatedListener;
 
 
     public static void setOnMessage(Consumer<MessageDTO> listener) {
@@ -25,6 +26,8 @@ public class ChatEventBus {
     public static void setOnDeleteChat(Consumer<String> listener) {
         deleteChatListener = listener;
     }
+
+    public static void setOnGroupDMCreated(Consumer<Map<String, Object>> listener) { groupDMCreatedListener = listener; }
 
     public static void setOnGroupMemberUpdate(
             java.util.function.BiConsumer<String, Map<String, Object>> listener) {
@@ -53,6 +56,12 @@ public class ChatEventBus {
     public static void fireGroupMemberUpdate(String type, Map<String, Object> data) {
         if (groupMemberUpdateListener != null) {
             groupMemberUpdateListener.accept(type, data);
+        }
+    }
+
+    public static void fireGroupDMCreated(Map<String, Object> data) {
+        if (groupDMCreatedListener != null) {
+            groupDMCreatedListener.accept(data);
         }
     }
 }

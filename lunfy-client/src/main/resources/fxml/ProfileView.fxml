@@ -3,14 +3,16 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.shape.*?>
+<?import javafx.geometry.*?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="ru.funduruk.controller.ProfileController"
             stylesheets="@../css/style.css"
-            fx:id="rootPane">
+            fx:id="rootPane"
+            styleClass="background-pane">
 
     <top>
-        <HBox fx:id="titleBar" styleClass="title-bar">
+        <HBox fx:id="titleBar" styleClass="title-bar" alignment="CENTER_LEFT" spacing="10">
             <Label text="lunfy"/>
             <Region HBox.hgrow="ALWAYS"/>
             <Button onAction="#close" styleClass="button-bar" text="✕"/>
@@ -18,53 +20,80 @@
     </top>
 
     <center>
-        <VBox alignment="CENTER" spacing="20" style="-fx-padding: 40; -fx-background-color: #1e1b2e;">
+        <ScrollPane fitToWidth="true" styleClass="profile-scroll">
+            <VBox alignment="TOP_CENTER" spacing="0" styleClass="profile-root">
 
-            <!-- Info -->
-            <StackPane>
-                <Rectangle width="400" height="120" arcWidth="12" arcHeight="12"
-                           fill="#31638a"/>
-                <StackPane StackPane.alignment="BOTTOM_LEFT"
-                           style="-fx-padding: 0 0 -30 20;">
-                    <Circle fx:id="avatarCircle" radius="40"
-                            style="-fx-fill: #2d2b40; -fx-stroke: #1e1b2e; -fx-stroke-width: 4;"/>
-                    <ImageView fx:id="avatarImage" fitWidth="80" fitHeight="80"
-                               preserveRatio="true" pickOnBounds="true"/>
-                </StackPane>
-            </StackPane>
+                <!-- Карточка профиля -->
+                <VBox styleClass="profile-card" maxWidth="700">
 
-            <!-- Load avatar button -->
-            <Button text="Загрузить аватарку" onAction="#uploadAvatar"
-                    styleClass="primary-btn"/>
+                    <!-- Банер с аватаркой -->
+                    <StackPane styleClass="profile-banner" alignment="BOTTOM_LEFT">
+                        <Region prefHeight="140" styleClass="banner-bg"/>
+                        <HBox alignment="BOTTOM_LEFT" StackPane.alignment="BOTTOM_LEFT">
+                            <padding><Insets top="0" right="0" bottom="-40" left="24"/></padding>
+                            <StackPane fx:id="avatarContainer" prefWidth="100" prefHeight="100" minWidth="100" minHeight="100">
+                                <Circle fx:id="avatarCircle" radius="50" styleClass="avatar-circle"/>
+                                <Label fx:id="avatarInitial" styleClass="avatar-initial"/>
+                                <ImageView fx:id="avatarImage" fitWidth="100" fitHeight="100" preserveRatio="true"/>
+                                <Circle fx:id="statusDot" radius="9" styleClass="avatar-status-dot"
+                                        StackPane.alignment="BOTTOM_RIGHT"
+                                        translateX="0" translateY="0"/>
+                            </StackPane>
+                        </HBox>
+                    </StackPane>
 
-            <!-- username -->
-            <VBox spacing="4">
-                <Label text="Никнейм" styleClass="field-label"/>
-                <TextField fx:id="usernameField" promptText="Введи никнейм"
-                           styleClass="profile-field"/>
+                    <!-- Имя и тег -->
+                    <VBox styleClass="profile-header" spacing="2">
+                        <padding><Insets top="50" right="24" bottom="20" left="24"/></padding>
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label fx:id="displayNameLabel" text="username" styleClass="profile-display-name"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Button text="📷 Сменить аватарку" onAction="#uploadAvatar" styleClass="profile-action-btn"/>
+                        </HBox>
+                        <Label fx:id="tagLabel" text="#0000" styleClass="profile-tag"/>
+                    </VBox>
+
+                    <!-- Разделитель -->
+                    <Region styleClass="profile-divider"/>
+
+                    <!-- Поля редактирования -->
+                    <VBox spacing="18" styleClass="profile-fields">
+                        <padding><Insets top="20" right="24" bottom="20" left="24"/></padding>
+
+                        <VBox spacing="6">
+                            <Label text="НИКНЕЙМ" styleClass="field-label"/>
+                            <TextField fx:id="usernameField" promptText="Введи никнейм"
+                                       styleClass="profile-field"/>
+                        </VBox>
+
+                        <VBox spacing="6">
+                            <Label text="СТАТУС" styleClass="field-label"/>
+                            <ComboBox fx:id="statusCombo" styleClass="profile-combo" maxWidth="Infinity"/>
+                        </VBox>
+
+                        <VBox spacing="6">
+                            <Label text="О СЕБЕ" styleClass="field-label"/>
+                            <TextArea fx:id="bioField" promptText="Расскажи о себе..."
+                                      prefRowCount="3" wrapText="true"
+                                      styleClass="profile-textarea"/>
+                        </VBox>
+                    </VBox>
+
+                    <!-- Разделитель -->
+                    <Region styleClass="profile-divider"/>
+
+                    <!-- Кнопки -->
+                    <HBox alignment="CENTER_RIGHT" spacing="10" styleClass="profile-actions">
+                        <padding><Insets top="20" right="24" bottom="24" left="24"/></padding>
+                        <Button text="🚪 Выйти из аккаунта" onAction="#logout" styleClass="danger-btn"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button text="Назад" onAction="#goBack" styleClass="secondary-btn"/>
+                        <Button text="Сохранить" onAction="#save" styleClass="primary-btn"/>
+                    </HBox>
+                </VBox>
+
+                <Region prefHeight="30"/>
             </VBox>
-
-            <!-- status -->
-            <VBox spacing="4">
-                <Label text="Статус" styleClass="field-label"/>
-                <ComboBox fx:id="statusCombo" styleClass="profile-field">
-                </ComboBox>
-            </VBox>
-
-            <!-- about me -->
-            <VBox spacing="4">
-                <Label text="О себе" styleClass="field-label"/>
-                <TextArea fx:id="bioField" promptText="Расскажи о себе..."
-                          prefRowCount="3" wrapText="true"
-                          styleClass="profile-field"/>
-            </VBox>
-
-            <!-- Buttons -->
-            <HBox spacing="10" alignment="CENTER">
-                <Button text="Сохранить" onAction="#save" styleClass="primary-btn"/>
-                <Button text="Назад" onAction="#goBack" styleClass="secondary-btn"/>
-            </HBox>
-
-        </VBox>
+        </ScrollPane>
     </center>
 </BorderPane>

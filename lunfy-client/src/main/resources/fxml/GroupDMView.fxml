@@ -2,9 +2,11 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.shape.*?>
+<?import java.net.URL?>
 
 <HBox xmlns:fx="http://javafx.com/fxml"
-      fx:controller="ru.funduruk.controller.GroupDMController">
+      fx:controller="ru.funduruk.controller.GroupDMController"
+      stylesheets="@../css/chat.css">
 
     <!-- Chat -->
     <BorderPane HBox.hgrow="ALWAYS">
@@ -32,10 +34,12 @@
         <bottom>
             <HBox spacing="8" style="-fx-padding: 10;">
                 <TextArea fx:id="messageField"
-                          promptText="Написать в группу..."
-                          wrapText="true" prefRowCount="1"
+                          promptText="Написать сообщение..."
+                          wrapText="true"
+                          prefRowCount="1"
+                          styleClass="message-input"
                           HBox.hgrow="ALWAYS"/>
-                <Button text="➤" onAction="#sendMessage"/>
+                <Button text="➤" onAction="#sendMessage" styleClass="send-button"/>
             </HBox>
         </bottom>
     </BorderPane>

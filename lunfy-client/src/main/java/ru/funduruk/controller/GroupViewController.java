@@ -681,12 +681,11 @@ public class GroupViewController {
                     String avatarPath = (String) result.get("avatarPath");
                     Platform.runLater(() -> {
                         group.setAvatarPath(avatarPath);
-                        // Перерисовываем список групп
+
                         if (GroupsTabController.getInstance() != null) {
-                            GroupsTabController.getInstance().renderGroups();
+                            GroupsTabController.getInstance().loadGroupsFromServer();
                         }
                     });
-
                 }
             } catch (Exception e) {
                 e.printStackTrace();

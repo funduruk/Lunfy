@@ -1,5 +1,6 @@
 package ru.funduruk.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -12,8 +13,12 @@ import org.funduruk.dto.EnvelopeDTO;
 import org.funduruk.dto.MessageDTO;
 import ru.funduruk.model.GroupDM;
 import ru.funduruk.model.MessageStore;
+import ru.funduruk.net.ApiClient;
 import ru.funduruk.net.ChatEventBus;
 import ru.funduruk.net.WSClient;
+
+import java.util.List;
+import java.util.Map;
 
 public class GroupDMController {
 
@@ -65,7 +70,7 @@ public class GroupDMController {
 
         MessageDTO msg = new MessageDTO();
         msg.setChatId(groupDM.getId());
-        msg.setSender("user-1");
+        msg.setSender(ApiClient.getCurrentUsername());
         msg.setText(text);
         msg.setTimestamp(System.currentTimeMillis());
         msg.setMine(true);
@@ -76,34 +81,59 @@ public class GroupDMController {
 
     @FXML
     private void addMember() {
+        new Thread(() -> {
+            try {
+                String response = ApiClient.getRaw("/api/friends");
+                ObjectMapper mapper = new ObjectMapper();
+                List<Map<String, Object>> friends = mapper.readValue(response,
+                        new com.fasterxml.jackson.core.type.TypeReference<>() {});
 
-        javafx.stage.Popup popup = new javafx.stage.Popup();
-        popup.setAutoHide(true);
+                Platform.runLater(() -> {
+                    javafx.stage.Popup popup = new javafx.stage.Popup();
+                    popup.setAutoHide(true);
 
-        VBox content = new VBox(6);
-        content.setStyle("-fx-background-color: #2d2b40; -fx-padding: 10; -fx-background-radius: 8;");
+                    VBox content = new VBox(6);
+                    content.setStyle("-fx-background-color: #2d2b40; -fx-padding: 10; -fx-background-radius: 8;");
+                    content.setPrefWidth(200);
+                    content.setMaxWidth(200);
 
-        Label title = new Label("Добавить участника");
-        title.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
+                    Label title = new Label("Добавить участника");
+                    title.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
+                    content.getChildren().add(title);
 
-        content.getChildren().add(title);
+                    boolean anyFriend = false;
+                    for (Map<String, Object> f : friends) {
+                        String username = (String) f.get("username");
+                        String tag = (String) f.get("tag");
+                        if (groupDM.getMembers().contains(username)) continue;
+                        anyFriend = true;
 
-        for (String friend : java.util.List.of("Alice", "Bob", "Charlie")) {
-            if (groupDM.getMembers().contains(friend)) continue;
-            Button btn = new Button(friend);
-            btn.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-cursor: hand;");
-            btn.setOnAction(e -> {
-                groupDM.addMember(friend);
-                updateMembersCount();
-                renderMembers();
-                popup.hide();
-            });
-            content.getChildren().add(btn);
-        }
+                        Button btn = new Button(username + "#" + tag);
+                        btn.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-cursor: hand;");
+                        btn.setMaxWidth(Double.MAX_VALUE);
+                        btn.setOnAction(e -> {
+                            groupDM.addMember(username);
+                            updateMembersCount();
+                            renderMembers();
+                            popup.hide();
+                        });
+                        content.getChildren().add(btn);
+                    }
 
-        popup.getContent().add(content);
-        var bounds = membersCountLabel.localToScreen(membersCountLabel.getBoundsInLocal());
-        popup.show(membersCountLabel, bounds.getMinX(), bounds.getMaxY() + 4);
+                    if (!anyFriend) {
+                        Label empty = new Label("Все друзья уже в группе");
+                        empty.setStyle("-fx-text-fill: #aaa; -fx-font-size: 11px;");
+                        content.getChildren().add(empty);
+                    }
+
+                    popup.getContent().add(content);
+                    var bounds = membersCountLabel.localToScreen(membersCountLabel.getBoundsInLocal());
+                    popup.show(membersCountLabel, bounds.getMinX(), bounds.getMaxY() + 4);
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     @FXML
@@ -126,35 +156,76 @@ public class GroupDMController {
 
     private void renderMembers() {
         membersList.getChildren().clear();
+        String currentUser = ApiClient.getCurrentUsername();
+        String owner = groupDM.getOwnerUsername();
+        boolean isOwner = currentUser.equals(owner);
+
         for (String member : groupDM.getMembers()) {
             HBox row = new HBox(8);
             row.setAlignment(Pos.CENTER_LEFT);
-            row.setStyle("-fx-padding: 4 8; -fx-background-radius: 6; -fx-cursor: hand;");
+            row.setStyle("-fx-padding: 4 8; -fx-background-radius: 6;");
 
             Circle dot = new Circle(5);
             dot.setStyle("-fx-fill: #3ba55d;");
 
             Label name = new Label(member);
-            name.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
+            // Создателя помечаем особым цветом
+            boolean isMemberOwner = member.equals(owner);
+            name.setStyle("-fx-text-fill: " + (isMemberOwner ? "#f0b132" : "white") +
+                    "; -fx-font-size: 12px;");
 
             Region spacer = new Region();
             HBox.setHgrow(spacer, Priority.ALWAYS);
 
-            if (!member.equals("user-1")) {
-                Button removeBtn = new Button("✕");
+            row.getChildren().addAll(dot, name, spacer);
+
+            boolean canKick = false;
+            String kickLabel = "✕";
+
+            if (isOwner && !member.equals(currentUser)) {
+                canKick = true;
+            } else if (!isOwner && member.equals(currentUser)) {
+                canKick = true;
+                kickLabel = "🚪";
+            }
+
+            if (canKick) {
+                Button removeBtn = new Button(kickLabel);
                 removeBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #aaa; -fx-cursor: hand;");
-                removeBtn.setOnAction(e -> {
-                    groupDM.removeMember(member);
-                    updateMembersCount();
-                    renderMembers();
-                });
-                row.getChildren().addAll(dot, name, spacer, removeBtn);
-            } else {
-                row.getChildren().addAll(dot, name);
+                String memberToKick = member;
+                removeBtn.setOnAction(e -> kickFromGroupDM(memberToKick));
+                row.getChildren().add(removeBtn);
             }
 
             membersList.getChildren().add(row);
         }
+    }
+
+    private void kickFromGroupDM(String memberToKick) {
+        String groupId = groupDM.getId().replace("gdm-", "");
+
+        new Thread(() -> {
+            try {
+                ApiClient.postRaw(
+                        "/api/groups/" + groupId + "/members/" + memberToKick + "/kick",
+                        "{}");
+
+                Platform.runLater(() -> {
+                    if (memberToKick.equals(ApiClient.getCurrentUsername())) {
+                        if (generalController != null) {
+                            generalController.removeChat(groupDM.getId());
+                            generalController.setContent(new javafx.scene.layout.StackPane());
+                        }
+                    } else {
+                        groupDM.removeMember(memberToKick);
+                        updateMembersCount();
+                        renderMembers();
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     private void updateMembersCount() {
@@ -163,13 +234,15 @@ public class GroupDMController {
     }
 
     private void addMessage(MessageDTO msg) {
-        boolean mine = "user-1".equals(msg.getSender());
+        boolean mine = ApiClient.getCurrentUsername().equals(msg.getSender());
 
         String time = java.time.Instant.ofEpochMilli(msg.getTimestamp())
                 .atZone(java.time.ZoneId.systemDefault())
                 .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
 
         HBox metaBox = new HBox(6);
+        metaBox.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(metaBox, Priority.ALWAYS);
         Label senderLabel = new Label(msg.getSender());
         senderLabel.setStyle("-fx-text-fill: #aaa; -fx-font-size: 10px;");
         Label timeLabel = new Label(time);
@@ -184,8 +257,16 @@ public class GroupDMController {
                 : "-fx-background-color: #221E33; -fx-text-fill: white; -fx-padding: 6 10; -fx-background-radius: 12;"
         );
 
+        // Обёртка чтобы пузырёк не растягивался
+        HBox messageWrapper = new HBox(messageLabel);
+        messageWrapper.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(messageWrapper, Priority.ALWAYS);
+        messageWrapper.setAlignment(mine ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
+
         VBox vbox = new VBox(2);
-        vbox.getChildren().addAll(metaBox, messageLabel);
+        vbox.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(vbox, Priority.ALWAYS);
+        vbox.getChildren().addAll(metaBox, messageWrapper);
 
         HBox wrapper = new HBox();
         wrapper.setPadding(new javafx.geometry.Insets(4, 10, 4, 10));
@@ -216,5 +297,11 @@ public class GroupDMController {
             };
             timer.start();
         });
+    }
+
+    private String ownerUsername;
+
+    public void setOwnerUsername(String username) {
+        this.ownerUsername = username;
     }
 }

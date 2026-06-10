@@ -14,6 +14,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.SVGPath;
 import javafx.stage.Popup;
@@ -37,15 +38,13 @@ public class RegisterController extends Controller{
     public TextField usernameField;
     public TextField emailField;
     public PasswordField passwordField;
-    @FXML
-    private HBox titleBar;
+
+    @FXML private HBox titleBar;
     @FXML Label statusLabel;
-    @FXML
-    private StackPane backButton;
-    @FXML
-    private Circle backBg;
-    @FXML
-    private SVGPath backIcon;
+    @FXML private StackPane backButton;
+    @FXML private Circle backBg;
+    @FXML private SVGPath backIcon;
+    @FXML private VBox statusBox;
 
 
     Rectangle2D screenBounds = Screen.getPrimary().getBounds();
@@ -55,7 +54,8 @@ public class RegisterController extends Controller{
     @Override
     public void initialize() {
         super.initialize(rootPane, titleBar);
-
+        statusLabel.setWrapText(true);
+        statusLabel.setMaxWidth(220);
         String bgPath;
 
         if(width <= 1280) bgPath = "/image/background/small-lunfy-background.png";
@@ -129,11 +129,11 @@ public class RegisterController extends Controller{
         String password = passwordField.getText();
 
         if (!FieldsManager.checkPassword(password)) {
-            statusLabel.setText("Пароль должен содержать минимум 8 символов, заглавную букву, цифру и спецсимвол");
+            showError("Пароль должен содержать минимум 8 символов, заглавную букву, цифру и спецсимвол");
             return;
         }
         if (!FieldsManager.checkEmail(email)) {
-            statusLabel.setText("Введите корректный email");
+            showError("Введите корректный email");
             return;
         }
 
@@ -149,39 +149,20 @@ public class RegisterController extends Controller{
 
                         SceneManager.setScene("/fxml/GeneralView.fxml", "/css/style.css");
                     } else {
-                        statusLabel.setText((String) result.getOrDefault("error", "Ошибка регистрации"));
+                        showError((String) result.getOrDefault("error", "Ошибка регистрации"));
                     }
                 });
             } catch (Exception e) {
                 javafx.application.Platform.runLater(() ->
-                        statusLabel.setText("Нет соединения с сервером")
+                        showError("Нет соединения с сервером")
                 );
             }
         }).start();
     }
 
-    private void showPopup(TextField field) {
-        if (popup.isShowing()) return;
-
-        var bounds = field.localToScreen(field.getBoundsInLocal());
-
-        popup.show(
-                field,
-                bounds.getMinX(),
-                bounds.getMaxY() + 5
-        );
-    }
-
-    private void showPopup(PasswordField field) {
-        if (popup.isShowing()) return;
-
-        var bounds = field.localToScreen(field.getBoundsInLocal());
-
-        popup.show(
-                field,
-                bounds.getMinX(),
-                bounds.getMaxY() + 2
-        );
+    private void showError(String text) {
+        statusLabel.setText(text);
+        statusBox.setVisible(true);
     }
 
     private void goBackToLogin() {

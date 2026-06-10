@@ -10,6 +10,10 @@ public class GroupDM {
     private String avatarPath;
     private List<String> members;
 
+    private String ownerUsername;
+    public String getOwnerUsername() { return ownerUsername; }
+    public void setOwnerUsername(String s) { this.ownerUsername = s; }
+
     public GroupDM(String id, String name, List<String> members) {
         this.id = id;
         this.name = name;

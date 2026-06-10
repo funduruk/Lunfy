@@ -73,12 +73,14 @@ public class GroupController {
                             ))
                             .collect(Collectors.toList());
 
-                    return Map.<String, Object>of(
-                            "id", g.getId(),
-                            "name", g.getName(),
-                            "role", m.getRole().name(),
-                            "channels", channels
-                    );
+                    Map<String, Object> groupMap = new java.util.HashMap<>();
+                    groupMap.put("id", g.getId());
+                    groupMap.put("name", g.getName());
+                    groupMap.put("role", m.getRole().name());
+                    groupMap.put("channels", channels);
+                    groupMap.put("type", g.getType() != null ? g.getType().name() : "COMMUNITY");
+                    groupMap.put("avatarPath", g.getAvatarPath());
+                    return groupMap;
                 })
                 .collect(Collectors.toList());
 
@@ -236,6 +238,93 @@ public class GroupController {
         if (filename == null) return ".png";
         int dot = filename.lastIndexOf('.');
         return dot >= 0 ? filename.substring(dot) : ".png";
+    }
+
+    @PostMapping("/dm")
+    public ResponseEntity<?> createDM(@AuthenticationPrincipal String username,
+                                      @RequestBody Map<String, Object> body) {
+        try {
+            User owner = userService.findByUsername(username);
+            String name = (String) body.get("name");
+            List<String> memberUsernames = (List<String>) body.getOrDefault("members", List.of());
+
+            Group group = new Group();
+            group.setName(name);
+            group.setOwner(owner);
+            group.setType(Group.GroupType.DM);
+            group = groupService.save(group);
+
+            groupService.addMember(group.getId(), owner);
+
+            for (String memberName : memberUsernames) {
+                try {
+                    User user = userService.findByUsername(memberName);
+                    groupService.addMember(group.getId(), user);
+                } catch (Exception ignored) {
+                }
+            }
+
+            // Уведомляем всех участников через WebSocket
+            Map<String, Object> data = new java.util.HashMap<>();
+            data.put("id", group.getId());
+            data.put("name", group.getName());
+            data.put("type", "DM");
+
+            EnvelopeDTO env = new EnvelopeDTO("GROUP_DM_CREATED", data);
+            for (String memberName : memberUsernames) {
+                chatWebSocketHandler.sendToUserByUsername(memberName, env);
+            }
+            chatWebSocketHandler.sendToUserByUsername(username, env);
+
+            return ResponseEntity.ok(Map.of(
+                    "id", group.getId(),
+                    "name", group.getName(),
+                    "type", "DM"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{groupId}")
+    public ResponseEntity<?> getGroupInfo(@PathVariable Long groupId) {
+        try {
+            Group g = groupService.findById(groupId);
+            Map<String, Object> info = new java.util.HashMap<>();
+            info.put("id", g.getId());
+            info.put("name", g.getName());
+            info.put("ownerUsername", g.getOwner() != null ? g.getOwner().getUsername() : null);
+            info.put("type", g.getType() != null ? g.getType().name() : "COMMUNITY");
+            return ResponseEntity.ok(info);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{groupId}/avatar")
+    public ResponseEntity<byte[]> getAvatar(@PathVariable Long groupId) {
+        try {
+            Group group = groupService.findById(groupId);
+            if (group.getAvatarPath() == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            java.nio.file.Path path = java.nio.file.Paths.get(group.getAvatarPath());
+            if (!java.nio.file.Files.exists(path)) {
+                return ResponseEntity.notFound().build();
+            }
+
+            byte[] bytes = java.nio.file.Files.readAllBytes(path);
+            String contentType = "image/png";
+            String name = path.getFileName().toString().toLowerCase();
+            if (name.endsWith(".jpg") || name.endsWith(".jpeg")) contentType = "image/jpeg";
+
+            return ResponseEntity.ok()
+                    .header("Content-Type", contentType)
+                    .body(bytes);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
 

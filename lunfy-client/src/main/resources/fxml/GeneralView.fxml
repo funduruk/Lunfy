@@ -8,6 +8,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.image.Image?>
+<?import javafx.scene.shape.Circle?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="ru.funduruk.controller.GeneralController"
@@ -76,12 +77,14 @@
 
                 <HBox fx:id="profilePanel" styleClass="profile-panel" spacing="8"
                       onMouseClicked="#openProfile">
-                    <StackPane styleClass="avatar-container">
+                    <StackPane styleClass="avatar-container" prefWidth="36" prefHeight="36"
+                               minWidth="36" minHeight="36" maxWidth="36" maxHeight="36">
                         <ImageView fx:id="profileAvatar" fitWidth="36" fitHeight="36"
                                    pickOnBounds="true" preserveRatio="true"/>
-                        <StackPane fx:id="statusDot" styleClass="status-dot-online"
-                                   maxWidth="10" maxHeight="10"
-                                   StackPane.alignment="BOTTOM_RIGHT"/>
+                        <Circle fx:id="statusDot" radius="6"
+                                                   styleClass="status-dot-sidebar"
+                                                   StackPane.alignment="BOTTOM_RIGHT"
+                                                   translateX="2" translateY="2"/>
                     </StackPane>
                     <VBox spacing="2" VBox.vgrow="ALWAYS">
                         <Label fx:id="profileUsername" text="username" styleClass="profile-name"/>

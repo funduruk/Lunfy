@@ -7,7 +7,7 @@ import java.util.Base64;
 public class AESUtil {
 
     private static final String ALGORITHM = "AES";
-    private static final String SECRET_KEY = "lunfy-secret-key"; // HARDCODE
+    private static final String SECRET_KEY = "lunfy-secret-key";
 
     public static String encrypt(String text) {
         try {

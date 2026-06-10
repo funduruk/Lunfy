@@ -22,6 +22,7 @@ import ru.funduruk.model.GroupDM;
 import ru.funduruk.model.MessageStore;
 import ru.funduruk.model.UserProfile;
 import ru.funduruk.net.ApiClient;
+import ru.funduruk.net.ChatEventBus;
 import ru.funduruk.net.WSClient;
 
 import java.util.ArrayList;
@@ -42,6 +43,7 @@ public class GeneralController {
     @FXML private ImageView profileAvatar;
     @FXML private Label profileUsername;
     @FXML private Label profileStatus;
+    @FXML private javafx.scene.shape.Circle statusDot;
 
     @Getter
     private static GeneralController instance;
@@ -53,19 +55,35 @@ public class GeneralController {
 
     @FXML
     public void initialize() throws Exception {
+        instance = this;
         enableWindowDragging();
         enableWindowResize();
-        instance = this;
+
         UserProfile profile = UserProfile.getInstance();
         profileUsername.setText(profile.getUsername() + "#" + profile.getTag());
-        profileStatus.setText(profile.getStatus());
+        updateStatusDisplay(profile.getStatus());
 
         loadChatView();
         loadGroupsView();
-        loadChatsFromFriends();
 
         WSClient.connect("ws://localhost:8080/ws?username=" + ApiClient.getCurrentUsername()
                 + "&token=" + ApiClient.getToken());
+
+        loadChatsFromFriends();
+    }
+
+    public void updateStatusDisplay(String status) {
+        if (profileStatus != null) {
+            profileStatus.setText(status);
+        }
+        if (statusDot != null) {
+            String color = switch (status == null ? "Онлайн" : status) {
+                case "Не беспокоить" -> "#ed4245";
+                case "Офлайн" -> "#747f8d";
+                default -> "#3ba55d";
+            };
+            statusDot.setFill(javafx.scene.paint.Color.web(color));
+        }
     }
 
     private Parent chatView;
@@ -158,23 +176,63 @@ public class GeneralController {
         });
     }
 
+    private double mouseDragOffsetX = 0;
+    private double mouseDragOffsetY = 0;
+    private boolean isResizing = false;
+
     private void enableWindowResize() {
-        final int RESIZE_MARGIN = 10;
+        final int RESIZE_MARGIN = 8;
+
         generalRoot.setOnMouseMoved(e -> {
-            if (e.getX() > generalRoot.getWidth() - RESIZE_MARGIN &&
-                    e.getY() > generalRoot.getHeight() - RESIZE_MARGIN) {
+            double w = generalRoot.getWidth();
+            double h = generalRoot.getHeight();
+            double x = e.getX();
+            double y = e.getY();
+
+            boolean right = x > w - RESIZE_MARGIN;
+            boolean bottom = y > h - RESIZE_MARGIN;
+
+            if (right && bottom) {
                 generalRoot.setCursor(javafx.scene.Cursor.SE_RESIZE);
+            } else if (right) {
+                generalRoot.setCursor(javafx.scene.Cursor.E_RESIZE);
+            } else if (bottom) {
+                generalRoot.setCursor(javafx.scene.Cursor.S_RESIZE);
             } else {
                 generalRoot.setCursor(javafx.scene.Cursor.DEFAULT);
             }
         });
+
+        generalRoot.setOnMousePressed(e -> {
+            javafx.scene.Cursor cursor = generalRoot.getCursor();
+            isResizing = cursor == javafx.scene.Cursor.SE_RESIZE
+                    || cursor == javafx.scene.Cursor.E_RESIZE
+                    || cursor == javafx.scene.Cursor.S_RESIZE;
+        });
+
         generalRoot.setOnMouseDragged(e -> {
-            if (generalRoot.getCursor() == javafx.scene.Cursor.SE_RESIZE) {
-                Stage stage = (Stage) generalRoot.getScene().getWindow();
-                stage.setWidth(e.getX());
-                stage.setHeight(e.getY());
+            if (!isResizing) return;
+
+            Stage stage = (Stage) generalRoot.getScene().getWindow();
+            javafx.scene.Cursor cursor = generalRoot.getCursor();
+
+            // Координаты мыши на экране минус позиция окна = новый размер
+            double newWidth = e.getScreenX() - stage.getX();
+            double newHeight = e.getScreenY() - stage.getY();
+
+            if (cursor == javafx.scene.Cursor.SE_RESIZE || cursor == javafx.scene.Cursor.E_RESIZE) {
+                if (newWidth >= stage.getMinWidth()) {
+                    stage.setWidth(newWidth);
+                }
+            }
+            if (cursor == javafx.scene.Cursor.SE_RESIZE || cursor == javafx.scene.Cursor.S_RESIZE) {
+                if (newHeight >= stage.getMinHeight()) {
+                    stage.setHeight(newHeight);
+                }
             }
         });
+
+        generalRoot.setOnMouseReleased(e -> isResizing = false);
     }
 
     public void openProfile() {
@@ -217,7 +275,17 @@ public class GeneralController {
         contentPane.getChildren().setAll(chatView);
         contentPane.getChildren().setAll(chatView);
 
-        // Определяем имя собеседника из chatId вида "dm-user1-user2"
+        if (chatId.startsWith("gdm-")) {
+            // Открываем GroupDMView
+            if (groupDMViews.containsKey(chatId)) {
+                contentPane.getChildren().setAll(groupDMViews.get(chatId));
+            } else {
+
+                loadGroupDM(chatId);
+            }
+            return;
+        }
+
         String chatName = chatId;
         if (chatId.startsWith("dm-")) {
             String[] parts = chatId.replace("dm-", "").split("-");
@@ -279,6 +347,59 @@ public class GeneralController {
         }).start();
     }
 
+    private void loadGroupDM(String chatId) {
+        String groupId = chatId.replace("gdm-", "");
+
+        new Thread(() -> {
+            try {
+                // Загружаем участников и инфу о группе параллельно
+                String membersResp = ApiClient.getRaw("/api/groups/" + groupId + "/members");
+                String infoResp = ApiClient.getRaw("/api/groups/" + groupId);
+
+                ObjectMapper mapper = new ObjectMapper();
+                List<Map<String, Object>> members = mapper.readValue(membersResp,
+                        new com.fasterxml.jackson.core.type.TypeReference<>() {});
+                Map<String, Object> info = mapper.readValue(infoResp,
+                        new com.fasterxml.jackson.core.type.TypeReference<>() {});
+
+                String ownerUsername = (String) info.get("ownerUsername");
+
+                List<String> memberNames = members.stream()
+                        .map(m -> (String) m.get("username"))
+                        .collect(java.util.stream.Collectors.toList());
+
+                String chatName = chatListPane.getChildren().stream()
+                        .filter(n -> chatId.equals(n.getUserData()))
+                        .findFirst()
+                        .map(n -> ((Label) n).getText())
+                        .orElse(chatId);
+
+                Platform.runLater(() -> {
+                    try {
+                        GroupDM gdm = new GroupDM(chatId, chatName, new ArrayList<>(memberNames));
+                        gdm.setOwnerUsername(ownerUsername);
+
+                        FXMLLoader loader = new FXMLLoader(
+                                getClass().getResource("/fxml/GroupDMView.fxml"));
+                        Parent view = loader.load();
+                        GroupDMController ctrl = loader.getController();
+                        ctrl.setGroupDM(gdm);
+                        ctrl.setGeneralController(this);
+
+                        groupDMViews.put(chatId, view);
+                        groupDMControllers.put(chatId, ctrl);
+
+                        contentPane.getChildren().setAll(view);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
     public void removeChat(String chatId) {
         chatListPane.getChildren().removeIf(n -> chatId.equals(n.getUserData()));
     }
@@ -289,16 +410,31 @@ public class GeneralController {
 
     @FXML
     private void openNewGroupDM() {
+        new Thread(() -> {
+            try {
+                String response = ApiClient.getRaw("/api/friends");
+                ObjectMapper mapper = new ObjectMapper();
+                List<Map<String, Object>> friendsData = mapper.readValue(response,
+                        new com.fasterxml.jackson.core.type.TypeReference<>() {});
+
+                Platform.runLater(() -> showGroupDMPopup(friendsData));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    private void showGroupDMPopup(List<Map<String, Object>> friendsData) {
         javafx.stage.Popup popup = new javafx.stage.Popup();
         popup.setAutoHide(true);
 
         VBox content = new VBox(8);
         content.setStyle("""
-    -fx-background-color: #2d2b40;
-    -fx-padding: 12;
-    -fx-background-radius: 10;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 10, 0, 0, 4);
-""");
+        -fx-background-color: #2d2b40;
+        -fx-padding: 12;
+        -fx-background-radius: 10;
+        -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 10, 0, 0, 4);
+    """);
         content.setPrefWidth(240);
         content.setMaxWidth(240);
 
@@ -312,22 +448,30 @@ public class GeneralController {
         Label membersLabel = new Label("Выбери друзей:");
         membersLabel.setStyle("-fx-text-fill: #aaa; -fx-font-size: 11px;");
 
-        List<String> friends = List.of("Alice", "Bob", "Charlie");
         List<String> selectedFriends = new ArrayList<>();
-
         VBox friendCheckboxes = new VBox(4);
 
-        for (String friend : friends) {
-            javafx.scene.control.CheckBox cb = new javafx.scene.control.CheckBox(friend);
-            cb.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
-            cb.setPrefWidth(216);
-            cb.setMaxWidth(216);
+        if (friendsData.isEmpty()) {
+            Label empty = new Label("Нет друзей для добавления");
+            empty.setStyle("-fx-text-fill: #888; -fx-font-size: 11px;");
+            friendCheckboxes.getChildren().add(empty);
+        } else {
+            for (Map<String, Object> f : friendsData) {
+                String username = (String) f.get("username");
+                String tag = (String) f.get("tag");
+                String display = username + "#" + tag;
 
-            cb.setOnAction(e -> {
-                if (cb.isSelected()) selectedFriends.add(friend);
-                else selectedFriends.remove(friend);
-            });
-            friendCheckboxes.getChildren().add(cb);
+                javafx.scene.control.CheckBox cb = new javafx.scene.control.CheckBox(display);
+                cb.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
+                cb.setPrefWidth(216);
+                cb.setMaxWidth(216);
+
+                cb.setOnAction(e -> {
+                    if (cb.isSelected()) selectedFriends.add(username);
+                    else selectedFriends.remove(username);
+                });
+                friendCheckboxes.getChildren().add(cb);
+            }
         }
 
         Button createBtn = new Button("Создать");
@@ -351,37 +495,56 @@ public class GeneralController {
         scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
 
         content.getChildren().addAll(title, nameField, membersLabel, scrollPane, createBtn);
-
         popup.getContent().add(content);
-
-
 
         var bounds = newGroupDMBtn.localToScreen(newGroupDMBtn.getBoundsInLocal());
         popup.show(newGroupDMBtn.getScene().getWindow(), bounds.getMinX() + 30, bounds.getMaxY() + 4);
     }
 
     private void createGroupDM(String name, List<String> members) {
-        String chatId = "gdm-" + System.currentTimeMillis();
-        GroupDM gdm = new GroupDM(chatId, name, new ArrayList<>(members));
-        gdm.getMembers().add(ApiClient.getCurrentUsername());
+        new Thread(() -> {
+            try {
+                Map<String, Object> body = new java.util.HashMap<>();
+                body.put("name", name);
+                body.put("members", members);
 
-        try {
-            FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/fxml/GroupDMView.fxml")
-            );
-            Parent view = loader.load();
-            GroupDMController ctrl = loader.getController();
-            ctrl.setGroupDM(gdm);
-            ctrl.setGeneralController(this);
+                String json = new ObjectMapper().writeValueAsString(body);
+                String response = ApiClient.postRaw("/api/groups/dm", json);
+                Map<String, Object> result = new ObjectMapper().readValue(
+                        response, new com.fasterxml.jackson.core.type.TypeReference<>() {});
 
-            addChatIfAbsent(chatId, name);
+                if (result.containsKey("error")) {
+                    System.out.println("Ошибка: " + result.get("error"));
+                    return;
+                }
 
-            groupDMViews.put(chatId, view);
-            groupDMControllers.put(chatId, ctrl);
+                String chatId = "gdm-" + result.get("id");
+                GroupDM gdm = new GroupDM(chatId, name, new ArrayList<>(members));
+                gdm.getMembers().add(ApiClient.getCurrentUsername());
+                gdm.setOwnerUsername(ApiClient.getCurrentUsername());
 
-            contentPane.getChildren().setAll(view);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+                Platform.runLater(() -> {
+                    try {
+                        FXMLLoader loader = new FXMLLoader(
+                                getClass().getResource("/fxml/GroupDMView.fxml")
+                        );
+                        Parent view = loader.load();
+                        GroupDMController ctrl = loader.getController();
+                        ctrl.setGroupDM(gdm);
+                        ctrl.setGeneralController(this);
+
+                        addChatIfAbsent(chatId, name);
+                        groupDMViews.put(chatId, view);
+                        groupDMControllers.put(chatId, ctrl);
+
+                        contentPane.getChildren().setAll(view);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 }

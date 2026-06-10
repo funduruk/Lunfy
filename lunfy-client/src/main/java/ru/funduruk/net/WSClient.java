@@ -59,6 +59,11 @@ public class WSClient {
                             Map<String, Object> data = mapper.readValue(dataJson,
                                     new com.fasterxml.jackson.core.type.TypeReference<>() {});
                             ChatEventBus.fireGroupMemberUpdate(env.getType(), data);
+                        } else if ("GROUP_DM_CREATED".equals(env.getType())) {
+                            String dataJson = mapper.writeValueAsString(env.getData());
+                            Map<String, Object> data = mapper.readValue(dataJson,
+                                    new com.fasterxml.jackson.core.type.TypeReference<>() {});
+                            ChatEventBus.fireGroupDMCreated(data);
                         }
 
                     } catch (Exception e) {

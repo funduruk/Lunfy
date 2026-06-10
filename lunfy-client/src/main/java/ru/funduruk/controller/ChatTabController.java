@@ -11,6 +11,8 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import lombok.Getter;
@@ -168,14 +170,14 @@ public class ChatTabController {
 
     private void addMessage(MessageDTO msg) {
         boolean mine = MY_USER_ID.equals(msg.getSender());
-        System.out.println("addMessage: sender=" + msg.getSender() + " mine=" + mine + " text=" + msg.getText());
 
         String time = java.time.Instant.ofEpochMilli(msg.getTimestamp())
                 .atZone(java.time.ZoneId.systemDefault())
                 .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
-        System.out.println("TIMESTAMP IN addMessage: " + msg.getTimestamp());
 
         HBox metaBox = new HBox(6);
+        metaBox.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(metaBox, javafx.scene.layout.Priority.ALWAYS);
         Label senderLabel = new Label(msg.getSender());
         senderLabel.setStyle("-fx-text-fill: #ffffff; -fx-font-size: 10px;");
         Label timeLabel = new Label(time);
@@ -190,10 +192,18 @@ public class ChatTabController {
                 : "-fx-background-color: #221E33; -fx-text-fill: white; -fx-padding: 6 10; -fx-background-radius: 12;"
         );
 
-        VBox vbox = new VBox(2);
-        vbox.getChildren().addAll(metaBox, messageLabel);
+        HBox messageWrapper = new HBox(messageLabel);
+        messageWrapper.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(messageWrapper, javafx.scene.layout.Priority.ALWAYS);
+        messageWrapper.setAlignment(mine ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
 
-        HBox wrapper = new HBox();
+        VBox vbox = new VBox(2);
+        vbox.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(vbox, javafx.scene.layout.Priority.ALWAYS);
+        vbox.getChildren().addAll(metaBox, messageWrapper);
+
+        // === АВАТАРКА для чужих сообщений ===
+        HBox wrapper = new HBox(8);
         wrapper.setPadding(new javafx.geometry.Insets(4, 10, 4, 10));
         HBox.setHgrow(wrapper, javafx.scene.layout.Priority.ALWAYS);
         wrapper.setMaxWidth(Double.MAX_VALUE);
@@ -201,12 +211,15 @@ public class ChatTabController {
         if (mine) {
             wrapper.setAlignment(Pos.CENTER_RIGHT);
             metaBox.setAlignment(Pos.CENTER_RIGHT);
+            wrapper.getChildren().add(vbox);
         } else {
             wrapper.setAlignment(Pos.CENTER_LEFT);
             metaBox.setAlignment(Pos.CENTER_LEFT);
-        }
 
-        wrapper.getChildren().add(vbox);
+            // Аватарка собеседника
+            StackPane avatar = buildUserAvatar(msg.getSender(), 32);
+            wrapper.getChildren().addAll(avatar, vbox);
+        }
 
         ContextMenu contextMenu = new ContextMenu();
         MenuItem deleteItem = new MenuItem("🗑 Удалить сообщение");
@@ -239,6 +252,53 @@ public class ChatTabController {
 
         playAppearAnimation(wrapper);
         scrollToBottom();
+    }
+
+    private StackPane buildUserAvatar(String username, double size) {
+        StackPane container = new StackPane();
+        container.setPrefSize(size, size);
+        container.setMinSize(size, size);
+        container.setMaxSize(size, size);
+
+        // Фон-кружок с инициалом
+        javafx.scene.shape.Circle bg = new javafx.scene.shape.Circle(size / 2);
+        bg.setFill(javafx.scene.paint.Color.web("#5865f2"));
+
+        String initial = username.length() > 0
+                ? username.substring(0, 1).toUpperCase()
+                : "?";
+        Label letter = new Label(initial);
+        letter.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13px;");
+
+        container.getChildren().addAll(bg, letter);
+
+        // Пробуем загрузить аватарку с сервера
+        try {
+            String url = "http://localhost:8080/api/users/" + username + "/avatar";
+            javafx.scene.image.Image img = new javafx.scene.image.Image(
+                    url, size, size, true, true, true);
+
+            javafx.scene.image.ImageView iv = new javafx.scene.image.ImageView(img);
+            iv.setFitWidth(size);
+            iv.setFitHeight(size);
+            iv.setPreserveRatio(true);
+
+            javafx.scene.shape.Circle clip = new javafx.scene.shape.Circle(
+                    size / 2, size / 2, size / 2);
+            iv.setClip(clip);
+
+            // При успешной загрузке заменяем инициал
+            img.errorProperty().addListener((obs, oldVal, newVal) -> {
+                // Ошибка загрузки — оставляем инициал
+            });
+            img.progressProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal.doubleValue() >= 1.0 && !img.isError()) {
+                    Platform.runLater(() -> container.getChildren().setAll(iv));
+                }
+            });
+        } catch (Exception ignored) {}
+
+        return container;
     }
 
     private boolean isAdminInCurrentChat() {

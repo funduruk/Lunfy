@@ -3,12 +3,14 @@ package ru.funduruk.controller;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.*;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import ru.funduruk.manager.SceneManager;
 import ru.funduruk.model.UserProfile;
+import ru.funduruk.net.ApiClient;
 
 import java.io.File;
 
@@ -16,7 +18,13 @@ public class ProfileController extends Controller {
 
     @FXML public BorderPane rootPane;
     @FXML public HBox titleBar;
+    @FXML private StackPane avatarContainer;
+    @FXML private Circle avatarCircle;
+    @FXML private Label avatarInitial;
     @FXML private ImageView avatarImage;
+    @FXML private Circle statusDot;
+    @FXML private Label displayNameLabel;
+    @FXML private Label tagLabel;
     @FXML private TextField usernameField;
     @FXML private ComboBox<String> statusCombo;
     @FXML private TextArea bioField;
@@ -29,11 +37,49 @@ public class ProfileController extends Controller {
         statusCombo.setValue("Онлайн");
 
         UserProfile profile = UserProfile.getInstance();
-        usernameField.setText(profile.getUsername());
+        String username = profile.getUsername();
+
+        usernameField.setText(username);
         bioField.setText(profile.getBio());
         statusCombo.setValue(profile.getStatus());
-        if (profile.getAvatarPath() != null) {
-            avatarImage.setImage(new Image("file:" + profile.getAvatarPath()));
+        displayNameLabel.setText(username);
+        tagLabel.setText("#" + profile.getTag());
+
+        // Инициал в аватарке
+        if (username != null && !username.isEmpty()) {
+            avatarInitial.setText(username.substring(0, 1).toUpperCase());
+        }
+
+        // Загружаем аватарку с сервера
+        loadAvatar(username);
+
+        // Цвет статус-точки
+        updateStatusDot(profile.getStatus());
+
+        statusCombo.valueProperty().addListener((obs, oldVal, newVal) -> updateStatusDot(newVal));
+    }
+
+    private void loadAvatar(String username) {
+        try {
+            String url = "http://localhost:8080/api/users/" + username + "/avatar";
+            Image img = new Image(url, 100, 100, true, true, true);
+            img.progressProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal.doubleValue() >= 1.0 && !img.isError()) {
+                    avatarImage.setImage(img);
+                    Circle clip = new Circle(50, 50, 50);
+                    avatarImage.setClip(clip);
+                    avatarInitial.setVisible(false);
+                }
+            });
+        } catch (Exception ignored) {}
+    }
+
+    private void updateStatusDot(String status) {
+        if (status == null) return;
+        switch (status) {
+            case "Онлайн" -> statusDot.setFill(Color.web("#3ba55d"));
+            case "Не беспокоить" -> statusDot.setFill(Color.web("#ed4245"));
+            default -> statusDot.setFill(Color.web("#747f8d"));
         }
     }
 
@@ -44,21 +90,75 @@ public class ProfileController extends Controller {
         chooser.getExtensionFilters().add(
                 new FileChooser.ExtensionFilter("Изображения", "*.png", "*.jpg", "*.jpeg")
         );
-        File file = chooser.showOpenDialog(avatarImage.getScene().getWindow());
-        if (file != null) {
-            Image img = new Image("file:" + file.getAbsolutePath());
-            avatarImage.setImage(img);
-            UserProfile.getInstance().setAvatarPath(file.getAbsolutePath());
-        }
+        File file = chooser.showOpenDialog(avatarContainer.getScene().getWindow());
+        if (file == null) return;
+
+        // Загружаем на сервер
+        new Thread(() -> {
+            try {
+                String boundary = "----FormBoundary" + System.currentTimeMillis();
+                java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+                        .uri(java.net.URI.create("http://localhost:8080/api/users/me/avatar"))
+                        .header("Authorization", "Bearer " + ApiClient.getToken())
+                        .header("Content-Type", "multipart/form-data; boundary=" + boundary)
+                        .POST(buildMultipartBody(file, boundary))
+                        .build();
+
+                java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
+                java.net.http.HttpResponse<String> response = client.send(request,
+                        java.net.http.HttpResponse.BodyHandlers.ofString());
+
+                System.out.println("User avatar uploaded: " + response.body());
+
+                javafx.application.Platform.runLater(() -> {
+                    // Перезагружаем аватарку
+                    loadAvatar(UserProfile.getInstance().getUsername());
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    private java.net.http.HttpRequest.BodyPublisher buildMultipartBody(File file, String boundary) throws Exception {
+        byte[] fileBytes = java.nio.file.Files.readAllBytes(file.toPath());
+        String header = "--" + boundary + "\r\n" +
+                "Content-Disposition: form-data; name=\"file\"; filename=\"" + file.getName() + "\"\r\n" +
+                "Content-Type: image/png\r\n\r\n";
+        String footer = "\r\n--" + boundary + "--\r\n";
+
+        byte[] headerBytes = header.getBytes();
+        byte[] footerBytes = footer.getBytes();
+        byte[] body = new byte[headerBytes.length + fileBytes.length + footerBytes.length];
+        System.arraycopy(headerBytes, 0, body, 0, headerBytes.length);
+        System.arraycopy(fileBytes, 0, body, headerBytes.length, fileBytes.length);
+        System.arraycopy(footerBytes, 0, body, headerBytes.length + fileBytes.length, footerBytes.length);
+
+        return java.net.http.HttpRequest.BodyPublishers.ofByteArray(body);
     }
 
     @FXML
     private void save() {
         UserProfile profile = UserProfile.getInstance();
-        profile.setUsername(usernameField.getText());
         profile.setBio(bioField.getText());
         profile.setStatus(statusCombo.getValue());
         goBack();
+    }
+
+    @FXML
+    private void logout() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Выход из аккаунта");
+        alert.setHeaderText(null);
+        alert.setContentText("Действительно выйти из аккаунта?");
+
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                // Сбрасываем токен и данные
+                ApiClient.setToken(null);
+                SceneManager.setScene("/fxml/LoginView.fxml", "/css/style.css");
+            }
+        });
     }
 
     @FXML

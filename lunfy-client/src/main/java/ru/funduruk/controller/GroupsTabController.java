@@ -38,7 +38,7 @@ public class GroupsTabController {
         instance = this;
     }
 
-    private void loadGroupsFromServer() {
+    public void loadGroupsFromServer() {
         new Thread(() -> {
             try {
                 String response = ApiClient.getRaw("/api/groups");
@@ -50,14 +50,26 @@ public class GroupsTabController {
                 Platform.runLater(() -> {
                     groups.clear();
                     for (Map<String, Object> g : data) {
+                        String type = (String) g.getOrDefault("type", "COMMUNITY");
                         String groupId = String.valueOf(g.get("id"));
                         String name = (String) g.get("name");
-                        String avatarPath = (String) g.get("avatarPath");
+
+                        if ("DM".equals(type)) {
+                            // Это групповой DM — добавляем в sidebar
+                            String chatId = "gdm-" + groupId;
+                            GeneralController.getInstance().addChatIfAbsent(chatId, name);
+                            // TODO: загрузка GroupDMView при клике
+                            continue;
+                        }
 
                         Group group = new Group(groupId, name);
 
+                        String avatarPath = (String) g.get("avatarPath");
+                        if (avatarPath != null) group.setAvatarPath(avatarPath);
+
                         List<Map<String, Object>> channels =
                                 (List<Map<String, Object>>) g.get("channels");
+
 
                         for (Map<String, Object> ch : channels) {
                             String chId = String.valueOf(ch.get("id"));
@@ -88,15 +100,15 @@ public class GroupsTabController {
             btn.getStyleClass().add("group-btn");
 
             if (group.getAvatarPath() != null && !group.getAvatarPath().isBlank()) {
-                // Аватарка группы
+                // Грузим через HTTP endpoint
+                String url = "http://localhost:8080/api/groups/" + group.getId() + "/avatar";
                 javafx.scene.image.ImageView avatar = new javafx.scene.image.ImageView(
-                        new javafx.scene.image.Image("file:" + group.getAvatarPath())
+                        new javafx.scene.image.Image(url, 42, 42, true, true, true)
                 );
                 avatar.setFitWidth(42);
                 avatar.setFitHeight(42);
                 avatar.setPreserveRatio(true);
 
-                // Обрезаем в круг
                 javafx.scene.shape.Circle clip = new javafx.scene.shape.Circle(21, 21, 21);
                 avatar.setClip(clip);
                 btn.setGraphic(avatar);

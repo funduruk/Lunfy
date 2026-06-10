@@ -31,4 +31,11 @@ public class Group {
     private List<GroupMember> members = new ArrayList<>();
 
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Enumerated(EnumType.STRING)
+    private GroupType type = GroupType.COMMUNITY;
+
+    public enum GroupType {
+        COMMUNITY, DM
+    }
 }

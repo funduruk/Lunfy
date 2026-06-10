@@ -53,32 +53,34 @@
         <center>
             <HBox fx:id="mainBox" styleClass="main-box">
                 <VBox fx:id="registerWrapper">
-                    <StackPane fx:id="backButton"
-                               prefWidth="12"
-                               prefHeight="12"
-                               StackPane.alignment="TOP_LEFT"
-                               style="-fx-cursor: hand; -fx-padding: 10;"
-                               styleClass="button-back">
-
-                        <Circle fx:id="backBg"
-                                radius="18"
-                                fill="rgba(255,255,255,0.15)"
-                                opacity="0"/>
-
-                        <SVGPath fx:id="backIcon"
-                                 content="M12 4 L6 10 L12 16"
-                                 stroke="white"
-                                 strokeWidth="2"
-                                 fill="transparent"/>
-                    </StackPane>
-
                     <VBox fx:id="registerBox" styleClass="login-box">
-                        <Label text="Register" style="-fx-font-size: 24px; -fx-text-fill: white;"/>
+                        <!-- Заголовок с кнопкой назад -->
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <StackPane fx:id="backButton"
+                                       prefWidth="24"
+                                       prefHeight="24"
+                                       style="-fx-cursor: hand;"
+                                       styleClass="button-back">
+
+                                <Circle fx:id="backBg"
+                                        radius="14"
+                                        fill="rgba(255,255,255,0.15)"
+                                        opacity="0"/>
+
+                                <SVGPath fx:id="backIcon"
+                                         content="M12 4 L6 10 L12 16"
+                                         stroke="white"
+                                         strokeWidth="2"
+                                         fill="transparent"/>
+                            </StackPane>
+                            <Label text="Register" style="-fx-font-size: 24px; -fx-text-fill: white;"/>
+                        </HBox>
+
                         <TextField fx:id="usernameField" promptText="Username" styleClass="text-field"/>
                         <TextField fx:id="emailField" promptText="email" styleClass="text-field"/>
                         <PasswordField fx:id="passwordField" promptText="Password" styleClass="password-field"/>
                         <HBox spacing="10" alignment="CENTER">
-                             <Button text="Register" onAction="#handleRegister" styleClass="button-login"/>
+                            <Button text="Register" onAction="#handleRegister" styleClass="button-login"/>
                         </HBox>
                         <VBox fx:id="statusBox" styleClass="status-box" visible="false">
                             <Label fx:id="statusLabel" style="-fx-text-fill: red;"/>
