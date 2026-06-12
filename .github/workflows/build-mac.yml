@@ -22,11 +22,12 @@ jobs:
           curl -L https://download2.gluonhq.com/openjfx/21/openjfx-21_osx-x64_bin-sdk.zip -o javafx.zip
           unzip javafx.zip -d javafx
 
-      - name: Build JAR
+	- name: Build JAR
         working-directory: lunfy-client
         run: |
           chmod +x gradlew
-          ./gradlew jar
+          cd ../lunfy-common && chmod +x gradlew && ./gradlew jar
+          cd ../lunfy-client && ./gradlew jar
 
       - name: Build DMG
         run: |
