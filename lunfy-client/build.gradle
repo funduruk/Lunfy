@@ -2,6 +2,19 @@ plugins {
     id 'java'
     id 'application'
     id 'org.openjfx.javafxplugin' version '0.0.14'
+    id 'org.beryx.jlink' version '3.0.1'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'ru.funduruk.MainApplication'
+    }
+    from {
+        configurations.runtimeClasspath.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 group 'ru.funduruk'
