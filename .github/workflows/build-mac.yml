@@ -38,7 +38,8 @@ jobs:
             --name Lunfy \
             --app-version 1.0.0 \
             --type dmg \
-            --java-options "--module-path $PWD/javafx/javafx-sdk-21/lib --add-modules javafx.controls,javafx.fxml,javafx.graphics,javafx.base,java.net.http" \
+            --java-options "-Djava.library.path=$PWD/javafx/javafx-sdk-21/lib" \
+            --java-options "--module-path $PWD/javafx/javafx-sdk-21/lib --add-modules javafx.controls,javafx.fxml,javafx.graphics,javafx.base,javafx.media,java.net.http" \
             --dest installer
 
       - name: Upload DMG
