@@ -1,8 +1,7 @@
 package ru.funduruk.net;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.funduruk.dto.EnvelopeDTO;
-import org.funduruk.dto.MessageDTO;
+import org.funduruk.dto.*;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
@@ -64,7 +63,39 @@ public class WSClient {
                             Map<String, Object> data = mapper.readValue(dataJson,
                                     new com.fasterxml.jackson.core.type.TypeReference<>() {});
                             ChatEventBus.fireGroupDMCreated(data);
-                        }
+                        } else if ("CALL_OFFER".equals(env.getType())) {
+                        String dataJson = mapper.writeValueAsString(env.getData());
+                        CallSignalDTO signal = mapper.readValue(dataJson, CallSignalDTO.class);
+                        ChatEventBus.fireCallOffer(signal);
+                    } else if ("CALL_ANSWER".equals(env.getType())) {
+                        String dataJson = mapper.writeValueAsString(env.getData());
+                        CallSignalDTO signal = mapper.readValue(dataJson, CallSignalDTO.class);
+                        ChatEventBus.fireCallAnswer(signal);
+                    } else if ("CALL_REJECT".equals(env.getType())) {
+                        String dataJson = mapper.writeValueAsString(env.getData());
+                        CallSignalDTO signal = mapper.readValue(dataJson, CallSignalDTO.class);
+                        ChatEventBus.fireCallReject(signal);
+                    } else if ("CALL_END".equals(env.getType())) {
+                        String dataJson = mapper.writeValueAsString(env.getData());
+                        CallSignalDTO signal = mapper.readValue(dataJson, CallSignalDTO.class);
+                        ChatEventBus.fireCallEnd(signal);
+                    } else if ("AUDIO_CHUNK".equals(env.getType())) {
+                        String dataJson = mapper.writeValueAsString(env.getData());
+                        AudioChunkDTO chunk = mapper.readValue(dataJson, AudioChunkDTO.class);
+                        ChatEventBus.fireAudioChunk(chunk);
+                    } else if ("SCREEN_FRAME".equals(env.getType())) {
+                        String dataJson = mapper.writeValueAsString(env.getData());
+                        ScreenFrameDTO frame = mapper.readValue(dataJson, ScreenFrameDTO.class);
+                        ChatEventBus.fireScreenFrame(frame);
+                    } else if ("SCREEN_SHARE_START".equals(env.getType())) {
+                        String dataJson = mapper.writeValueAsString(env.getData());
+                        ScreenFrameDTO frame = mapper.readValue(dataJson, ScreenFrameDTO.class);
+                        ChatEventBus.fireScreenShareStart(frame);
+                    } else if ("SCREEN_SHARE_STOP".equals(env.getType())) {
+                        String dataJson = mapper.writeValueAsString(env.getData());
+                        ScreenFrameDTO frame = mapper.readValue(dataJson, ScreenFrameDTO.class);
+                        ChatEventBus.fireScreenShareStop(frame);
+                    }
 
                     } catch (Exception e) {
                         e.printStackTrace();

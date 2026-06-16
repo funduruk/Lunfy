@@ -1,15 +1,15 @@
 package org.funduruk.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
-@Getter
-@Setter
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class CallSignalDTO {
-
-    private String callId;
-    private String from;
-    private String to;
-    private String sdp;       // offer / answer
-    private String candidate; // ICE
+    private String fromUser;   // кто звонит
+    private String toUser;     // кому звонят
+    private String chatId;     // чат/канал, в рамках которого звонок
+    private String callType;   // "AUDIO" или "SCREEN"
 }

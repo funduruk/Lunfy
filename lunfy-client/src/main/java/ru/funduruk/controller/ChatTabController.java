@@ -260,7 +260,6 @@ public class ChatTabController {
         container.setMinSize(size, size);
         container.setMaxSize(size, size);
 
-        // Фон-кружок с инициалом
         javafx.scene.shape.Circle bg = new javafx.scene.shape.Circle(size / 2);
         bg.setFill(javafx.scene.paint.Color.web("#5865f2"));
 
@@ -272,7 +271,6 @@ public class ChatTabController {
 
         container.getChildren().addAll(bg, letter);
 
-        // Пробуем загрузить аватарку с сервера
         try {
             String url = "http://localhost:8080/api/users/" + username + "/avatar";
             javafx.scene.image.Image img = new javafx.scene.image.Image(
@@ -303,8 +301,6 @@ public class ChatTabController {
 
     private boolean isAdminInCurrentChat() {
         if (currentChatId == null) return false;
-        // Для групповых каналов проверяем роль
-        // chatId канала это числовой ID — проверяем через GroupsTabController
         return GroupsTabController.isCurrentUserAdminInGroup(currentChatId);
     }
 
@@ -439,9 +435,14 @@ public class ChatTabController {
 
     @FXML
     private void startCall() {
-        System.out.println("Later..!");
+        System.out.println(">>> startCall: chatId=" + currentChatId + " friend=" + currentFriendUsername);
+        if (currentChatId == null || currentFriendUsername == null) {
+            System.out.println("Нет активного чата для звонка");
+            return;
+        }
+        GeneralController.getInstance().openCall(ctrl ->
+                ctrl.initOutgoing(currentFriendUsername, currentChatId, "AUDIO"));
     }
-
     @FXML
     private void startVideoCall() {
         System.out.println("Later..!");
