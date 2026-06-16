@@ -34,12 +34,11 @@ public class GroupController {
             String name = (String) body.get("name");
             Group group = groupService.create(name, owner);
 
-            // Добавляем дополнительные каналы если переданы
             List<String> textChannels = (List<String>) body.getOrDefault("textChannels", List.of());
             List<String> voiceChannels = (List<String>) body.getOrDefault("voiceChannels", List.of());
 
             for (String ch : textChannels) {
-                if (!ch.equals("general")) { // general уже создан в GroupService
+                if (!ch.equals("general")) {
                     groupService.addChannel(group.getId(), ch, Channel.ChannelType.TEXT);
                 }
             }

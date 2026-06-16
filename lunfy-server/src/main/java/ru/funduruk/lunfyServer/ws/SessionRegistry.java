@@ -12,11 +12,15 @@ public class SessionRegistry {
     private final Map<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
 
     public void add(String username, WebSocketSession session) {
-        sessions.put(username, session);
+        sessions.put(username.toLowerCase(), session);
     }
 
     public void remove(String username) {
-        sessions.values().removeIf(s -> s.getId().equals(username));
+        if (username != null) sessions.remove(username.toLowerCase());
+    }
+
+    public void removeBySession(WebSocketSession session) {
+        sessions.values().removeIf(s -> s.getId().equals(session.getId()));
     }
 
     public Collection<WebSocketSession> all() {
@@ -24,6 +28,7 @@ public class SessionRegistry {
     }
 
     public WebSocketSession getByUsername(String username) {
-        return sessions.get(username);
+        if (username == null) return null;
+        return sessions.get(username.toLowerCase());
     }
 }

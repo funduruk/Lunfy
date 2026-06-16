@@ -14,10 +14,10 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     public User register(String username, String tag, String email, String password) {
-        if (userRepository.existsByUsername(username)) {
+        if (userRepository.existsByUsernameIgnoreCase(username)) {
             throw new RuntimeException("Имя пользователя уже занято");
         }
-        if (userRepository.existsByEmail(email)) {
+        if (userRepository.existsByEmailIgnoreCase(email)) {
             throw new RuntimeException("Email уже используется");
         }
 
@@ -31,7 +31,7 @@ public class UserService {
     }
 
     public User findByUsername(String username) {
-        return userRepository.findByUsername(username)
+        return userRepository.findByUsernameIgnoreCase(username)
                 .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
     }
 

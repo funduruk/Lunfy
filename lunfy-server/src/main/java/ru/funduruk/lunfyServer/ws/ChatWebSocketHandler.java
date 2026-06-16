@@ -3,10 +3,7 @@ package ru.funduruk.lunfyServer.ws;
 import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
-import org.funduruk.dto.ConnectDTO;
-import org.funduruk.dto.EnvelopeDTO;
-import org.funduruk.dto.MessageDTO;
-import org.funduruk.dto.TypingDTO;
+import org.funduruk.dto.*;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.socket.*;
@@ -52,12 +49,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     }
 
     @Override
-    public void afterConnectionClosed(WebSocketSession session, org.springframework.web.socket.CloseStatus status) {
-        String username = getUsername(session);
-        if (username != null) {
-            registry.remove(username);
-            log.info("Removed session: {}", username);
-        }
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+        registry.removeBySession(session);
     }
 
     @Override
@@ -132,6 +125,34 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                     broadcast(env);
                 }
             }
+
+            case "CALL_OFFER", "CALL_ANSWER", "CALL_REJECT", "CALL_END" -> {
+                String dataJson = mapper.writeValueAsString(env.getData());
+                CallSignalDTO signal = mapper.readValue(dataJson, CallSignalDTO.class);
+
+                System.out.println("CALL signal " + env.getType() +
+                        " from " + signal.getFromUser() + " to " + signal.getToUser());
+
+                sendToUserByUsername(signal.getToUser(), env);
+            }
+
+            case "AUDIO_CHUNK" -> {
+                String dataJson = mapper.writeValueAsString(env.getData());
+                AudioChunkDTO chunk = mapper.readValue(dataJson, AudioChunkDTO.class);
+                sendToUserByUsername(chunk.getToUser(), env);
+            }
+
+            case "SCREEN_FRAME" -> {
+                String dataJson = mapper.writeValueAsString(env.getData());
+                ScreenFrameDTO frame = mapper.readValue(dataJson, ScreenFrameDTO.class);
+                sendToUserByUsername(frame.getToUser(), env);
+            }
+
+            case "SCREEN_SHARE_START", "SCREEN_SHARE_STOP" -> {
+                String dataJson = mapper.writeValueAsString(env.getData());
+                ScreenFrameDTO frame = mapper.readValue(dataJson, ScreenFrameDTO.class);
+                sendToUserByUsername(frame.getToUser(), env);
+            }
         }
     }
 
@@ -141,7 +162,6 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             session.sendMessage(new TextMessage(mapper.writeValueAsString(env)));
         }
     }
-
     private void handleConnect(WebSocketSession session, EnvelopeDTO env) {
         ConnectDTO dto = mapper.convertValue(env.getData(), ConnectDTO.class);
         registry.add(dto.getUserId(), session);
