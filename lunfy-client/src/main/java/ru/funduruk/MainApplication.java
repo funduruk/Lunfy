@@ -4,6 +4,7 @@ import javafx.application.Application;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import ru.funduruk.manager.NotificationManager;
 import ru.funduruk.manager.SceneManager;
 
 import java.util.Objects;
@@ -36,12 +37,15 @@ public class MainApplication extends Application {
                 "/css/style.css"
         );
 
+        NotificationManager.init(stage);
+
         stage.show();
 
         stage.setAlwaysOnTop(false);
     }
 
     public static void main(String[] args) {
+        System.setProperty("java.awt.headless", "false");
         launch();
     }
 }

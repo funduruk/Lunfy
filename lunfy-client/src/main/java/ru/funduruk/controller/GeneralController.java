@@ -15,6 +15,7 @@
     import javafx.scene.layout.HBox;
     import javafx.stage.Stage;
     import lombok.Getter;
+    import ru.funduruk.manager.NotificationManager;
     import ru.funduruk.manager.SceneManager;
     import ru.funduruk.model.GroupDM;
     import ru.funduruk.model.MessageStore;
@@ -54,8 +55,16 @@
                     + "&token=" + ApiClient.getToken());
 
             ChatEventBus.setOnCallOffer(signal -> {
-                Platform.runLater(() ->
-                        openCall(ctrl -> ctrl.initIncoming(signal)));
+                Platform.runLater(() -> {
+                    if (NotificationManager.isWindowHidden()) {
+                        NotificationManager.showSystem(
+                                "Входящий вызов", "Звонок от " + signal.getFromUser());
+                        Stage st = (Stage) generalRoot.getScene().getWindow();
+                        st.setIconified(false);
+                        st.toFront();
+                    }
+                    openCall(ctrl -> ctrl.initIncoming(signal));
+                });
             });
 
             loadChatsFromFriends();
@@ -269,6 +278,8 @@
         public void openChat(String chatId) {
             contentPane.getChildren().setAll(chatView);
             contentPane.getChildren().setAll(chatView);
+
+            clearUnread(chatId);
 
             if (chatId.startsWith("gdm-")) {
                 if (groupDMViews.containsKey(chatId)) {
@@ -563,5 +574,33 @@
             callView = null;
             callController = null;
             contentPane.getChildren().setAll(chatView);
+        }
+
+        private final Map<String, Integer> unreadCounts = new HashMap<>();
+
+        public void incrementUnread(String chatId) {
+            unreadCounts.merge(chatId, 1, Integer::sum);
+            updateChatBadge(chatId);
+        }
+
+        public void clearUnread(String chatId) {
+            unreadCounts.remove(chatId);
+            updateChatBadge(chatId);
+        }
+
+        private void updateChatBadge(String chatId) {
+            for (javafx.scene.Node node : chatListPane.getChildren()) {
+                if (chatId.equals(node.getUserData()) && node instanceof Label label) {
+                    int count = unreadCounts.getOrDefault(chatId, 0);
+                    String baseName = label.getText().replaceAll(" ●.*$", "");
+                    if (count > 0) {
+                        label.setText(baseName + "  ● " + count);
+                        label.setStyle("-fx-font-weight: bold;");
+                    } else {
+                        label.setText(baseName);
+                        label.setStyle("");
+                    }
+                }
+            }
         }
     }

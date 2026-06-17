@@ -20,6 +20,7 @@ import org.funduruk.dto.MessageDTO;
 import org.funduruk.dto.TypingDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.funduruk.manager.NotificationManager;
 import ru.funduruk.model.MessageStore;
 import ru.funduruk.net.ApiClient;
 import ru.funduruk.net.ChatEventBus;
@@ -71,7 +72,23 @@ public class ChatTabController {
         ChatEventBus.setOnMessage(msg -> {
             Platform.runLater(() -> {
                 MessageStore.getInstance().addMessage(msg.getChatId(), msg);
-                if (msg.getChatId().equals(currentChatId)) addMessage(msg);
+
+                boolean isOwn = ApiClient.getCurrentUsername().equalsIgnoreCase(msg.getSender());
+                boolean isCurrentChat = msg.getChatId().equals(currentChatId);
+
+                if (isCurrentChat) {
+                    addMessage(msg);
+                }
+
+                if (!isOwn && !isCurrentChat) {
+                    if (NotificationManager.isWindowHidden()) {
+                        NotificationManager.showSystem(
+                                "Сообщение от " + msg.getSender(), msg.getText());
+                    } else {
+                        GeneralController gc = GeneralController.getInstance();
+                        if (gc != null) gc.incrementUnread(msg.getChatId());
+                    }
+                }
             });
         });
 
