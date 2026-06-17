@@ -1,6 +1,8 @@
 package ru.funduruk.net;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -13,14 +15,13 @@ public class ApiClient {
     private static final String BASE_URL = "http://localhost:8080";
     private static final HttpClient client = HttpClient.newHttpClient();
     private static final ObjectMapper mapper = new ObjectMapper();
+    @Getter
+    @Setter
     private static String token = null;
+    @Getter
     private static String currentUsername = null;
+    @Getter
     private static String currentTag = null;
-
-    public static void setToken(String t) { token = t; }
-    public static String getToken() { return token; }
-    public static String getCurrentUsername() { return currentUsername; }
-    public static String getCurrentTag() { return currentTag; }
 
     public static Map<String, Object> post(String path, Map<String, ?> body) throws Exception {
         String json = mapper.writeValueAsString(body);

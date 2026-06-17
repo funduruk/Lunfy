@@ -3,21 +3,17 @@ package ru.funduruk.controller;
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.ScaleTransition;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
-import javafx.scene.shape.SVGPath;
-import javafx.stage.Popup;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -33,22 +29,15 @@ import static ru.funduruk.manager.TitleBarManager.maximizeWithoutTaskbar;
 
 public class RegisterController extends Controller{
 
-    public BorderPane rootPane;
-    public ImageView background;
-    public TextField usernameField;
-    public TextField emailField;
-    public PasswordField passwordField;
-
     @FXML private HBox titleBar;
     @FXML Label statusLabel;
     @FXML private StackPane backButton;
     @FXML private Circle backBg;
-    @FXML private SVGPath backIcon;
-    @FXML private VBox statusBox;
 
 
     Rectangle2D screenBounds = Screen.getPrimary().getBounds();
     double width = screenBounds.getWidth();
+    public BorderPane rootPane;
 
     @FXML
     @Override
@@ -121,9 +110,11 @@ public class RegisterController extends Controller{
         }
     }
 
-    private Popup popup;
+    public PasswordField passwordField;
+    public TextField emailField;
+    public TextField usernameField;
 
-    public void handleRegister(ActionEvent actionEvent) {
+    public void handleRegister() {
         String username = usernameField.getText().trim();
         String email = emailField.getText().trim();
         String password = passwordField.getText();
@@ -159,6 +150,8 @@ public class RegisterController extends Controller{
             }
         }).start();
     }
+
+    @FXML private VBox statusBox;
 
     private void showError(String text) {
         statusLabel.setText(text);

@@ -5,13 +5,10 @@
     import javafx.fxml.FXML;
     import javafx.fxml.FXMLLoader;
     import javafx.scene.Parent;
-    import javafx.scene.Scene;
     import javafx.scene.control.Button;
     import javafx.scene.control.Label;
     import javafx.scene.control.ScrollPane;
     import javafx.scene.control.TextField;
-    import javafx.scene.image.Image;
-    import javafx.scene.image.ImageView;
     import javafx.scene.layout.StackPane;
     import javafx.scene.layout.VBox;
     import javafx.scene.layout.BorderPane;
@@ -35,24 +32,10 @@
 
     public class GeneralController {
 
-        @FXML private BorderPane generalRoot;
-        @FXML private HBox titleBar;
-        @FXML private VBox groupsPane;
-        @FXML private VBox chatListPane;
-        @FXML private StackPane contentPane;
-        @FXML private javafx.scene.control.Button friendsBtn;
-        @FXML private ImageView profileAvatar;
         @FXML private Label profileUsername;
-        @FXML private Label profileStatus;
-        @FXML private javafx.scene.shape.Circle statusDot;
 
         @Getter
         private static GeneralController instance;
-
-        private double xOffset, yOffset;
-
-        private ChatTabController chatController;
-
 
         @FXML
         public void initialize() throws Exception {
@@ -77,6 +60,9 @@
 
             loadChatsFromFriends();
         }
+
+        @FXML private javafx.scene.shape.Circle statusDot;
+        @FXML private Label profileStatus;
 
         public void updateStatusDisplay(String status) {
             if (profileStatus != null) {
@@ -123,6 +109,10 @@
             return "dm-" + users[0] + "-" + users[1];
         }
 
+        @FXML private StackPane contentPane;
+
+        private ChatTabController chatController;
+
         private void loadChatView() {
             try {
                 FXMLLoader loader = new FXMLLoader(
@@ -134,15 +124,6 @@
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
-
-        public void addChat(String chatId, String title) {
-            Label chat = new Label(title);
-            chat.setUserData(chatId);
-            chat.getStyleClass().add("chat-item");
-            chat.setOnMouseClicked(e -> openChat(chatId));
-            chatListPane.getChildren().add(chat);
-            MessageStore.getInstance().ensureChat(chatId);
         }
 
         @FXML private void openFriends() {
@@ -157,6 +138,8 @@
             }
         }
 
+        @FXML private BorderPane generalRoot;
+
         @FXML private void close() {
             ((Stage) generalRoot.getScene().getWindow()).close();
         }
@@ -170,6 +153,10 @@
             maximizeWithoutTaskbar(stage);
         }
 
+        @FXML private HBox titleBar;
+
+        private double xOffset, yOffset;
+
         private void enableWindowDragging() {
             titleBar.setOnMousePressed(e -> {
                 xOffset = e.getSceneX();
@@ -182,8 +169,6 @@
             });
         }
 
-        private double mouseDragOffsetX = 0;
-        private double mouseDragOffsetY = 0;
         private boolean isResizing = false;
 
         private void enableWindowResize() {
@@ -249,6 +234,8 @@
             contentPane.getChildren().setAll(view);
         }
 
+        @FXML private VBox groupsPane;
+
         private void loadGroupsView() {
             try {
                 FXMLLoader loader = new FXMLLoader(
@@ -262,6 +249,8 @@
                 e.printStackTrace();
             }
         }
+
+        @FXML private VBox chatListPane;
 
         public void addChatIfAbsent(String chatId, String title) {
             boolean exists = chatListPane.getChildren().stream()
@@ -282,7 +271,6 @@
             contentPane.getChildren().setAll(chatView);
 
             if (chatId.startsWith("gdm-")) {
-                // Открываем GroupDMView
                 if (groupDMViews.containsKey(chatId)) {
                     contentPane.getChildren().setAll(groupDMViews.get(chatId));
                 } else {
@@ -295,7 +283,7 @@
             String chatName = chatId;
             if (chatId.startsWith("dm-")) {
                 String[] parts = chatId.replace("dm-", "").split("-");
-                // Берём ту часть которая не является текущим пользователем
+                // uncorrected part user
                 String currentUser = ApiClient.getCurrentUsername().toLowerCase();
                 for (String part : parts) {
                     if (!part.equals(currentUser)) {
@@ -303,8 +291,6 @@
                         break;
                     }
                 }
-                // Делаем первую букву заглавной
-                chatName = chatName.substring(0, 1).toUpperCase() + chatName.substring(1);
             }
 
             final String finalChatName = chatName;
@@ -321,7 +307,7 @@
                             new com.fasterxml.jackson.core.type.TypeReference<>() {});
 
                     Platform.runLater(() -> {
-                        // Очищаем кэш перед загрузкой
+                        // clear hash before load
                         MessageStore.getInstance().clearChat(chatId);
                         MessageStore.getInstance().ensureChat(chatId);
 
@@ -342,12 +328,11 @@
 
                             MessageStore.getInstance().addMessage(chatId, msg);
                         }
-                        // Открываем чат после загрузки истории
                         chatController.openChat(chatId);
                     });
                 } catch (Exception e) {
                     e.printStackTrace();
-                    // Если сервер недоступен — просто открываем из кэша
+                    // chat load in hash
                     Platform.runLater(() -> chatController.openChat(chatId));
                 }
             }).start();
@@ -358,7 +343,6 @@
 
             new Thread(() -> {
                 try {
-                    // Загружаем участников и инфу о группе параллельно
                     String membersResp = ApiClient.getRaw("/api/groups/" + groupId + "/members");
                     String infoResp = ApiClient.getRaw("/api/groups/" + groupId);
 

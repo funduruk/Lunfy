@@ -5,13 +5,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.funduruk.dto.*;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Repository;
 import org.springframework.web.socket.*;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import ru.funduruk.lunfyServer.entity.User;
 import ru.funduruk.lunfyServer.repository.UserRepository;
 import ru.funduruk.lunfyServer.service.MessageService;
-import ru.funduruk.lunfyServer.util.AESUtil;
 import tools.jackson.databind.ObjectMapper;
 
 @Component
@@ -19,15 +17,11 @@ import tools.jackson.databind.ObjectMapper;
 @RequiredArgsConstructor
 public class ChatWebSocketHandler extends TextWebSocketHandler {
 
-    private final ObjectMapper mapper = new ObjectMapper();
-    private final SessionRegistry registry = new SessionRegistry();
-    private final UserRepository userRepository;
-    private final MessageService messageService;
-
-
     public void sendToUserByUsername(String username, EnvelopeDTO env) throws Exception {
         sendToUser(username, env);
     }
+
+    private final SessionRegistry registry = new SessionRegistry();
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
@@ -52,6 +46,11 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         registry.removeBySession(session);
     }
+
+    private final ObjectMapper mapper = new ObjectMapper();
+
+    private final MessageService messageService;
+    private final UserRepository userRepository;
 
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
@@ -142,15 +141,15 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                 sendToUserByUsername(chunk.getToUser(), env);
             }
 
-            case "SCREEN_FRAME" -> {
+            case "SCREEN_FRAME", "SCREEN_SHARE_START", "SCREEN_SHARE_STOP" -> {
                 String dataJson = mapper.writeValueAsString(env.getData());
                 ScreenFrameDTO frame = mapper.readValue(dataJson, ScreenFrameDTO.class);
                 sendToUserByUsername(frame.getToUser(), env);
             }
 
-            case "SCREEN_SHARE_START", "SCREEN_SHARE_STOP" -> {
+            case "VIDEO_FRAME", "VIDEO_START", "VIDEO_STOP" -> {
                 String dataJson = mapper.writeValueAsString(env.getData());
-                ScreenFrameDTO frame = mapper.readValue(dataJson, ScreenFrameDTO.class);
+                VideoFrameDTO frame = mapper.readValue(dataJson, VideoFrameDTO.class);
                 sendToUserByUsername(frame.getToUser(), env);
             }
         }

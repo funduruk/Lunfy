@@ -21,14 +21,12 @@ public class GroupService {
         group.setOwner(owner);
         group = groupRepository.save(group);
 
-        // Создаём участника-владельца
         GroupMember member = new GroupMember();
         member.setGroup(group);
         member.setUser(owner);
         member.setRole(GroupMember.Role.ADMIN);
         groupMemberRepository.save(member);
 
-        // Создаём дефолтный канал
         Channel general = new Channel();
         general.setName("general");
         general.setType(Channel.ChannelType.TEXT);

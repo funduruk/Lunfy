@@ -46,6 +46,9 @@ dependencies {
     // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    //camera
+    implementation 'com.github.sarxos:webcam-capture:0.3.12'
 }
 
 tasks.named('test') {

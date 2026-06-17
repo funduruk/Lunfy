@@ -1,8 +1,5 @@
 package ru.funduruk.manager;
 
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-
 public class FieldsManager {
 
     public static boolean checkPassword(String pass) {

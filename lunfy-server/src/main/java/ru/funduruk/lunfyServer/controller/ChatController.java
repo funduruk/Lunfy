@@ -2,7 +2,6 @@ package ru.funduruk.lunfyServer.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import ru.funduruk.lunfyServer.entity.Message;
 import ru.funduruk.lunfyServer.service.MessageService;

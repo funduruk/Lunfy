@@ -13,7 +13,6 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.funduruk.model.ChatChannel;
 import ru.funduruk.model.Group;
-import ru.funduruk.model.GroupMember;
 import ru.funduruk.net.ApiClient;
 
 import java.util.ArrayList;
@@ -21,13 +20,6 @@ import java.util.List;
 import java.util.Map;
 
 public class GroupsTabController {
-
-    @FXML
-    private VBox groupsPane;
-
-    private final List<Group> groups = new ArrayList<>();
-    @Setter
-    private GeneralController generalController;
 
     @Getter
     private static GroupsTabController instance;
@@ -37,6 +29,8 @@ public class GroupsTabController {
         loadGroupsFromServer();
         instance = this;
     }
+
+    private final List<Group> groups = new ArrayList<>();
 
     public void loadGroupsFromServer() {
         new Thread(() -> {
@@ -55,7 +49,6 @@ public class GroupsTabController {
                         String name = (String) g.get("name");
 
                         if ("DM".equals(type)) {
-                            // Это групповой DM — добавляем в sidebar
                             String chatId = "gdm-" + groupId;
                             GeneralController.getInstance().addChatIfAbsent(chatId, name);
                             // TODO: загрузка GroupDMView при клике
@@ -92,6 +85,9 @@ public class GroupsTabController {
         }).start();
     }
 
+    @FXML
+    private VBox groupsPane;
+
     public void renderGroups() {
         groupsPane.getChildren().clear();
 
@@ -100,7 +96,6 @@ public class GroupsTabController {
             btn.getStyleClass().add("group-btn");
 
             if (group.getAvatarPath() != null && !group.getAvatarPath().isBlank()) {
-                // Грузим через HTTP endpoint
                 String url = "http://localhost:8080/api/groups/" + group.getId() + "/avatar";
                 javafx.scene.image.ImageView avatar = new javafx.scene.image.ImageView(
                         new javafx.scene.image.Image(url, 42, 42, true, true, true)
@@ -113,7 +108,6 @@ public class GroupsTabController {
                 avatar.setClip(clip);
                 btn.setGraphic(avatar);
             } else {
-                // Текстовая иконка если аватарки нет
                 String initials = group.getName().length() >= 2
                         ? group.getName().substring(0, 2).toUpperCase()
                         : group.getName().substring(0, 1).toUpperCase();
@@ -122,7 +116,6 @@ public class GroupsTabController {
                 btn.setGraphic(lbl);
             }
 
-            // Tooltip с названием группы
             Tooltip tooltip = new Tooltip(group.getName());
             tooltip.setStyle("""
             -fx-background-color: #13112b;
@@ -138,7 +131,6 @@ public class GroupsTabController {
             groupsPane.getChildren().add(btn);
         }
 
-        // Кнопка создать группу
         Button addBtn = new Button("+");
         addBtn.getStyleClass().add("group-add-btn");
         Tooltip addTooltip = new Tooltip("Создать сообщество");
@@ -153,6 +145,9 @@ public class GroupsTabController {
         addBtn.setOnAction(e -> openCreateGroupPopup(addBtn));
         groupsPane.getChildren().add(addBtn);
     }
+
+    @Setter
+    private GeneralController generalController;
 
     private void openGroup(Group group) {
         try {
@@ -294,7 +289,7 @@ public class GroupsTabController {
     }
 
     public static boolean isCurrentUserAdminInGroup(String channelId) {
-        // Проверяем все группы текущего пользователя
+        // check all groups user
         for (Group g : instance.groups) {
             boolean channelInGroup = g.getTextChannels().stream()
                     .anyMatch(ch -> ch.getId().equals(channelId));
@@ -306,5 +301,4 @@ public class GroupsTabController {
         }
         return false;
     }
-
 }

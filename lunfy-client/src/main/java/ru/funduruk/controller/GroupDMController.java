@@ -24,17 +24,9 @@ public class GroupDMController {
 
     @FXML private Label groupNameLabel;
     @FXML private Label groupInitial;
-    @FXML private Label membersCountLabel;
-    @FXML private VBox chatList;
-    @FXML private VBox membersList;
-    @FXML private ScrollPane scrollPane;
     @FXML private TextArea messageField;
-    @FXML private Button muteBtnGDM;
 
     private GroupDM groupDM;
-    @Setter
-    private GeneralController generalController;
-    private boolean muted = false;
 
     public void setGroupDM(GroupDM groupDM) {
         this.groupDM = groupDM;
@@ -78,6 +70,8 @@ public class GroupDMController {
         WSClient.send(new EnvelopeDTO("CHAT_MESSAGE", msg));
         messageField.clear();
     }
+
+    @FXML private Label membersCountLabel;
 
     @FXML
     private void addMember() {
@@ -136,11 +130,18 @@ public class GroupDMController {
         }).start();
     }
 
+    @FXML private Button muteBtnGDM;
+
+    private boolean muted = false;
+
     @FXML
     private void toggleMute() {
         muted = !muted;
         muteBtnGDM.setText(muted ? "🔕" : "🔔");
     }
+
+    @Setter
+    private GeneralController generalController;
 
     @FXML
     private void openSettings() {
@@ -153,6 +154,8 @@ public class GroupDMController {
         menu.getItems().add(deleteItem);
         menu.show(muteBtnGDM, javafx.geometry.Side.BOTTOM, 0, 0);
     }
+
+    @FXML private VBox membersList;
 
     private void renderMembers() {
         membersList.getChildren().clear();
@@ -169,7 +172,8 @@ public class GroupDMController {
             dot.setStyle("-fx-fill: #3ba55d;");
 
             Label name = new Label(member);
-            // Создателя помечаем особым цветом
+
+            // Paint owner
             boolean isMemberOwner = member.equals(owner);
             name.setStyle("-fx-text-fill: " + (isMemberOwner ? "#f0b132" : "white") +
                     "; -fx-font-size: 12px;");
@@ -192,8 +196,7 @@ public class GroupDMController {
             if (canKick) {
                 Button removeBtn = new Button(kickLabel);
                 removeBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #aaa; -fx-cursor: hand;");
-                String memberToKick = member;
-                removeBtn.setOnAction(e -> kickFromGroupDM(memberToKick));
+                removeBtn.setOnAction(e -> kickFromGroupDM(member));
                 row.getChildren().add(removeBtn);
             }
 
@@ -233,6 +236,8 @@ public class GroupDMController {
         membersCountLabel.setText(count + " " + (count == 1 ? "участник" : "участника"));
     }
 
+    @FXML private VBox chatList;
+
     private void addMessage(MessageDTO msg) {
         boolean mine = ApiClient.getCurrentUsername().equals(msg.getSender());
 
@@ -257,7 +262,6 @@ public class GroupDMController {
                 : "-fx-background-color: #221E33; -fx-text-fill: white; -fx-padding: 6 10; -fx-background-radius: 12;"
         );
 
-        // Обёртка чтобы пузырёк не растягивался
         HBox messageWrapper = new HBox(messageLabel);
         messageWrapper.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(messageWrapper, Priority.ALWAYS);
@@ -280,6 +284,8 @@ public class GroupDMController {
         scrollToBottom();
     }
 
+    @FXML private ScrollPane scrollPane;
+
     private void scrollToBottom() {
         Platform.runLater(() -> {
             final double start = scrollPane.getVvalue();
@@ -297,11 +303,5 @@ public class GroupDMController {
             };
             timer.start();
         });
-    }
-
-    private String ownerUsername;
-
-    public void setOwnerUsername(String username) {
-        this.ownerUsername = username;
     }
 }

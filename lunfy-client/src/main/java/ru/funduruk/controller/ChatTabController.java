@@ -11,7 +11,6 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
@@ -27,21 +26,20 @@ import ru.funduruk.net.ChatEventBus;
 import ru.funduruk.net.WSClient;
 
 public class ChatTabController {
-
     private static final Logger log = LoggerFactory.getLogger(ChatTabController.class);
+    private final Label typingIndicator = new Label("Friend is typing...");
+
     public ScrollPane scrollPane;
+
     @FXML private VBox chatList;
     @FXML private TextArea messageField;
-
-    private String currentChatId = null;
-
-
-    private final Label typingIndicator = new Label("Friend is typing...");
 
     @Getter
     public static ChatTabController instance;
 
     private long lastTypingSent = 0;
+    private String currentChatId = null;
+
 
     @FXML
     public void initialize() {
@@ -50,7 +48,6 @@ public class ChatTabController {
         scrollPane.setFitToWidth(true);
         chatList.setFillWidth(true);
         chatList.prefWidthProperty().bind(scrollPane.widthProperty().subtract(20));
-
 
         instance = this;
 
@@ -69,14 +66,9 @@ public class ChatTabController {
                     }
                 }
             }
-
         });
 
         ChatEventBus.setOnMessage(msg -> {
-
-
-            log.trace("UI RECEIVED MESSAGE: {}", msg.getText());
-
             Platform.runLater(() -> {
                 MessageStore.getInstance().addMessage(msg.getChatId(), msg);
                 if (msg.getChatId().equals(currentChatId)) addMessage(msg);
@@ -120,27 +112,10 @@ public class ChatTabController {
         });
     }
 
-    public void addChat(String chatId, String title) {
-        MessageStore.getInstance().ensureChat(chatId);
-        Label chat = new Label(title);
-        chat.getStyleClass().add("chat-item");
-        chat.setOnMouseClicked(e -> openChat(chatId));
-        chatList.getChildren().add(chat);
-    }
-
-    public void addMessageToChat(String chatId, String sender, String text) {
-        MessageDTO msg = new MessageDTO();
-        msg.setChatId(chatId);
-        msg.setSender(sender);
-        msg.setText(text);
-        msg.setMine(false);
-        MessageStore.getInstance().addMessage(chatId, msg);
-        if (chatId.equals(currentChatId)) addMessage(msg);
-    }
-
     public void openChat(String chatId) {
         currentChatId = chatId;
         chatList.getChildren().clear();
+
         for (MessageDTO msg : MessageStore.getInstance().getMessages(chatId)) {
             addMessage(msg);
         }
@@ -160,12 +135,12 @@ public class ChatTabController {
         msg.setSender(ApiClient.getCurrentUsername());
         msg.setText(text);
         msg.setTimestamp(System.currentTimeMillis());
-        System.out.println("\n\n CURRENT TIME: " + msg.getTimestamp() + "\n\n");
         msg.setMine(true);
 
         WSClient.send(new EnvelopeDTO("CHAT_MESSAGE", msg));
         messageField.clear();
     }
+
     private static final String MY_USER_ID = ApiClient.getCurrentUsername();
 
     private void addMessage(MessageDTO msg) {
@@ -202,7 +177,6 @@ public class ChatTabController {
         HBox.setHgrow(vbox, javafx.scene.layout.Priority.ALWAYS);
         vbox.getChildren().addAll(metaBox, messageWrapper);
 
-        // === АВАТАРКА для чужих сообщений ===
         HBox wrapper = new HBox(8);
         wrapper.setPadding(new javafx.geometry.Insets(4, 10, 4, 10));
         HBox.setHgrow(wrapper, javafx.scene.layout.Priority.ALWAYS);
@@ -216,7 +190,6 @@ public class ChatTabController {
             wrapper.setAlignment(Pos.CENTER_LEFT);
             metaBox.setAlignment(Pos.CENTER_LEFT);
 
-            // Аватарка собеседника
             StackPane avatar = buildUserAvatar(msg.getSender(), 32);
             wrapper.getChildren().addAll(avatar, vbox);
         }
@@ -225,7 +198,6 @@ public class ChatTabController {
         MenuItem deleteItem = new MenuItem("🗑 Удалить сообщение");
         deleteItem.setStyle("-fx-text-fill: #ed4245;");
         deleteItem.setOnAction(e -> deleteMessage(msg, wrapper));
-
 
         boolean canDelete = mine || isAdminInCurrentChat();
         if (canDelete) {
@@ -285,9 +257,9 @@ public class ChatTabController {
                     size / 2, size / 2, size / 2);
             iv.setClip(clip);
 
-            // При успешной загрузке заменяем инициал
+            // Successfully loading - change
             img.errorProperty().addListener((obs, oldVal, newVal) -> {
-                // Ошибка загрузки — оставляем инициал
+                // Error loading - stay
             });
             img.progressProperty().addListener((obs, oldVal, newVal) -> {
                 if (newVal.doubleValue() >= 1.0 && !img.isError()) {
@@ -307,12 +279,12 @@ public class ChatTabController {
     private void deleteMessage(MessageDTO msg, HBox wrapper) {
         new Thread(() -> {
             try {
-                // Отправляем запрос на сервер
+                // send request on server
                 if (msg.getId() != 0) {
                     ApiClient.delete("/api/chats/messages/" + msg.getId());
                 }
 
-                // Удаляем локально из кэша
+                // local delete in hash
                 MessageStore.getInstance().getMessages(msg.getChatId())
                         .removeIf(m -> m.getId() == msg.getId()
                                 && m.getText().equals(msg.getText()));
@@ -321,7 +293,7 @@ public class ChatTabController {
                     chatList.getChildren().remove(wrapper);
                 });
 
-                // Уведомляем собеседника через WebSocket
+                // notify interlocutor
                 org.funduruk.dto.EnvelopeDTO env = new org.funduruk.dto.EnvelopeDTO(
                         "DELETE_MESSAGE", msg
                 );
@@ -403,7 +375,6 @@ public class ChatTabController {
     }
 
     @FXML private Label chatName;
-    @FXML private Label chatStatusLabel;
     @FXML private ImageView chatAvatar;
     @FXML private Label chatAvatarInitial;
     @FXML private Button muteBtn;
@@ -477,12 +448,11 @@ public class ChatTabController {
 
         String chatIdToDelete = currentChatId;
 
-        // Отправляем через WebSocket — сервер сам удалит из БД и уведомит собеседника
         org.funduruk.dto.MessageDTO msg = new org.funduruk.dto.MessageDTO();
         msg.setChatId(chatIdToDelete);
         ru.funduruk.net.WSClient.send(new org.funduruk.dto.EnvelopeDTO("DELETE_CHAT", msg));
 
-        // Очищаем локально
+        // clear local
         MessageStore.getInstance().clearChat(chatIdToDelete);
         chatList.getChildren().clear();
         GeneralController.getInstance().removeChat(chatIdToDelete);

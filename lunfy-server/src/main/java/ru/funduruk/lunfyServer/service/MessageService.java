@@ -19,13 +19,12 @@ public class MessageService {
         Message message = new Message();
         message.setSender(sender);
         message.setChatId(chatId);
-        message.setText(AESUtil.encrypt(text)); // шифруем перед сохранением
+        message.setText(AESUtil.encrypt(text));
         return messageRepository.save(message);
     }
 
     public List<Message> getHistory(String chatId) {
         List<Message> messages = messageRepository.findByChatIdOrderByTimestampAsc(chatId);
-        // расшифровываем перед отдачей
         messages.forEach(m -> m.setText(AESUtil.decrypt(m.getText())));
         return messages;
     }

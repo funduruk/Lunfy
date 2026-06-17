@@ -18,7 +18,6 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import ru.funduruk.manager.SceneManager;
-import ru.funduruk.manager.TitleBarManager;
 import ru.funduruk.model.UserProfile;
 import ru.funduruk.net.ApiClient;
 
@@ -30,37 +29,10 @@ import static ru.funduruk.manager.TitleBarManager.maximizeWithoutTaskbar;
 
 public class LoginController extends Controller{
 
-
-    @FXML
-    public BorderPane rootPane;
-
-    @FXML
-    public ImageView backgroundLogin;
-    public Button registerBtn;
-
-    @FXML
-    private TextField usernameField;
-
-    @FXML
-    private PasswordField passwordField;
-
-    @FXML
-    private Label statusLabel;
-
-    @FXML
-    VBox statusBox;
-
-    @FXML
-    private ImageView logo;
-
-    @FXML
-    private HBox mainBox;
-
-    @FXML
-    private VBox loginWrapper;
-
-    Rectangle2D screenBounds = Screen.getPrimary().getBounds();
-    double width = screenBounds.getWidth();
+    @FXML private TextField usernameField;
+    @FXML private PasswordField passwordField;
+    @FXML private Label statusLabel;
+    @FXML VBox statusBox;
 
     @FXML
     private void handleLogin() {
@@ -73,7 +45,6 @@ public class LoginController extends Controller{
             return;
         }
 
-        // Запрос в отдельном потоке чтобы не блокировать UI
         new Thread(() -> {
             try {
                 Map<String, Object> result = ApiClient.login(username, password);
@@ -109,7 +80,12 @@ public class LoginController extends Controller{
     }
 
     @FXML private HBox titleBar;
+    @FXML public ImageView backgroundLogin;
+    @FXML public BorderPane rootPane;
 
+    public Button registerBtn;
+    Rectangle2D screenBounds = Screen.getPrimary().getBounds();
+    double width = screenBounds.getWidth();
 
     @FXML
     public void initialize() {
@@ -162,6 +138,9 @@ public class LoginController extends Controller{
         }
     }
 
+    @FXML private VBox loginWrapper;
+    @FXML private ImageView logo;
+
     private void playLoginSuccessAnimation() {
 
         double loginWidth = loginWrapper.getWidth();
@@ -190,6 +169,8 @@ public class LoginController extends Controller{
 
         animation.play();
     }
+
+    @FXML private HBox mainBox;
 
     private ParallelTransition getParallelTransition(double loginWidth, ScaleTransition scale) {
         TranslateTransition moveLeft =
@@ -237,7 +218,4 @@ public class LoginController extends Controller{
             scaleOut.playFromStart();
         });
     }
-
-
-
 }

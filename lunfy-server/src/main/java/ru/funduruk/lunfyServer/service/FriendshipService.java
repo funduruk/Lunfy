@@ -15,29 +15,28 @@ public class FriendshipService {
 
     private final FriendshipRepository friendshipRepository;
 
-    public Friendship sendRequest(User sender, User receiver) {
-        // Проверяем что заявка не отправлена ранее
+    public void sendRequest(User sender, User receiver) {
         friendshipRepository.findBySenderAndReceiver(sender, receiver)
                 .ifPresent(f -> { throw new RuntimeException("Заявка уже отправлена"); });
 
         Friendship friendship = new Friendship();
         friendship.setSender(sender);
         friendship.setReceiver(receiver);
-        return friendshipRepository.save(friendship);
+        friendshipRepository.save(friendship);
     }
 
-    public Friendship accept(Long friendshipId) {
+    public void accept(Long friendshipId) {
         Friendship friendship = friendshipRepository.findById(friendshipId)
                 .orElseThrow(() -> new RuntimeException("Заявка не найдена"));
         friendship.setStatus(Friendship.FriendshipStatus.ACCEPTED);
-        return friendshipRepository.save(friendship);
+        friendshipRepository.save(friendship);
     }
 
-    public Friendship decline(Long friendshipId) {
+    public void decline(Long friendshipId) {
         Friendship friendship = friendshipRepository.findById(friendshipId)
                 .orElseThrow(() -> new RuntimeException("Заявка не найдена"));
         friendship.setStatus(Friendship.FriendshipStatus.DECLINED);
-        return friendshipRepository.save(friendship);
+        friendshipRepository.save(friendship);
     }
 
     public List<Friendship> getIncoming(User user) {

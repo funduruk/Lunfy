@@ -37,17 +37,29 @@ application {
     mainClass = 'ru.funduruk.MainApplication'
 }
 dependencies {
+    //Java-FX
     implementation 'org.controlsfx:controlsfx:11.2.1'
     implementation 'org.kordamp.ikonli:ikonli-javafx:12.2.0'
     implementation 'org.kordamp.bootstrapfx:bootstrapfx-core:0.4.0'
+
+    //Lombok
     compileOnly 'org.projectlombok:lombok:1.18.34'
     annotationProcessor 'org.projectlombok:lombok:1.18.34'
+
+    //Jackson
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.0'
+
+    //WebSocket
     implementation("org.java-websocket:Java-WebSocket:1.6.0")
 
+    //Logging
     implementation("org.apache.logging.log4j:log4j-core:2.25.3")
 
+    //lunfy-common module
     implementation 'ru.funduruk:lunfy-common'
+
+    //camera
+    implementation 'com.github.sarxos:webcam-capture:0.3.12'
 }
 
 javafx {

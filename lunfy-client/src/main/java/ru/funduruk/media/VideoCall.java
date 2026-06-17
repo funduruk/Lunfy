@@ -1,65 +1,72 @@
 package ru.funduruk.media;
 
+import com.github.sarxos.webcam.Webcam;
+import com.github.sarxos.webcam.WebcamResolution;
 import org.funduruk.dto.EnvelopeDTO;
-import org.funduruk.dto.ScreenFrameDTO;
+import org.funduruk.dto.VideoFrameDTO;
 import ru.funduruk.net.WSClient;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.util.Base64;
 import java.util.Iterator;
+import java.util.function.Consumer;
 
-public class ScreenShare {
+public class VideoCall {
 
-    private final Rectangle screenRect;
     private final String fromUser;
     private final String toUser;
     private final String chatId;
 
-    public ScreenShare(String fromUser, String toUser, String chatId) {
+    private final Consumer<BufferedImage> localPreview;
+
+    public VideoCall(String fromUser, String toUser, String chatId,
+                     Consumer<BufferedImage> localPreview) {
         this.fromUser = fromUser;
         this.toUser = toUser;
         this.chatId = chatId;
-        this.screenRect = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
+        this.localPreview = localPreview;
     }
 
-    private Robot robot;
     private volatile boolean running = false;
+    private Webcam webcam;
 
     public void start() {
         try {
-            robot = new Robot();
+            webcam = Webcam.getDefault();
+            if (webcam == null) {
+                System.err.println("Камера не найдена");
+                return;
+            }
+            webcam.setViewSize(WebcamResolution.VGA.getSize()); // 640x480
+            webcam.open();
             running = true;
-            new Thread(this::captureLoop, "screen-capture").start();
-            System.out.println("ScreenShare запущен");
-        } catch (AWTException e) {
-            System.err.println("Не удалось создать Robot: " + e.getMessage());
+            new Thread(this::captureLoop, "video-capture").start();
+            System.out.println("VideoCall запущен");
+        } catch (Exception e) {
+            System.err.println("Не удалось открыть камеру: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    private static final int FPS = 15;
-    private int lastFrameHash = 0;
+    private static final int FPS = 12;
 
     private void captureLoop() {
         long frameInterval = 1000 / FPS;
         while (running) {
             long startTime = System.currentTimeMillis();
             try {
-                BufferedImage screen = robot.createScreenCapture(screenRect);
-                BufferedImage scaled = scaleImage(screen);
+                BufferedImage frame = webcam.getImage();
+                if (frame != null) {
+                    if (localPreview != null) localPreview.accept(frame);
 
-                int hash = quickHash(scaled);
-                if (hash != lastFrameHash) {
-                    lastFrameHash = hash;
-                    String encoded = encodeJpeg(scaled);
-                    ScreenFrameDTO dto = new ScreenFrameDTO(fromUser, toUser, chatId, encoded);
-                    WSClient.send(new EnvelopeDTO("SCREEN_FRAME", dto));
+                    String encoded = encodeJpeg(frame);
+                    VideoFrameDTO dto = new VideoFrameDTO(fromUser, toUser, chatId, encoded);
+                    WSClient.send(new EnvelopeDTO("VIDEO_FRAME", dto));
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -71,31 +78,6 @@ public class ScreenShare {
         }
     }
 
-    private int quickHash(BufferedImage img) {
-        int hash = 7;
-        for (int y = 0; y < img.getHeight(); y += 16) {
-            for (int x = 0; x < img.getWidth(); x += 16) {
-                hash = hash * 31 + img.getRGB(x, y);
-            }
-        }
-        return hash;
-    }
-
-    private static final int TARGET_WIDTH = 1280;
-
-    private BufferedImage scaleImage(BufferedImage src) {
-        if (src.getWidth() <= TARGET_WIDTH) return src;
-        double ratio = (double) TARGET_WIDTH / src.getWidth();
-        int newW = TARGET_WIDTH;
-        int newH = (int) (src.getHeight() * ratio);
-
-        BufferedImage scaled = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g = scaled.createGraphics();
-        g.drawImage(src, 0, 0, newW, newH, null);
-        g.dispose();
-        return scaled;
-    }
-
     private static final float JPEG_QUALITY = 0.5f;
 
     private String encodeJpeg(BufferedImage img) throws Exception {
@@ -105,18 +87,19 @@ public class ScreenShare {
         ImageWriteParam param = writer.getDefaultWriteParam();
         param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
         param.setCompressionQuality(JPEG_QUALITY);
-
         try (ImageOutputStream ios = ImageIO.createImageOutputStream(baos)) {
             writer.setOutput(ios);
             writer.write(null, new javax.imageio.IIOImage(img, null, null), param);
         }
         writer.dispose();
-
         return Base64.getEncoder().encodeToString(baos.toByteArray());
     }
 
     public void stop() {
         running = false;
-        System.out.println("ScreenShare остановлен");
+        if (webcam != null && webcam.isOpen()) {
+            webcam.close();
+        }
+        System.out.println("VideoCall остановлен");
     }
 }

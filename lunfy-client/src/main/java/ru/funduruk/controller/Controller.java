@@ -8,10 +8,8 @@ import ru.funduruk.manager.TitleBarManager;
 
 public abstract class Controller {
 
-    public BorderPane rootPane;
     public ImageView background;
-    @FXML
-    private HBox titleBar;
+
     @FXML
     public void initialize( BorderPane rootPane, HBox titleBar ) {
         TitleBarManager.enableWindowDragging(titleBar);

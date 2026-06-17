@@ -7,7 +7,6 @@ import javafx.scene.layout.StackPane;
 
 public class GroupItemController {
 
-    @FXML private StackPane root;
     @FXML private ImageView avatar;
 
     private boolean selected = false;
@@ -15,6 +14,8 @@ public class GroupItemController {
     public void setAvatar(Image image) {
         avatar.setImage(image);
     }
+
+    @FXML private StackPane root;
 
     @FXML
     private void initialize() {

@@ -17,12 +17,11 @@ public class AuthController {
 
     private final UserService userService;
     private final JwtService jwtService;
-    private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody Map<String, String> body) {
         try {
-            // Генерируем случайный 4-значный тег
+            // random tag
             String tag = String.format("%04d", (int)(Math.random() * 10000));
 
             User user = userService.register(
@@ -42,6 +41,8 @@ public class AuthController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
+    private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> body) {

@@ -18,11 +18,7 @@ public class ProfileController extends Controller {
 
     @FXML public BorderPane rootPane;
     @FXML public HBox titleBar;
-    @FXML private StackPane avatarContainer;
-    @FXML private Circle avatarCircle;
     @FXML private Label avatarInitial;
-    @FXML private ImageView avatarImage;
-    @FXML private Circle statusDot;
     @FXML private Label displayNameLabel;
     @FXML private Label tagLabel;
     @FXML private TextField usernameField;
@@ -45,19 +41,19 @@ public class ProfileController extends Controller {
         displayNameLabel.setText(username);
         tagLabel.setText("#" + profile.getTag());
 
-        // Инициал в аватарке
         if (username != null && !username.isEmpty()) {
             avatarInitial.setText(username.substring(0, 1).toUpperCase());
         }
 
-        // Загружаем аватарку с сервера
         loadAvatar(username);
 
-        // Цвет статус-точки
+        // color status
         updateStatusDot(profile.getStatus());
 
         statusCombo.valueProperty().addListener((obs, oldVal, newVal) -> updateStatusDot(newVal));
     }
+
+    @FXML private ImageView avatarImage;
 
     private void loadAvatar(String username) {
         try {
@@ -74,6 +70,8 @@ public class ProfileController extends Controller {
         } catch (Exception ignored) {}
     }
 
+    @FXML private Circle statusDot;
+
     private void updateStatusDot(String status) {
         if (status == null) return;
         switch (status) {
@@ -82,6 +80,8 @@ public class ProfileController extends Controller {
             default -> statusDot.setFill(Color.web("#747f8d"));
         }
     }
+
+    @FXML private StackPane avatarContainer;
 
     @FXML
     private void uploadAvatar() {
@@ -93,7 +93,7 @@ public class ProfileController extends Controller {
         File file = chooser.showOpenDialog(avatarContainer.getScene().getWindow());
         if (file == null) return;
 
-        // Загружаем на сервер
+        // load to server
         new Thread(() -> {
             try {
                 String boundary = "----FormBoundary" + System.currentTimeMillis();
@@ -111,7 +111,7 @@ public class ProfileController extends Controller {
                 System.out.println("User avatar uploaded: " + response.body());
 
                 javafx.application.Platform.runLater(() -> {
-                    // Перезагружаем аватарку
+                    // reload avatar
                     loadAvatar(UserProfile.getInstance().getUsername());
                 });
             } catch (Exception e) {
@@ -154,7 +154,6 @@ public class ProfileController extends Controller {
 
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                // Сбрасываем токен и данные
                 ApiClient.setToken(null);
                 SceneManager.setScene("/fxml/LoginView.fxml", "/css/style.css");
             }

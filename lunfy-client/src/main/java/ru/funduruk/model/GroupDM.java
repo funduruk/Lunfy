@@ -1,6 +1,9 @@
 package ru.funduruk.model;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.List;
 
 @Data
@@ -10,9 +13,9 @@ public class GroupDM {
     private String avatarPath;
     private List<String> members;
 
+    @Setter
+    @Getter
     private String ownerUsername;
-    public String getOwnerUsername() { return ownerUsername; }
-    public void setOwnerUsername(String s) { this.ownerUsername = s; }
 
     public GroupDM(String id, String name, List<String> members) {
         this.id = id;

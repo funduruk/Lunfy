@@ -2,7 +2,6 @@ package ru.funduruk.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
@@ -11,6 +10,7 @@ import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Circle;
+import lombok.Setter;
 import ru.funduruk.model.ChatChannel;
 import ru.funduruk.model.Group;
 import ru.funduruk.model.GroupMember;
@@ -27,25 +27,9 @@ import java.util.Map;
 public class GroupViewController {
 
     @FXML private Label groupNameLabel;
-    @FXML private Label membersCountLabel;
-    @FXML private VBox textChannelList;
-    @FXML private VBox voiceChannelList;
-    @FXML private StackPane chatPane;
-    @FXML private VBox adminsList;
-    @FXML private VBox membersList;
-    @FXML private VBox channelPanel;
-    @FXML private VBox membersPanel;
-    @FXML private Button hideChannelsBtn;
-    @FXML private Button hideMembersBtn;
 
     private Group group;
-    private GeneralController generalController;
-    private boolean channelPanelVisible = true;
-    private boolean membersPanelVisible = true;
-
-    public void setGeneralController(GeneralController ctrl) {
-        this.generalController = ctrl;
-    }
+    @Setter private GeneralController generalController;
 
     public void setGroup(Group group) {
         this.group = group;
@@ -54,7 +38,7 @@ public class GroupViewController {
         loadMembersFromServer(group.getId());
 
         if (!group.getTextChannels().isEmpty()) {
-            openChannel(group.getTextChannels().get(0));
+            openChannel(group.getTextChannels().getFirst());
         }
 
         ChatEventBus.setOnGroupMemberUpdate((type, data) -> {
@@ -64,7 +48,7 @@ public class GroupViewController {
             Platform.runLater(() -> {
                 if ("GROUP_MEMBER_KICKED".equals(type)) {
                     String kicked = (String) data.get("username");
-                    // Если кикнули меня — выходим из группы
+                    // if kicked - leave
                     if (kicked.equals(ApiClient.getCurrentUsername())) {
                         if (generalController != null) {
                             generalController.setContent(new javafx.scene.layout.StackPane());
@@ -79,7 +63,8 @@ public class GroupViewController {
         });
     }
 
-    // ===== КАНАЛЫ =====
+    @FXML private VBox textChannelList;
+    @FXML private VBox voiceChannelList;
 
     private void renderChannels() {
         textChannelList.getChildren().clear();
@@ -92,8 +77,8 @@ public class GroupViewController {
             voiceChannelList.getChildren().add(buildChannelItem(ch));
         }
 
-        // Кнопки добавления каналов — только для админа
-        // Показываем всегда, проверка роли идёт после загрузки участников
+        // Buttons add channels only for admin
+        // Show always, check role after load members
         Button addText = new Button("+ Текстовый канал");
         addText.setStyle("-fx-background-color: transparent; -fx-text-fill: #aaa; -fx-font-size: 11px; -fx-cursor: hand;");
         addText.setOnAction(e -> showAddChannelPopup(false));
@@ -125,6 +110,8 @@ public class GroupViewController {
         return row;
     }
 
+    @FXML private StackPane chatPane;
+
     private void openChannel(ChatChannel channel) {
         if (!channel.isVoice()) {
             try {
@@ -134,7 +121,7 @@ public class GroupViewController {
                 Parent view = loader.load();
                 ChatTabController ctrl = loader.getController();
 
-                // Загружаем историю канала
+                // load history
                 new Thread(() -> {
                     try {
                         String response = ApiClient.getRaw("/api/chats/" + channel.getId() + "/messages");
@@ -260,8 +247,6 @@ public class GroupViewController {
         }).start();
     }
 
-    // ===== УЧАСТНИКИ =====
-
     private void loadMembersFromServer(String groupId) {
         new Thread(() -> {
             try {
@@ -287,6 +272,10 @@ public class GroupViewController {
             }
         }).start();
     }
+
+    @FXML private VBox adminsList;
+    @FXML private VBox membersList;
+    @FXML private Label membersCountLabel;
 
     private void renderMembers() {
         adminsList.getChildren().clear();
@@ -324,7 +313,6 @@ public class GroupViewController {
         boolean isMe = member.getUsername().equals(ApiClient.getCurrentUsername());
 
         if (isMe) {
-            // Для себя — только "Покинуть группу"
             row.setOnMouseClicked(e -> {
                 if (e.getButton() == javafx.scene.input.MouseButton.SECONDARY) {
                     ContextMenu menu = new ContextMenu();
@@ -336,7 +324,6 @@ public class GroupViewController {
                 }
             });
         } else if (isCurrentUserAdmin()) {
-            // Для других — роль и исключение
             row.setOnMouseClicked(e -> {
                 if (e.getButton() == javafx.scene.input.MouseButton.SECONDARY) {
                     ContextMenu menu = new ContextMenu();
@@ -364,7 +351,6 @@ public class GroupViewController {
     }
 
     private void updateAdminButtons() {
-        // Показываем кнопки добавления каналов только админу
         textChannelList.getChildren().stream()
                 .filter(n -> "addTextBtn".equals(n.getId()))
                 .findFirst()
@@ -375,6 +361,8 @@ public class GroupViewController {
                 .findFirst()
                 .ifPresent(n -> n.setVisible(isCurrentUserAdmin()));
     }
+
+    @FXML private VBox membersPanel;
 
     @FXML
     private void addMember() {
@@ -472,7 +460,12 @@ public class GroupViewController {
         }).start();
     }
 
-    // ===== СКРЫТИЕ ПАНЕЛЕЙ =====
+    @FXML private Button hideChannelsBtn;
+    @FXML private Button hideMembersBtn;
+    @FXML private VBox channelPanel;
+
+    private boolean channelPanelVisible = true;
+    private boolean membersPanelVisible = true;
 
     @FXML
     private void toggleChannelPanel() {
@@ -529,7 +522,6 @@ public class GroupViewController {
         Label title = new Label("Настройки группы");
         title.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13px;");
 
-        // Название группы
         Label nameLabel = new Label("Название");
         nameLabel.setStyle("-fx-text-fill: #aaa; -fx-font-size: 11px;");
 
@@ -559,7 +551,6 @@ public class GroupViewController {
             }
         });
 
-        // Кнопка удаления группы (только для админа)
         if (isCurrentUserAdmin()) {
             Button deleteBtn = new Button("🗑 Удалить группу");
             deleteBtn.setStyle("""

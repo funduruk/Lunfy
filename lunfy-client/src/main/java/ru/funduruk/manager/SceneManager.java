@@ -3,10 +3,8 @@ package ru.funduruk.manager;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.animation.FadeTransition;
-import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
 import java.io.IOException;

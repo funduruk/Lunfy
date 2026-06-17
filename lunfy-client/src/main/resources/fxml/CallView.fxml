@@ -3,6 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.shape.*?>
+<?import javafx.geometry.*?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="ru.funduruk.controller.CallController"
@@ -36,6 +37,19 @@
                        style="-fx-background-color: black;">
                 <ImageView fx:id="screenImageView" preserveRatio="true"/>
             </StackPane>
+            <StackPane fx:id="peerVideoStack" visible="false" managed="false"
+                       StackPane.alignment="CENTER">
+                <ImageView fx:id="peerVideoView" preserveRatio="true"/>
+            </StackPane>
+
+            <!-- Своё превью — маленькое, в правом нижнем углу -->
+            <StackPane fx:id="selfVideoStack" visible="false" managed="false"
+                       maxWidth="200" maxHeight="150"
+                       StackPane.alignment="BOTTOM_RIGHT"
+                       style="-fx-background-color: black; -fx-border-color: #5865f2; -fx-border-width: 2;">
+                <padding><javafx.geometry.Insets bottom="20" right="20"/></padding>
+                <ImageView fx:id="selfVideoView" fitWidth="180" fitHeight="135" preserveRatio="true"/>
+            </StackPane>
         </StackPane>
     </center>
 
@@ -61,6 +75,8 @@
             <Button fx:id="muteBtn" text="🎤" onAction="#toggleMute" visible="false" managed="false"
                     style="-fx-background-color: #36344f; -fx-text-fill: white; -fx-background-radius: 50; -fx-min-width: 56; -fx-min-height: 56; -fx-font-size: 20px; -fx-cursor: hand;"/>
             <Button fx:id="screenBtn" text="🖥" onAction="#toggleScreenShare" visible="false" managed="false"
+                    style="-fx-background-color: #36344f; -fx-text-fill: white; -fx-background-radius: 50; -fx-min-width: 56; -fx-min-height: 56; -fx-font-size: 20px; -fx-cursor: hand;"/>
+            <Button fx:id="videoBtn" text="📹" onAction="#toggleVideo" visible="false" managed="false"
                     style="-fx-background-color: #36344f; -fx-text-fill: white; -fx-background-radius: 50; -fx-min-width: 56; -fx-min-height: 56; -fx-font-size: 20px; -fx-cursor: hand;"/>
             <Button fx:id="endBtn" text="📞" onAction="#end" visible="false" managed="false"
                     style="-fx-background-color: #ed4245; -fx-text-fill: white; -fx-background-radius: 50; -fx-min-width: 56; -fx-min-height: 56; -fx-font-size: 20px; -fx-cursor: hand;"/>

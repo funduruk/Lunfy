@@ -24,7 +24,6 @@ public class GroupController {
 
     private final GroupService groupService;
     private final UserService userService;
-    private final ChatWebSocketHandler chatWebSocketHandler;
 
     @PostMapping
     public ResponseEntity<?> create(@AuthenticationPrincipal String username,
@@ -150,7 +149,7 @@ public class GroupController {
         try {
             groupService.kickMember(groupId, username);
 
-            // Уведомляем всех участников группы через WebSocket
+            // Notify all members
             notifyGroupMembers(groupId, "GROUP_MEMBER_KICKED",
                     Map.of("groupId", groupId, "username", username));
 
@@ -176,6 +175,7 @@ public class GroupController {
         }
     }
 
+    private final ChatWebSocketHandler chatWebSocketHandler;
 
     private void notifyGroupMembers(Long groupId, String type, Map<String, Object> data) {
         try {
@@ -263,7 +263,7 @@ public class GroupController {
                 }
             }
 
-            // Уведомляем всех участников через WebSocket
+            // notify all members
             Map<String, Object> data = new java.util.HashMap<>();
             data.put("id", group.getId());
             data.put("name", group.getName());

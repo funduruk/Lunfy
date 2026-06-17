@@ -15,10 +15,6 @@ public class SessionRegistry {
         sessions.put(username.toLowerCase(), session);
     }
 
-    public void remove(String username) {
-        if (username != null) sessions.remove(username.toLowerCase());
-    }
-
     public void removeBySession(WebSocketSession session) {
         sessions.values().removeIf(s -> s.getId().equals(session.getId()));
     }

@@ -16,12 +16,8 @@ import java.util.Map;
 
 public class FriendsTabController {
 
-    @FXML private VBox friendsList;
     @FXML private TextField searchField;
-    @FXML private Button tabAll, tabOnline, tabIncoming;
 
-    private final List<Friend> allFriends = new ArrayList<>();
-    private String currentTab = "ALL";
 
     @FXML
     public void initialize() {
@@ -29,6 +25,8 @@ public class FriendsTabController {
 
         loadFriendsFromServer();
     }
+
+    private final List<Friend> allFriends = new ArrayList<>();
 
     private void loadFriendsFromServer() {
         new Thread(() -> {
@@ -56,6 +54,10 @@ public class FriendsTabController {
             }
         }).start();
     }
+
+    @FXML private Button tabAll, tabOnline, tabIncoming;
+
+    private String currentTab = "ALL";
 
     @FXML private void showAll() {
         currentTab = "ALL";
@@ -106,6 +108,8 @@ public class FriendsTabController {
         }).start();
     }
 
+    @FXML private VBox friendsList;
+
     private void renderList() {
         friendsList.getChildren().clear();
         String query = searchField.getText().trim().toLowerCase();
@@ -113,8 +117,7 @@ public class FriendsTabController {
         List<Friend> filtered = allFriends.stream()
                 .filter(f -> {
                     if (currentTab.equals("ONLINE") && !f.isOnline()) return false;
-                    if (!query.isEmpty() && !f.getUsername().toLowerCase().contains(query)) return false;
-                    return true;
+                    return query.isEmpty() || f.getUsername().toLowerCase().contains(query);
                 })
                 .toList();
 
@@ -224,7 +227,6 @@ public class FriendsTabController {
                 Platform.runLater(() -> {
                     if (data.isEmpty()) return;
 
-                    // Показываем входящие заявки отдельным блоком
                     friendsList.getChildren().clear();
 
                     Label incomingLabel = new Label("ВХОДЯЩИЕ ЗАЯВКИ");

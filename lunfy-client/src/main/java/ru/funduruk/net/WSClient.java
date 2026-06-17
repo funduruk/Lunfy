@@ -31,17 +31,12 @@ public class WSClient {
                 @Override
                 public void onMessage(String message) {
                     try {
-                        System.out.println("CLIENT RAW MESSAGE: " + message);
                         EnvelopeDTO env = mapper.readValue(message, EnvelopeDTO.class);
-                        System.out.println("TYPE = " + env.getType());
-                        System.out.println("DATA = " + env.getData());
 
                         if ("CHAT_MESSAGE".equals(env.getType())) {
                             String dataJson = mapper.writeValueAsString(env.getData());
                             MessageDTO msg = mapper.readValue(dataJson, MessageDTO.class);
-                            System.out.println("AFTER CONVERT timestamp: " + msg.getTimestamp());
                             msg.setMine("user-1".equals(msg.getSender()));
-                            System.out.println("FIRED TO EVENT BUS: " + msg.getText());
                             ChatEventBus.fireMessage(msg);
 
                         } else if ("DELETE_MESSAGE".equals(env.getType())) {
@@ -95,8 +90,19 @@ public class WSClient {
                         String dataJson = mapper.writeValueAsString(env.getData());
                         ScreenFrameDTO frame = mapper.readValue(dataJson, ScreenFrameDTO.class);
                         ChatEventBus.fireScreenShareStop(frame);
-                    }
-
+                        } else if ("VIDEO_FRAME".equals(env.getType())) {
+                            String dataJson = mapper.writeValueAsString(env.getData());
+                            VideoFrameDTO frame = mapper.readValue(dataJson, VideoFrameDTO.class);
+                            ChatEventBus.fireVideoFrame(frame);
+                        } else if ("VIDEO_START".equals(env.getType())) {
+                            String dataJson = mapper.writeValueAsString(env.getData());
+                            VideoFrameDTO frame = mapper.readValue(dataJson, VideoFrameDTO.class);
+                            ChatEventBus.fireVideoStart(frame);
+                        } else if ("VIDEO_STOP".equals(env.getType())) {
+                            String dataJson = mapper.writeValueAsString(env.getData());
+                            VideoFrameDTO frame = mapper.readValue(dataJson, VideoFrameDTO.class);
+                            ChatEventBus.fireVideoStop(frame);
+                        }
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
