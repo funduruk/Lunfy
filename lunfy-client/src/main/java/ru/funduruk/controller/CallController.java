@@ -9,6 +9,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import org.funduruk.dto.*;
+import ru.funduruk.manager.CallSoundManager;
 import ru.funduruk.media.AudioCall;
 import ru.funduruk.media.ScreenShare;
 import ru.funduruk.media.VideoCall;
@@ -38,6 +39,8 @@ public class CallController {
                 ApiClient.getCurrentUsername(), peerUser, chatId, callType);
         WSClient.send(new EnvelopeDTO("CALL_OFFER", signal));
         endBtn.setVisible(true); endBtn.setManaged(true);
+
+        CallSoundManager.playDialing();
     }
 
     public void initIncoming(CallSignalDTO signal) {
@@ -48,6 +51,8 @@ public class CallController {
         setupCommon();
         callStatusLabel.setText("Входящий вызов от " + peerUser);
         showIncomingButtons(true);
+
+        CallSoundManager.playRingtone();
     }
 
     @FXML private Label peerInitial;
@@ -97,6 +102,7 @@ public class CallController {
 
     @FXML
     private void accept() {
+        CallSoundManager.stopAll();
         WSClient.send(new EnvelopeDTO("CALL_ANSWER",
                 new CallSignalDTO(ApiClient.getCurrentUsername(), peerUser, chatId, callType)));
         onCallEstablished();
@@ -104,6 +110,7 @@ public class CallController {
 
     @FXML
     private void reject() {
+        CallSoundManager.stopAll();
         WSClient.send(new EnvelopeDTO("CALL_REJECT",
                 new CallSignalDTO(ApiClient.getCurrentUsername(), peerUser, chatId, callType)));
         closeCall();
@@ -111,6 +118,7 @@ public class CallController {
 
     @FXML
     private void end() {
+        CallSoundManager.stopAll();
         WSClient.send(new EnvelopeDTO("CALL_END",
                 new CallSignalDTO(ApiClient.getCurrentUsername(), peerUser, chatId, callType)));
         stopMedia();
@@ -185,6 +193,7 @@ public class CallController {
     private boolean videoOn = false;
 
     private void stopMedia() {
+        CallSoundManager.stopAll();
         if (audioCall != null) { audioCall.stop(); audioCall = null; }
         if (screenShare != null) { screenShare.stop(); screenShare = null; }
         if (videoCall != null) { videoCall.stop(); videoCall = null; }
@@ -205,6 +214,7 @@ public class CallController {
     }
 
     private void closeCall() {
+        CallSoundManager.stopAll();
         GeneralController gc = GeneralController.getInstance();
         if (gc != null) gc.returnToChat();
     }
@@ -288,6 +298,7 @@ public class CallController {
     }
 
     private void onCallEstablished() {
+        CallSoundManager.stopAll();
         callStatusLabel.setText("Звонок с " + peerUser);
         showIncomingButtons(false);
         muteBtn.setVisible(true); muteBtn.setManaged(true);
