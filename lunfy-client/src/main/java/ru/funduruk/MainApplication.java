@@ -1,6 +1,7 @@
 package ru.funduruk;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -13,7 +14,7 @@ public class MainApplication extends Application {
 
     @Override
     public void start(Stage stage) {
-
+        Platform.setImplicitExit(false);
         SceneManager.init(stage);
 
         stage.getIcons().add(

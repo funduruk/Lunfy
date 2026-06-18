@@ -150,7 +150,8 @@
         @FXML private BorderPane generalRoot;
 
         @FXML private void close() {
-            ((Stage) generalRoot.getScene().getWindow()).close();
+            Stage stage = (Stage) generalRoot.getScene().getWindow();
+            stage.hide();
         }
 
         @FXML private void minimize() {
@@ -216,7 +217,6 @@
                 Stage stage = (Stage) generalRoot.getScene().getWindow();
                 javafx.scene.Cursor cursor = generalRoot.getCursor();
 
-                // Координаты мыши на экране минус позиция окна = новый размер
                 double newWidth = e.getScreenX() - stage.getX();
                 double newHeight = e.getScreenY() - stage.getY();
 

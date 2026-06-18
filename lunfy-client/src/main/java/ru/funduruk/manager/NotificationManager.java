@@ -24,20 +24,32 @@ public class NotificationManager {
             Image image;
             try {
                 image = ImageIO.read(
-                        NotificationManager.class.getResource("/image/icon/lunfy.png"));
+                        NotificationManager.class.getResource("/image/logo/logo.png"));
             } catch (Exception e) {
                 image = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
             }
 
-            trayIcon = new TrayIcon(image, "Lunfy");
-            trayIcon.setImageAutoSize(true);
+            PopupMenu popup = new PopupMenu();
 
-            trayIcon.addActionListener(e -> Platform.runLater(() -> {
-                if (primaryStage != null) {
-                    primaryStage.setIconified(false);
-                    primaryStage.toFront();
+            MenuItem openItem = new MenuItem("Открыть Lunfy");
+            openItem.addActionListener(e -> restoreWindow());
+
+            MenuItem exitItem = new MenuItem("Выход");
+            exitItem.addActionListener(e -> {
+                if (trayIcon != null) {
+                    SystemTray.getSystemTray().remove(trayIcon);
                 }
-            }));
+                Platform.exit();
+                System.exit(0);
+            });
+
+            popup.add(openItem);
+            popup.addSeparator();
+            popup.add(exitItem);
+
+            trayIcon = new TrayIcon(image, "Lunfy", popup);
+            trayIcon.setImageAutoSize(true);
+            trayIcon.addActionListener(e -> restoreWindow());
 
             tray.add(trayIcon);
         } catch (AWTException e) {
@@ -55,4 +67,22 @@ public class NotificationManager {
         if (primaryStage == null) return false;
         return primaryStage.isIconified() || !primaryStage.isFocused();
     }
+
+    private static void restoreWindow() {
+        System.out.println(">>> restoreWindow вызван, primaryStage=" + primaryStage);
+        Platform.runLater(() -> {
+            if (primaryStage == null) {
+                System.out.println(">>> primaryStage == null!");
+                return;
+            }
+            System.out.println(">>> showing=" + primaryStage.isShowing()
+                    + " iconified=" + primaryStage.isIconified());
+            primaryStage.show();
+            primaryStage.setIconified(false);
+            primaryStage.toFront();
+            primaryStage.requestFocus();
+            System.out.println(">>> после show: showing=" + primaryStage.isShowing());
+        });
+    }
+
 }
