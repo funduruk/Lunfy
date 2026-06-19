@@ -97,4 +97,61 @@ public class GroupService {
     public void delete(Long groupId) {
         groupRepository.deleteById(groupId);
     }
+
+    private final GroupInviteRepository inviteRepository;
+
+    public GroupInvite createInvite(Long groupId, User invitedUser, User invitedBy) {
+
+        boolean alreadyMember = getMembers(groupId).stream()
+                .anyMatch(m -> m.getUser().getId().equals(invitedUser.getId()));
+        if (alreadyMember) {
+            throw new RuntimeException("Пользователь уже в сообществе");
+        }
+
+        if (inviteRepository.findByGroupIdAndInvitedUserIdAndStatus(
+                groupId, invitedUser.getId(), GroupInvite.Status.PENDING).isPresent()) {
+            throw new RuntimeException("Приглашение уже отправлено");
+        }
+
+        Group group = findById(groupId);
+        GroupInvite invite = new GroupInvite();
+        invite.setGroup(group);
+        invite.setInvitedUser(invitedUser);
+        invite.setInvitedBy(invitedBy);
+        invite.setStatus(GroupInvite.Status.PENDING);
+        return inviteRepository.save(invite);
+    }
+
+    public List<GroupInvite> getPendingInvites(Long userId) {
+        return inviteRepository.findByInvitedUserIdAndStatus(userId, GroupInvite.Status.PENDING);
+    }
+
+    public GroupInvite getInvite(Long inviteId) {
+        return inviteRepository.findById(inviteId)
+                .orElseThrow(() -> new RuntimeException("Приглашение не найдено"));
+    }
+
+    public Group acceptInvite(Long inviteId, User user) {
+        GroupInvite invite = getInvite(inviteId);
+        if (!invite.getInvitedUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Это не ваше приглашение");
+        }
+        invite.setStatus(GroupInvite.Status.ACCEPTED);
+        inviteRepository.save(invite);
+        addMember(invite.getGroup().getId(), user); // существующий метод
+        return invite.getGroup();
+    }
+
+    public void declineInvite(Long inviteId, User user) {
+        GroupInvite invite = getInvite(inviteId);
+        if (!invite.getInvitedUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Это не ваше приглашение");
+        }
+        invite.setStatus(GroupInvite.Status.DECLINED);
+        inviteRepository.save(invite);
+    }
+
+    public void deleteChannel(Long channelId) {
+        channelRepository.deleteById(channelId);
+    }
 }

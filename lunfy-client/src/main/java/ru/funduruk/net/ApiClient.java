@@ -12,7 +12,10 @@ import java.util.Map;
 
 public class ApiClient {
 
-    private static final String BASE_URL = "http://localhost:8080";
+    public static final String SERVER_HOST = "localhost:8080";
+    public static final String HTTP_BASE = "http://" + SERVER_HOST;
+    public static final String WS_BASE = "ws://" + SERVER_HOST;
+    private static final String BASE_URL = HTTP_BASE;
     private static final HttpClient client = HttpClient.newHttpClient();
     private static final ObjectMapper mapper = new ObjectMapper();
     @Getter

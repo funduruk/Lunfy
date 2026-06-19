@@ -24,6 +24,12 @@ public class ChatEventBus {
     private static java.util.function.Consumer<VideoFrameDTO> videoFrameListener;
     private static java.util.function.Consumer<VideoFrameDTO> videoStartListener;
     private static java.util.function.Consumer<VideoFrameDTO> videoStopListener;
+    private static java.util.function.Consumer<Map<String, Object>> groupInviteListener;
+    private static java.util.function.Consumer<Map<String, Object>> groupJoinedListener;
+    private static java.util.function.Consumer<Map<String, Object>> channelCreatedListener;
+    private static java.util.function.Consumer<Map<String, Object>> channelDeletedListener;
+    private static java.util.function.Consumer<Map<String, Object>> friendRequestListener;
+    private static java.util.function.BiConsumer<String, Map<String, Object>> friendUpdateListener;
 
     public static void setOnMessage(Consumer<MessageDTO> listener) { messageListener = listener; }
     public static void setOnDeleteMessage(Consumer<MessageDTO> listener) { deleteListener = listener; }
@@ -41,6 +47,12 @@ public class ChatEventBus {
     public static void setOnVideoFrame(java.util.function.Consumer<VideoFrameDTO> l) { videoFrameListener = l; }
     public static void setOnVideoStart(java.util.function.Consumer<VideoFrameDTO> l) { videoStartListener = l; }
     public static void setOnVideoStop(java.util.function.Consumer<VideoFrameDTO> l) { videoStopListener = l; }
+    public static void setOnGroupInvite(java.util.function.Consumer<Map<String, Object>> l) { groupInviteListener = l; }
+    public static void setOnGroupJoined(java.util.function.Consumer<Map<String, Object>> l) { groupJoinedListener = l; }
+    public static void setOnChannelCreated(java.util.function.Consumer<Map<String, Object>> l) { channelCreatedListener = l; }
+    public static void setOnChannelDeleted(java.util.function.Consumer<Map<String, Object>> l) { channelDeletedListener = l; }
+    public static void setOnFriendRequest(java.util.function.Consumer<Map<String, Object>> l) { friendRequestListener = l; }
+    public static void setOnFriendUpdate(java.util.function.BiConsumer<String, Map<String, Object>> l) { friendUpdateListener = l; }
 
     public static void fireMessage(MessageDTO msg) { if (messageListener != null) { messageListener.accept(msg); } }
     public static void fireDeleteMessage(MessageDTO msg) { if (deleteListener != null) { deleteListener.accept(msg); } }
@@ -58,4 +70,10 @@ public class ChatEventBus {
     public static void fireVideoFrame(VideoFrameDTO f) { if (videoFrameListener != null) videoFrameListener.accept(f); }
     public static void fireVideoStart(VideoFrameDTO f) { if (videoStartListener != null) videoStartListener.accept(f); }
     public static void fireVideoStop(VideoFrameDTO f) { if (videoStopListener != null) videoStopListener.accept(f); }
+    public static void fireGroupInvite(Map<String, Object> d) { if (groupInviteListener != null) groupInviteListener.accept(d); }
+    public static void fireGroupJoined(Map<String, Object> d) { if (groupJoinedListener != null) groupJoinedListener.accept(d); }
+    public static void fireChannelCreated(Map<String, Object> d) { if (channelCreatedListener != null) channelCreatedListener.accept(d); }
+    public static void fireChannelDeleted(Map<String, Object> d) { if (channelDeletedListener != null) channelDeletedListener.accept(d); }
+    public static void fireFriendRequest(Map<String, Object> d) { if (friendRequestListener != null) friendRequestListener.accept(d); }
+    public static void fireFriendUpdate(String type, Map<String, Object> d) { if (friendUpdateListener != null) friendUpdateListener.accept(type, d); }
 }

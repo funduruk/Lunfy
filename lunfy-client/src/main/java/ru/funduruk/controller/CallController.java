@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -297,6 +298,9 @@ public class CallController {
         }
     }
 
+    private boolean autoStartVideo = false;
+    public void setAutoStartVideo(boolean v) { this.autoStartVideo = v; }
+
     private void onCallEstablished() {
         CallSoundManager.stopAll();
         callStatusLabel.setText("Звонок с " + peerUser);
@@ -304,6 +308,9 @@ public class CallController {
         muteBtn.setVisible(true); muteBtn.setManaged(true);
         screenBtn.setVisible(true); screenBtn.setManaged(true);
         endBtn.setVisible(true); endBtn.setManaged(true);
+
+        toggleModeBtn.setVisible(true);
+        toggleModeBtn.setManaged(true);
 
         audioCall = new AudioCall(ApiClient.getCurrentUsername(), peerUser, chatId);
         audioCall.start();
@@ -328,6 +335,14 @@ public class CallController {
 
         videoBtn.setVisible(true); videoBtn.setManaged(true);
 
+        if (!ru.funduruk.media.VideoCall.isCameraAvailable()) {
+            videoBtn.setOpacity(0.4);
+            Tooltip noCam = new Tooltip("Нет активных камер");
+            noCam.setShowDelay(javafx.util.Duration.millis(200));
+            Tooltip.install(videoBtn, noCam);
+            videoBtn.setOnAction(e -> {});
+        }
+
         ChatEventBus.setOnVideoStart(frame -> {
             if (frame.getFromUser().equalsIgnoreCase(peerUser))
                 Platform.runLater(this::showPeerVideo);
@@ -340,5 +355,52 @@ public class CallController {
             if (frame.getFromUser().equalsIgnoreCase(peerUser))
                 Platform.runLater(this::hidePeerVideo);
         });
+
+        if (autoStartVideo && !videoOn) {
+            toggleVideo();
+        }
+    }
+
+    public void forceEnd() {
+        CallSoundManager.stopAll();
+        WSClient.send(new EnvelopeDTO("CALL_END",
+                new CallSignalDTO(ApiClient.getCurrentUsername(), peerUser, chatId, callType)));
+        stopMedia();
+        closeCall();
+    }
+
+    @FXML private javafx.scene.layout.BorderPane callRoot;
+    @FXML private Button toggleModeBtn;
+
+    private boolean expanded = true;
+
+    @FXML
+    private void toggleMode() {
+        expanded = !expanded;
+        applyMode();
+    }
+
+    private void applyMode() {
+        GeneralController gc = GeneralController.getInstance();
+
+        if (expanded) {
+            callRoot.getTop().setVisible(true);
+            ((javafx.scene.layout.VBox) callRoot.getTop()).setManaged(true);
+            centerStack.setVisible(true);
+            centerStack.setManaged(true);
+            toggleModeBtn.setText("🗕");
+
+            if (gc != null) gc.setCallContainerHeight(-1);
+
+            repositionPeerVideo();
+        } else {
+            callRoot.getTop().setVisible(false);
+            ((javafx.scene.layout.VBox) callRoot.getTop()).setManaged(false);
+            centerStack.setVisible(false);
+            centerStack.setManaged(false);
+            toggleModeBtn.setText("🗖");
+
+            if (gc != null) gc.setCallContainerHeight(80);
+        }
     }
 }

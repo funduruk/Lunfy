@@ -2,10 +2,12 @@ plugins {
     id 'java'
     id 'application'
     id 'org.openjfx.javafxplugin' version '0.0.14'
-    id 'org.beryx.jlink' version '3.0.1'
 }
 
+
 jar {
+    archiveBaseName = 'Lunfy'
+    archiveVersion = '1.0-SNAPSHOT'
     manifest {
         attributes 'Main-Class': 'ru.funduruk.MainApplication'
     }
@@ -16,6 +18,7 @@ jar {
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
+
 
 group 'ru.funduruk'
 version '1.0-SNAPSHOT'
@@ -65,4 +68,20 @@ dependencies {
 javafx {
     version = '21'
     modules = ['javafx.controls', 'javafx.fxml', 'javafx.media']
+}
+
+tasks.register('jpackageExe', Exec) {
+    dependsOn jar
+    commandLine 'jpackage',
+            '--type', 'exe',
+            '--name', 'Lunfy',
+            '--input', "${buildDir}/libs",
+            '--dest', "build/installer",
+            '--main-jar', jar.archiveFileName.get(),
+            '--main-class', 'ru.funduruk.MainApplication',
+            '--runtime-image', 'C:/Liberica-Full-JDK-21',
+            '--icon', 'src/main/resources/image/logo/logo.ico',
+            '--win-shortcut',
+            '--win-menu',
+            '--win-dir-chooser'
 }

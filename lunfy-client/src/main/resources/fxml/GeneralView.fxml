@@ -61,9 +61,17 @@
 
             <!-- Sidebar -->
             <VBox styleClass="sidebar-pane" prefWidth="220">
-                <Button text="Friends"
+                <Button text="Друзья"
                         fx:id="friendsBtn"
                         onAction="#openFriends"
+                        styleClass="friends-btn"/>
+                <Button text="Приглашения"
+                        fx:id="invitesBtn"
+                        onAction="#openInvites"
+                        styleClass="friends-btn"/>
+                <Button text="Настройки"
+                        fx:id="settingsBtn"
+                        onAction="#openSettings"
                         styleClass="friends-btn"/>
 
                 <HBox alignment="CENTER_LEFT" style="-fx-padding: 8 4 4 4;">
@@ -93,10 +101,18 @@
                 </HBox>
             </VBox>
 
-            <!-- Content -->
-            <StackPane fx:id="contentPane"
-                       styleClass="content-pane"
-                       HBox.hgrow="ALWAYS"/>
+            <VBox HBox.hgrow="ALWAYS" spacing="0">
+                <StackPane fx:id="callContainer"
+                           visible="false" managed="false"
+                           style="-fx-background-color: #1a1730;"/>
+                <Region fx:id="callResizeHandle"
+                        visible="false" managed="false"
+                        prefHeight="5" minHeight="5" maxHeight="5"
+                        style="-fx-background-color: #36344f; -fx-cursor: v-resize;"/>
+                <StackPane fx:id="contentPane"
+                           styleClass="content-pane"
+                           VBox.vgrow="ALWAYS"/>
+            </VBox>
 
         </HBox>
     </center>

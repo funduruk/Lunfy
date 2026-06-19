@@ -4,6 +4,7 @@ import lombok.Setter;
 import org.funduruk.dto.AudioChunkDTO;
 import org.funduruk.dto.EnvelopeDTO;
 import ru.funduruk.net.WSClient;
+import ru.funduruk.manager.AudioSettings;
 
 import javax.sound.sampled.*;
 import java.util.Base64;
@@ -33,13 +34,25 @@ public class AudioCall {
         try {
             // open micro
             DataLine.Info micInfo = new DataLine.Info(TargetDataLine.class, FORMAT);
-            micLine = (TargetDataLine) AudioSystem.getLine(micInfo);
+
+            AudioSettings s = AudioSettings.getInstance();
+            Mixer.Info micMixerInfo = AudioSettings.findMixerInfo(s.getSelectedMicName());
+            if (micMixerInfo != null) {
+                micLine = (TargetDataLine) AudioSystem.getMixer(micMixerInfo).getLine(micInfo);
+            } else {
+                micLine = (TargetDataLine) AudioSystem.getLine(micInfo);
+            }
             micLine.open(FORMAT);
             micLine.start();
 
             // open speaker
             DataLine.Info speakerInfo = new DataLine.Info(SourceDataLine.class, FORMAT);
-            speakerLine = (SourceDataLine) AudioSystem.getLine(speakerInfo);
+            Mixer.Info spkMixerInfo = AudioSettings.findMixerInfo(s.getSelectedSpeakerName());
+            if (spkMixerInfo != null) {
+                speakerLine = (SourceDataLine) AudioSystem.getMixer(spkMixerInfo).getLine(speakerInfo);
+            } else {
+                speakerLine = (SourceDataLine) AudioSystem.getLine(speakerInfo);
+            }
             speakerLine.open(FORMAT);
             speakerLine.start();
 
@@ -59,6 +72,7 @@ public class AudioCall {
             if (read > 0 && !muted) {
                 byte[] chunk = new byte[read];
                 System.arraycopy(buffer, 0, chunk, 0, read);
+                chunk = applyVolume(chunk, chunk.length, AudioSettings.getInstance().getMicVolume());
                 String encoded = Base64.getEncoder().encodeToString(chunk);
                 AudioChunkDTO dto = new AudioChunkDTO(fromUser, toUser, chatId, encoded);
                 WSClient.send(new EnvelopeDTO("AUDIO_CHUNK", dto));
@@ -69,6 +83,7 @@ public class AudioCall {
     public void playChunk(String base64Data) {
         if (!running || speakerLine == null) return;
         byte[] data = Base64.getDecoder().decode(base64Data);
+        data = applyVolume(data, data.length, AudioSettings.getInstance().getSpeakerVolume());
         speakerLine.write(data, 0, data.length);
     }
 
@@ -84,6 +99,18 @@ public class AudioCall {
             speakerLine.close();
         }
         System.out.println("AudioCall остановлен");
+    }
+
+    private byte[] applyVolume(byte[] data, int length, double volume) {
+        if (volume == 1.0) return data;
+        byte[] result = new byte[length];
+        for (int i = 0; i < length - 1; i += 2) {
+            short sample = (short) ((data[i] & 0xFF) | (data[i + 1] << 8));
+            sample = (short) Math.max(Short.MIN_VALUE, Math.min(Short.MAX_VALUE, sample * volume));
+            result[i] = (byte) (sample & 0xFF);
+            result[i + 1] = (byte) ((sample >> 8) & 0xFF);
+        }
+        return result;
     }
 
     @Setter

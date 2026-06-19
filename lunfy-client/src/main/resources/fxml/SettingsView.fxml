@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="ru.funduruk.controller.SettingsController"
+      spacing="20"
+      style="-fx-background-color: #1e1b2e; -fx-padding: 30;">
+
+    <Label text="Настройки звука"
+           style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;"/>
+
+    <!-- Микрофон -->
+    <VBox spacing="8">
+        <Label text="Устройство ввода (микрофон)"
+               style="-fx-text-fill: #aaa; -fx-font-size: 12px;"/>
+        <ComboBox fx:id="micCombo" prefWidth="400"
+                  style="-fx-background-color: #2d2b40; -fx-text-fill: white;"/>
+    </VBox>
+
+    <!-- Громкость микрофона -->
+    <VBox spacing="8">
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="Громкость микрофона:"
+                   style="-fx-text-fill: #aaa; -fx-font-size: 12px;"/>
+            <Label fx:id="micVolumeLabel" text="100%"
+                   style="-fx-text-fill: white; -fx-font-size: 12px;"/>
+        </HBox>
+        <Slider fx:id="micVolumeSlider" min="0" max="100" value="100" prefWidth="400"/>
+    </VBox>
+
+    <Separator/>
+
+    <!-- Колонки -->
+    <VBox spacing="8">
+        <Label text="Устройство вывода (колонки/наушники)"
+               style="-fx-text-fill: #aaa; -fx-font-size: 12px;"/>
+        <ComboBox fx:id="speakerCombo" prefWidth="400"
+                  style="-fx-background-color: #2d2b40; -fx-text-fill: white;"/>
+    </VBox>
+
+    <!-- Громкость входящих -->
+    <VBox spacing="8">
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="Громкость входящих:"
+                   style="-fx-text-fill: #aaa; -fx-font-size: 12px;"/>
+            <Label fx:id="speakerVolumeLabel" text="100%"
+                   style="-fx-text-fill: white; -fx-font-size: 12px;"/>
+        </HBox>
+        <Slider fx:id="speakerVolumeSlider" min="0" max="100" value="100" prefWidth="400"/>
+    </VBox>
+
+    <Region VBox.vgrow="ALWAYS"/>
+
+    <Label text="Изменения применяются сразу. Для нового микрофона перезапустите активный звонок."
+           style="-fx-text-fill: #888; -fx-font-size: 11px;"/>
+</VBox>

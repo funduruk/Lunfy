@@ -10,10 +10,8 @@
             fx:id="callRoot"
             style="-fx-background-color: #1a1730;">
 
-    <!-- Центр: либо аватарки участников, либо демонстрация экрана -->
     <center>
         <StackPane fx:id="centerStack">
-            <!-- Аудио-режим: аватарки -->
             <HBox fx:id="participantsBox" alignment="CENTER" spacing="40">
                 <VBox alignment="CENTER" spacing="12">
                     <StackPane>
@@ -32,7 +30,6 @@
                 </VBox>
             </HBox>
 
-            <!-- Режим демонстрации экрана (поверх, скрыт по умолчанию) -->
             <StackPane fx:id="screenStack" visible="false" managed="false"
                        style="-fx-background-color: black;">
                 <ImageView fx:id="screenImageView" preserveRatio="true"/>
@@ -42,7 +39,6 @@
                 <ImageView fx:id="peerVideoView" preserveRatio="true"/>
             </StackPane>
 
-            <!-- Своё превью — маленькое, в правом нижнем углу -->
             <StackPane fx:id="selfVideoStack" visible="false" managed="false"
                        maxWidth="200" maxHeight="150"
                        StackPane.alignment="BOTTOM_RIGHT"
@@ -53,7 +49,6 @@
         </StackPane>
     </center>
 
-    <!-- Верх: статус звонка -->
     <top>
         <VBox alignment="CENTER" style="-fx-padding: 20 0 0 0;">
             <Label fx:id="callStatusLabel" text="Вызов..."
@@ -61,7 +56,6 @@
         </VBox>
     </top>
 
-    <!-- Низ: панель управления -->
     <bottom>
         <HBox fx:id="controlBar" alignment="CENTER" spacing="16" style="-fx-padding: 24;">
 
@@ -80,6 +74,8 @@
                     style="-fx-background-color: #36344f; -fx-text-fill: white; -fx-background-radius: 50; -fx-min-width: 56; -fx-min-height: 56; -fx-font-size: 20px; -fx-cursor: hand;"/>
             <Button fx:id="endBtn" text="📞" onAction="#end" visible="false" managed="false"
                     style="-fx-background-color: #ed4245; -fx-text-fill: white; -fx-background-radius: 50; -fx-min-width: 56; -fx-min-height: 56; -fx-font-size: 20px; -fx-cursor: hand;"/>
+            <Button fx:id="toggleModeBtn" text="🗕" onAction="#toggleMode" visible="false" managed="false"
+                    style="-fx-background-color: #36344f; -fx-text-fill: white; -fx-background-radius: 50; -fx-min-width: 56; -fx-min-height: 56; -fx-font-size: 18px; -fx-cursor: hand;"/>
         </HBox>
     </bottom>
 </BorderPane>

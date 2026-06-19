@@ -9,6 +9,7 @@ import javafx.scene.layout.*;
 import javafx.scene.shape.Circle;
 import ru.funduruk.model.Friend;
 import ru.funduruk.net.ApiClient;
+import ru.funduruk.net.ChatEventBus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +23,16 @@ public class FriendsTabController {
     @FXML
     public void initialize() {
         searchField.textProperty().addListener((obs, old, val) -> renderList());
+
+        ChatEventBus.setOnFriendRequest(data -> Platform.runLater(() -> {
+            if ("INCOMING".equals(currentTab)) loadIncomingRequests();
+            System.out.println("Новая заявка от " + data.get("from"));
+        }));
+
+        ChatEventBus.setOnFriendUpdate((type, data) -> Platform.runLater(() -> {
+            loadFriendsFromServer();
+            if ("INCOMING".equals(currentTab)) loadIncomingRequests();
+        }));
 
         loadFriendsFromServer();
     }

@@ -33,6 +33,8 @@ public class LoginController extends Controller{
     @FXML private PasswordField passwordField;
     @FXML private Label statusLabel;
     @FXML VBox statusBox;
+    @FXML private TextField passwordVisibleField;
+    @FXML private Button eyeButton;
 
     @FXML
     private void handleLogin() {
@@ -40,7 +42,7 @@ public class LoginController extends Controller{
         String password = passwordField.getText();
 
         if (username.isEmpty() || password.isEmpty()) {
-            statusLabel.setText("Введите имя пользователя и пароль");
+            statusLabel.setText("Введите имя пользователя \n и/или пароль");
             statusBox.setVisible(true);
             return;
         }
@@ -103,9 +105,19 @@ public class LoginController extends Controller{
         backgroundLogin.setImage(bgImage);
         backgroundLogin.fitWidthProperty().bind(rootPane.widthProperty());
         backgroundLogin.fitHeightProperty().bind(rootPane.heightProperty());
+        passwordVisibleField.textProperty().bindBidirectional(passwordField.textProperty());
 
     }
 
+    @FXML
+    private void togglePasswordVisibility() {
+        boolean showing = passwordVisibleField.isVisible();
+        passwordVisibleField.setVisible(!showing);
+        passwordVisibleField.setManaged(!showing);
+        passwordField.setVisible(showing);
+        passwordField.setManaged(showing);
+        eyeButton.setText(showing ? "👁" : "🙈");
+    }
 
     double prevX, prevY, prevW, prevH;
 

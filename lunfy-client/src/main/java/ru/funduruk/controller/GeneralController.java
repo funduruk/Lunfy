@@ -9,10 +9,7 @@
     import javafx.scene.control.Label;
     import javafx.scene.control.ScrollPane;
     import javafx.scene.control.TextField;
-    import javafx.scene.layout.StackPane;
-    import javafx.scene.layout.VBox;
-    import javafx.scene.layout.BorderPane;
-    import javafx.scene.layout.HBox;
+    import javafx.scene.layout.*;
     import javafx.stage.Stage;
     import lombok.Getter;
     import ru.funduruk.manager.NotificationManager;
@@ -29,14 +26,13 @@
     import java.util.List;
     import java.util.Map;
 
-    import static ru.funduruk.manager.TitleBarManager.maximizeWithoutTaskbar;
 
     public class GeneralController {
 
         @FXML private Label profileUsername;
 
-        @Getter
-        private static GeneralController instance;
+        @Getter private static GeneralController instance;
+
 
         @FXML
         public void initialize() throws Exception {
@@ -51,8 +47,28 @@
             loadChatView();
             loadGroupsView();
 
-            WSClient.connect("ws://localhost:8080/ws?username=" + ApiClient.getCurrentUsername()
+            WSClient.connect(ApiClient.WS_BASE + "/ws?username=" + ApiClient.getCurrentUsername()
                     + "&token=" + ApiClient.getToken());
+
+            ChatEventBus.setOnGroupJoined(data -> Platform.runLater(() -> {
+                GroupsTabController gtc = GroupsTabController.getInstance();
+                if (gtc != null) gtc.loadGroupsFromServer();
+            }));
+
+            ChatEventBus.setOnChannelCreated(data -> Platform.runLater(() -> {
+                GroupsTabController gtc = GroupsTabController.getInstance();
+                if (gtc != null) gtc.loadGroupsFromServer();
+            }));
+
+            ChatEventBus.setOnGroupInvite(data -> Platform.runLater(() -> {
+                String groupName = (String) data.get("groupName");
+                String invitedBy = (String) data.get("invitedBy");
+
+                if (NotificationManager.isWindowHidden()) {
+                    NotificationManager.showSystem("Приглашение в сообщество",
+                            invitedBy + " приглашает вас в «" + groupName + "»");
+                }
+            }));
 
             ChatEventBus.setOnCallOffer(signal -> {
                 Platform.runLater(() -> {
@@ -67,7 +83,9 @@
                 });
             });
 
+
             loadChatsFromFriends();
+            setupCallResize();
         }
 
         @FXML private javafx.scene.shape.Circle statusDot;
@@ -158,9 +176,34 @@
             ((Stage) generalRoot.getScene().getWindow()).setIconified(true);
         }
 
+        private double prevX, prevY, prevWidth, prevHeight;
+        private boolean maximized = false;
+
         @FXML private void maximize() {
             Stage stage = (Stage) generalRoot.getScene().getWindow();
-            maximizeWithoutTaskbar(stage);
+
+            if (!maximized) {
+                prevX = stage.getX();
+                prevY = stage.getY();
+                prevWidth = stage.getWidth();
+                prevHeight = stage.getHeight();
+
+                javafx.geometry.Rectangle2D bounds =
+                        javafx.stage.Screen.getPrimary().getVisualBounds();
+                stage.setX(bounds.getMinX());
+                stage.setY(bounds.getMinY());
+                stage.setWidth(bounds.getWidth());
+                stage.setHeight(bounds.getHeight());
+
+                maximized = true;
+            } else {
+                stage.setX(prevX);
+                stage.setY(prevY);
+                stage.setWidth(prevWidth);
+                stage.setHeight(prevHeight);
+
+                maximized = false;
+            }
         }
 
         @FXML private HBox titleBar;
@@ -549,31 +592,54 @@
             }).start();
         }
 
+        @FXML private StackPane callContainer;
+
         private Parent callView;
         private CallController callController;
 
         public void openCall(java.util.function.Consumer<CallController> init) {
             try {
-                System.out.println(">>> openCall начало");
                 FXMLLoader loader = new FXMLLoader(
                         getClass().getResource("/fxml/CallView.fxml"));
                 callView = loader.load();
-                System.out.println(">>> FXML загружен");
                 callController = loader.getController();
                 init.accept(callController);
-                System.out.println(">>> init выполнен");
-                contentPane.getChildren().setAll(callView);
-                System.out.println(">>> контент установлен");
+
+                callContainer.getChildren().setAll(callView);
+                callContainer.setVisible(true);
+                callContainer.setManaged(true);
+
+                // Показываем handle
+                callResizeHandle.setVisible(true);
+                callResizeHandle.setManaged(true);
             } catch (Exception e) {
-                System.out.println(">>> ОШИБКА в openCall:");
                 e.printStackTrace();
             }
         }
 
+
         public void returnToChat() {
+            callContainer.getChildren().clear();
+            callContainer.setVisible(false);
+            callContainer.setManaged(false);
+
+            callResizeHandle.setVisible(false);
+            callResizeHandle.setManaged(false);
+
             callView = null;
             callController = null;
-            contentPane.getChildren().setAll(chatView);
+        }
+
+        public void setCallContainerHeight(double height) {
+            if (height < 0) {
+                callContainer.setPrefHeight(javafx.scene.layout.Region.USE_COMPUTED_SIZE);
+                callContainer.setMinHeight(javafx.scene.layout.Region.USE_COMPUTED_SIZE);
+                callContainer.setMaxHeight(Double.MAX_VALUE);
+            } else {
+                callContainer.setPrefHeight(height);
+                callContainer.setMinHeight(height);
+                callContainer.setMaxHeight(height);
+            }
         }
 
         private final Map<String, Integer> unreadCounts = new HashMap<>();
@@ -601,6 +667,140 @@
                         label.setStyle("");
                     }
                 }
+            }
+        }
+
+        @FXML
+        private void openInvites() {
+            VBox root = new VBox(12);
+            root.setStyle("-fx-padding: 20; -fx-background-color: #1e1b2e;");
+
+            Label title = new Label("Приглашения в сообщества");
+            title.setStyle("-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;");
+
+            VBox invitesList = new VBox(8);
+            root.getChildren().addAll(title, invitesList);
+
+            contentPane.getChildren().setAll(root);
+
+            new Thread(() -> {
+                try {
+                    String response = ApiClient.getRaw("/api/groups/invites");
+                    ObjectMapper mapper = new ObjectMapper();
+                    List<Map<String, Object>> invites = mapper.readValue(response,
+                            new com.fasterxml.jackson.core.type.TypeReference<>() {});
+
+                    Platform.runLater(() -> {
+                        invitesList.getChildren().clear();
+                        if (invites.isEmpty()) {
+                            Label empty = new Label("Нет новых приглашений");
+                            empty.setStyle("-fx-text-fill: #888; -fx-font-size: 13px;");
+                            invitesList.getChildren().add(empty);
+                        } else {
+                            for (Map<String, Object> inv : invites) {
+                                invitesList.getChildren().add(buildInviteCard(inv, invitesList));
+                            }
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }).start();
+        }
+
+        private javafx.scene.Node buildInviteCard(Map<String, Object> inv, VBox parentList) {
+            Long inviteId = ((Number) inv.get("inviteId")).longValue();
+            String groupName = (String) inv.get("groupName");
+            String invitedBy = (String) inv.get("invitedBy");
+
+            HBox card = new HBox(12);
+            card.setStyle("-fx-background-color: #2d2b40; -fx-padding: 12; -fx-background-radius: 8;");
+            card.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+
+            VBox info = new VBox(4);
+            Label name = new Label(groupName);
+            name.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;");
+            Label by = new Label("Пригласил: " + invitedBy);
+            by.setStyle("-fx-text-fill: #aaa; -fx-font-size: 11px;");
+            info.getChildren().addAll(name, by);
+
+            Region spacer = new Region();
+            HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+
+            Button accept = new Button("Принять");
+            accept.setStyle("-fx-background-color: #3ba55d; -fx-text-fill: white; -fx-background-radius: 6; -fx-cursor: hand; -fx-padding: 6 14;");
+            accept.setOnAction(e -> respondInvite(inviteId, true, card, parentList));
+
+            Button decline = new Button("Отклонить");
+            decline.setStyle("-fx-background-color: #ed4245; -fx-text-fill: white; -fx-background-radius: 6; -fx-cursor: hand; -fx-padding: 6 14;");
+            decline.setOnAction(e -> respondInvite(inviteId, false, card, parentList));
+
+            card.getChildren().addAll(info, spacer, accept, decline);
+            return card;
+        }
+
+        private void respondInvite(Long inviteId, boolean accept, javafx.scene.Node card, VBox parentList) {
+            new Thread(() -> {
+                try {
+                    String path = "/api/groups/invites/" + inviteId + (accept ? "/accept" : "/decline");
+                    ApiClient.postRaw(path, "{}");
+                    Platform.runLater(() -> {
+                        parentList.getChildren().remove(card);
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }).start();
+        }
+
+        public boolean isInCall() {
+            return callController != null;
+        }
+
+        public void endCurrentCall() {
+            if (callController != null) {
+                callController.forceEnd();
+            }
+        }
+
+        @FXML private javafx.scene.layout.Region callResizeHandle;
+
+        private double resizeStartY;
+        private double resizeStartHeight;
+
+        private void setupCallResize() {
+            callResizeHandle.setOnMousePressed(e -> {
+                resizeStartY = e.getScreenY();
+                resizeStartHeight = callContainer.getHeight();
+            });
+
+            callResizeHandle.setOnMouseDragged(e -> {
+                double delta = e.getScreenY() - resizeStartY;
+                double newHeight = resizeStartHeight + delta;
+
+                double sceneHeight = callContainer.getScene() != null
+                        ? callContainer.getScene().getHeight()
+                        : 800;
+                double maxHeight = sceneHeight * 0.8;
+
+                if (newHeight < 80) newHeight = 80;
+                if (newHeight > maxHeight) newHeight = maxHeight;
+
+                callContainer.setPrefHeight(newHeight);
+                callContainer.setMinHeight(newHeight);
+                callContainer.setMaxHeight(newHeight);
+            });
+        }
+
+        @FXML
+        private void openSettings() {
+            try {
+                FXMLLoader loader = new FXMLLoader(
+                        getClass().getResource("/fxml/SettingsView.fxml"));
+                Parent view = loader.load();
+                contentPane.getChildren().setAll(view);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }

@@ -54,7 +54,14 @@
             <VBox fx:id="loginBox" styleClass="login-box">
                 <Label text="Welcome to lunfy" style="-fx-font-size: 24px; -fx-text-fill: white;"/>
                 <TextField fx:id="usernameField" promptText="Username" styleClass="text-field"/>
-                <PasswordField fx:id="passwordField" promptText="Password" styleClass="password-field"/>
+                <StackPane>
+                    <PasswordField fx:id="passwordField" promptText="Password" styleClass="password-field"/>
+                    <TextField fx:id="passwordVisibleField" promptText="Password" styleClass="password-field"
+                               visible="false" managed="false"/>
+                    <Button fx:id="eyeButton" text="👁" onAction="#togglePasswordVisibility"
+                            StackPane.alignment="CENTER_RIGHT"
+                            style="-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 0 10 0 0; -fx-font-size: 16px;"/>
+                </StackPane>
                 <Button fx:id="registerBtn" text="Hey, are you here for the first time?" onAction="#handleRegister" styleClass="button-register"/>
                 <HBox spacing="10" alignment="CENTER">
                     <Button text="Login" onAction="#handleLogin" styleClass="button-login"/>

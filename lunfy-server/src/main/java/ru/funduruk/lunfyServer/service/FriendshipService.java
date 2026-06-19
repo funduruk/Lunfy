@@ -25,11 +25,16 @@ public class FriendshipService {
         friendshipRepository.save(friendship);
     }
 
-    public void accept(Long friendshipId) {
+    public Friendship accept(Long friendshipId) {
         Friendship friendship = friendshipRepository.findById(friendshipId)
                 .orElseThrow(() -> new RuntimeException("Заявка не найдена"));
         friendship.setStatus(Friendship.FriendshipStatus.ACCEPTED);
-        friendshipRepository.save(friendship);
+        return friendshipRepository.save(friendship);
+    }
+
+    public Friendship findById(Long friendshipId) {
+        return friendshipRepository.findById(friendshipId)
+                .orElseThrow(() -> new RuntimeException("Заявка не найдена"));
     }
 
     public void decline(Long friendshipId) {

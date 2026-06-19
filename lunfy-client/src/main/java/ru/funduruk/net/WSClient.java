@@ -47,8 +47,9 @@ public class WSClient {
                         String dataJson = mapper.writeValueAsString(env.getData());
                         MessageDTO msg = mapper.readValue(dataJson, MessageDTO.class);
                         ChatEventBus.fireDeleteChat(msg.getChatId());
-                        } else if ("GROUP_MEMBER_KICKED".equals(env.getType()) ||
-                                "GROUP_ROLE_CHANGED".equals(env.getType())) {
+                        }else if ("GROUP_MEMBER_KICKED".equals(env.getType()) ||
+                                "GROUP_ROLE_CHANGED".equals(env.getType()) ||
+                                "GROUP_MEMBER_ADDED".equals(env.getType())) {
                             String dataJson = mapper.writeValueAsString(env.getData());
                             Map<String, Object> data = mapper.readValue(dataJson,
                                     new com.fasterxml.jackson.core.type.TypeReference<>() {});
@@ -102,6 +103,36 @@ public class WSClient {
                             String dataJson = mapper.writeValueAsString(env.getData());
                             VideoFrameDTO frame = mapper.readValue(dataJson, VideoFrameDTO.class);
                             ChatEventBus.fireVideoStop(frame);
+                        } else if ("GROUP_INVITE".equals(env.getType())) {
+                            String dataJson = mapper.writeValueAsString(env.getData());
+                            Map<String, Object> data = mapper.readValue(dataJson,
+                                    new com.fasterxml.jackson.core.type.TypeReference<>() {});
+                            ChatEventBus.fireGroupInvite(data);
+                        } else if ("GROUP_JOINED".equals(env.getType())) {
+                            String dataJson = mapper.writeValueAsString(env.getData());
+                            Map<String, Object> data = mapper.readValue(dataJson,
+                                    new com.fasterxml.jackson.core.type.TypeReference<>() {});
+                            ChatEventBus.fireGroupJoined(data);
+                        } else if ("CHANNEL_CREATED".equals(env.getType())) {
+                            String dataJson = mapper.writeValueAsString(env.getData());
+                            Map<String, Object> data = mapper.readValue(dataJson,
+                                    new com.fasterxml.jackson.core.type.TypeReference<>() {});
+                            ChatEventBus.fireChannelCreated(data);
+                        } else if ("CHANNEL_DELETED".equals(env.getType())) {
+                            String dataJson = mapper.writeValueAsString(env.getData());
+                            Map<String, Object> data = mapper.readValue(dataJson,
+                                    new com.fasterxml.jackson.core.type.TypeReference<>() {});
+                            ChatEventBus.fireChannelDeleted(data);
+                        } else if ("FRIEND_REQUEST".equals(env.getType())) {
+                            String dataJson = mapper.writeValueAsString(env.getData());
+                            Map<String, Object> data = mapper.readValue(dataJson,
+                                    new com.fasterxml.jackson.core.type.TypeReference<>() {});
+                            ChatEventBus.fireFriendRequest(data);
+                        } else if ("FRIEND_ACCEPTED".equals(env.getType()) || "FRIEND_REMOVED".equals(env.getType())) {
+                            String dataJson = mapper.writeValueAsString(env.getData());
+                            Map<String, Object> data = mapper.readValue(dataJson,
+                                    new com.fasterxml.jackson.core.type.TypeReference<>() {});
+                            ChatEventBus.fireFriendUpdate(env.getType(), data);
                         }
                     } catch (Exception e) {
                         e.printStackTrace();

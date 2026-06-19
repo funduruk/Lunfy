@@ -20,6 +20,7 @@ public class FriendController {
 
     private final FriendshipService friendshipService;
     private final UserService userService;
+    private final ru.funduruk.lunfyServer.ws.ChatWebSocketHandler ws;
 
     @PostMapping("/request")
     public ResponseEntity<?> sendRequest(@AuthenticationPrincipal String username,
@@ -27,9 +28,12 @@ public class FriendController {
         try {
             User sender = userService.findByUsername(username);
             User receiver = userService.findByUsernameAndTag(
-                    body.get("username"), body.get("tag")
-            );
+                    body.get("username"), body.get("tag"));
             friendshipService.sendRequest(sender, receiver);
+
+            safeSend(receiver.getUsername(), new org.funduruk.dto.EnvelopeDTO("FRIEND_REQUEST",
+                    Map.of("from", sender.getUsername(), "tag", sender.getTag())));
+
             return ResponseEntity.ok(Map.of("message", "Заявка отправлена"));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -38,7 +42,17 @@ public class FriendController {
 
     @PostMapping("/{id}/accept")
     public ResponseEntity<?> accept(@PathVariable Long id) {
-        friendshipService.accept(id);
+        Friendship f = friendshipService.accept(id);
+
+        if (f != null) {
+            String u1 = f.getSender().getUsername();
+            String u2 = f.getReceiver().getUsername();
+            org.funduruk.dto.EnvelopeDTO env = new org.funduruk.dto.EnvelopeDTO(
+                    "FRIEND_ACCEPTED", Map.of("user1", u1, "user2", u2));
+
+            safeSend(u1, env);
+            safeSend(u2, env);
+        }
         return ResponseEntity.ok(Map.of("message", "Заявка принята"));
     }
 
@@ -90,12 +104,28 @@ public class FriendController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> removeFriend(@PathVariable Long id) {
         try {
+            Friendship f = friendshipService.findById(id); // нужен метод, см ниже
+            String u1 = f.getSender().getUsername();
+            String u2 = f.getReceiver().getUsername();
+
             friendshipService.remove(id);
+
+            org.funduruk.dto.EnvelopeDTO env = new org.funduruk.dto.EnvelopeDTO(
+                    "FRIEND_REMOVED", Map.of("user1", u1, "user2", u2));
+            ws.sendToUserByUsername(u1, env);
+            ws.sendToUserByUsername(u2, env);
+
             return ResponseEntity.ok(Map.of("message", "Друг удалён"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
-
+    private void safeSend(String username, org.funduruk.dto.EnvelopeDTO env) {
+        try {
+            ws.sendToUserByUsername(username, env);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

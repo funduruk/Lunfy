@@ -5,6 +5,7 @@ import javafx.animation.ParallelTransition;
 import javafx.animation.ScaleTransition;
 import javafx.fxml.FXML;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -33,7 +34,8 @@ public class RegisterController extends Controller{
     @FXML Label statusLabel;
     @FXML private StackPane backButton;
     @FXML private Circle backBg;
-
+    @FXML private TextField passwordVisibleField;
+    @FXML private Button eyeButton;
 
     Rectangle2D screenBounds = Screen.getPrimary().getBounds();
     double width = screenBounds.getWidth();
@@ -76,8 +78,18 @@ public class RegisterController extends Controller{
         backButton.setOnMouseExited(e -> fadeOut.playFromStart());
 
         backButton.setOnMouseClicked(e -> goBackToLogin());
+        passwordVisibleField.textProperty().bindBidirectional(passwordField.textProperty());
     }
 
+    @FXML
+    private void togglePasswordVisibility() {
+        boolean showing = passwordVisibleField.isVisible();
+        passwordVisibleField.setVisible(!showing);
+        passwordVisibleField.setManaged(!showing);
+        passwordField.setVisible(showing);
+        passwordField.setManaged(showing);
+        eyeButton.setText(showing ? "👁" : "🙈");
+    }
 
     double prevX, prevY, prevW, prevH;
 
@@ -120,7 +132,7 @@ public class RegisterController extends Controller{
         String password = passwordField.getText();
 
         if (!FieldsManager.checkPassword(password)) {
-            showError("Пароль должен содержать минимум 8 символов, заглавную букву, цифру и спецсимвол");
+            showError("Пароль должен содержать минимум \n 8 символов, заглавную букву\n, цифру и спецсимвол");
             return;
         }
         if (!FieldsManager.checkEmail(email)) {
@@ -145,7 +157,7 @@ public class RegisterController extends Controller{
                 });
             } catch (Exception e) {
                 javafx.application.Platform.runLater(() ->
-                        showError("Нет соединения с сервером")
+                        showError("Нет соединения \nс сервером")
                 );
             }
         }).start();

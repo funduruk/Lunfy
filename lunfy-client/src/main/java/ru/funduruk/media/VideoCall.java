@@ -102,4 +102,12 @@ public class VideoCall {
         }
         System.out.println("VideoCall остановлен");
     }
+
+    public static boolean isCameraAvailable() {
+        try {
+            return com.github.sarxos.webcam.Webcam.getDefault() != null;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }

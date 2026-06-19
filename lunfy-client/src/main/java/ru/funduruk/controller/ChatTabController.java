@@ -34,6 +34,7 @@ public class ChatTabController {
 
     @FXML private VBox chatList;
     @FXML private TextArea messageField;
+    @FXML private Button videoBtn;
 
     @Getter
     public static ChatTabController instance;
@@ -127,6 +128,16 @@ public class ChatTabController {
                 if (general != null) general.removeChat(chatId);
             });
         });
+
+        if (!ru.funduruk.media.VideoCall.isCameraAvailable()) {
+            videoBtn.setOpacity(0.4);
+            Tooltip noCam = new Tooltip("Нет активных камер");
+            noCam.setStyle("-fx-background-color: #13112b; -fx-text-fill: white; -fx-font-size: 12px; -fx-background-radius: 6; -fx-padding: 4 8;");
+            noCam.setShowDelay(javafx.util.Duration.millis(200));
+            Tooltip.install(videoBtn, noCam);
+            videoBtn.setOnAction(e -> {});
+        }
+
     }
 
     public void openChat(String chatId) {
@@ -261,7 +272,7 @@ public class ChatTabController {
         container.getChildren().addAll(bg, letter);
 
         try {
-            String url = "http://localhost:8080/api/users/" + username + "/avatar";
+            String url = ApiClient.HTTP_BASE + "/api/users/" + username + "/avatar";
             javafx.scene.image.Image img = new javafx.scene.image.Image(
                     url, size, size, true, true, true);
 
@@ -423,17 +434,35 @@ public class ChatTabController {
 
     @FXML
     private void startCall() {
-        System.out.println(">>> startCall: chatId=" + currentChatId + " friend=" + currentFriendUsername);
         if (currentChatId == null || currentFriendUsername == null) {
             System.out.println("Нет активного чата для звонка");
             return;
         }
-        GeneralController.getInstance().openCall(ctrl ->
+        GeneralController gc = GeneralController.getInstance();
+
+        if (gc.isInCall()) {
+            gc.endCurrentCall();
+        }
+
+        gc.openCall(ctrl ->
                 ctrl.initOutgoing(currentFriendUsername, currentChatId, "AUDIO"));
     }
+
     @FXML
     private void startVideoCall() {
-        System.out.println("Later..!");
+        if (currentChatId == null || currentFriendUsername == null) return;
+        if (!ru.funduruk.media.VideoCall.isCameraAvailable()) {
+            System.out.println("Нет камеры");
+            return;
+        }
+        GeneralController gc = GeneralController.getInstance();
+        if (gc.isInCall()) {
+            gc.endCurrentCall();
+        }
+        gc.openCall(ctrl -> {
+            ctrl.initOutgoing(currentFriendUsername, currentChatId, "AUDIO");
+            ctrl.setAutoStartVideo(true);
+        });
     }
 
     @FXML

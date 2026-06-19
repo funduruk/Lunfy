@@ -41,14 +41,27 @@ public class GroupViewController {
             openChannel(group.getTextChannels().getFirst());
         }
 
+        ChatEventBus.setOnChannelCreated(data -> {
+            String groupId = String.valueOf(data.get("groupId"));
+            if (!groupId.equals(group.getId())) return;
+            Platform.runLater(this::reloadChannels);
+        });
+
+        ChatEventBus.setOnChannelDeleted(data -> {
+            String groupId = String.valueOf(data.get("groupId"));
+            if (!groupId.equals(group.getId())) return;
+            Platform.runLater(this::reloadChannels);
+        });
+
         ChatEventBus.setOnGroupMemberUpdate((type, data) -> {
             String groupId = String.valueOf(data.get("groupId"));
             if (!groupId.equals(group.getId())) return;
 
+
+
             Platform.runLater(() -> {
                 if ("GROUP_MEMBER_KICKED".equals(type)) {
                     String kicked = (String) data.get("username");
-                    // if kicked - leave
                     if (kicked.equals(ApiClient.getCurrentUsername())) {
                         if (generalController != null) {
                             generalController.setContent(new javafx.scene.layout.StackPane());
@@ -57,6 +70,8 @@ public class GroupViewController {
                         loadMembersFromServer(group.getId());
                     }
                 } else if ("GROUP_ROLE_CHANGED".equals(type)) {
+                    loadMembersFromServer(group.getId());
+                } else if ("GROUP_MEMBER_ADDED".equals(type)) {  // ← добавь
                     loadMembersFromServer(group.getId());
                 }
             });
@@ -106,8 +121,30 @@ public class GroupViewController {
         name.setStyle("-fx-text-fill: #ccc; -fx-font-size: 13px;");
 
         row.getChildren().addAll(icon, name);
-        row.setOnMouseClicked(e -> openChannel(channel));
+        row.setOnMouseClicked(e -> {
+            if (e.getButton() == javafx.scene.input.MouseButton.SECONDARY && isCurrentUserAdmin()) {
+                ContextMenu menu = new ContextMenu();
+                MenuItem del = new MenuItem("Удалить канал");
+                del.setStyle("-fx-text-fill: #ed4245;");
+                del.setOnAction(ev -> deleteChannelFromServer(channel));
+                menu.getItems().add(del);
+                menu.show(row, e.getScreenX(), e.getScreenY());
+            } else {
+                openChannel(channel);
+            }
+        });
         return row;
+    }
+
+    private void deleteChannelFromServer(ChatChannel channel) {
+        new Thread(() -> {
+            try {
+                ApiClient.delete("/api/groups/" + group.getId() + "/channels/" + channel.getId());
+                Platform.runLater(this::reloadChannels);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     @FXML private StackPane chatPane;
@@ -382,7 +419,7 @@ public class GroupViewController {
                     content.setPrefWidth(200);
                     content.setMaxWidth(200);
 
-                    Label title = new Label("Добавить участника");
+                    Label title = new Label("Пригласить участника");
                     title.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
                     content.getChildren().add(title);
 
@@ -427,9 +464,18 @@ public class GroupViewController {
     private void addMemberToServer(String username, String tag) {
         new Thread(() -> {
             try {
-                ApiClient.postRaw("/api/groups/" + group.getId() + "/members",
+                String response = ApiClient.postRaw("/api/groups/" + group.getId() + "/invite",
                         new ObjectMapper().writeValueAsString(Map.of("username", username, "tag", tag)));
-                Platform.runLater(() -> loadMembersFromServer(group.getId()));
+                ObjectMapper mapper = new ObjectMapper();
+                Map<String, Object> result = mapper.readValue(response,
+                        new com.fasterxml.jackson.core.type.TypeReference<>() {});
+                Platform.runLater(() -> {
+                    if (result.containsKey("error")) {
+                        System.out.println("Ошибка приглашения: " + result.get("error"));
+                    } else {
+                        System.out.println("Приглашение отправлено: " + username);
+                    }
+                });
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -552,7 +598,7 @@ public class GroupViewController {
         });
 
         if (isCurrentUserAdmin()) {
-            Button deleteBtn = new Button("🗑 Удалить группу");
+            Button deleteBtn = new Button("Удалить группу");
             deleteBtn.setStyle("""
             -fx-background-color: rgba(237,66,69,0.15);
             -fx-text-fill: #ed4245;
@@ -651,7 +697,7 @@ public class GroupViewController {
                 // Multipart upload
                 String boundary = "----FormBoundary" + System.currentTimeMillis();
                 java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
-                        .uri(java.net.URI.create("http://localhost:8080/api/groups/" + group.getId() + "/avatar"))
+                        .uri(java.net.URI.create(ApiClient.HTTP_BASE + "/api/groups/" + group.getId() + "/avatar"))
                         .header("Authorization", "Bearer " + ApiClient.getToken())
                         .header("Content-Type", "multipart/form-data; boundary=" + boundary)
                         .POST(buildMultipartBody(file, boundary))

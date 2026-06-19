@@ -96,7 +96,7 @@ public class GroupsTabController {
             btn.getStyleClass().add("group-btn");
 
             if (group.getAvatarPath() != null && !group.getAvatarPath().isBlank()) {
-                String url = "http://localhost:8080/api/groups/" + group.getId() + "/avatar";
+                String url = ApiClient.HTTP_BASE + "/api/groups/" + group.getId() + "/avatar";
                 javafx.scene.image.ImageView avatar = new javafx.scene.image.ImageView(
                         new javafx.scene.image.Image(url, 42, 42, true, true, true)
                 );

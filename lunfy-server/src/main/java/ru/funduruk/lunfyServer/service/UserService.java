@@ -44,7 +44,7 @@ public class UserService {
         return encoder.matches(rawPassword, user.getPasswordHash());
     }
 
-    public User save(User user) {
-        return userRepository.save(user);
+    public void save(User user) {
+        userRepository.save(user);
     }
 }

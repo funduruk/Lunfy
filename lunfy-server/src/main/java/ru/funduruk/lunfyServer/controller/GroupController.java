@@ -54,7 +54,101 @@ public class GroupController {
         }
     }
 
-    @GetMapping
+    @PostMapping("/{groupId}/invite")
+    public ResponseEntity<?> invite(@PathVariable Long groupId,
+                                    @AuthenticationPrincipal String currentUser,
+                                    @RequestBody Map<String, String> body) {
+        try {
+            User invitedBy = userService.findByUsername(currentUser);
+            User invitedUser = userService.findByUsernameAndTag(
+                    body.get("username"), body.get("tag"));
+
+            GroupInvite invite = groupService.createInvite(groupId, invitedUser, invitedBy);
+            Group group = invite.getGroup();
+
+            Map<String, Object> data = new java.util.HashMap<>();
+            data.put("inviteId", invite.getId());
+            data.put("groupId", group.getId());
+            data.put("groupName", group.getName());
+            data.put("invitedBy", invitedBy.getUsername());
+
+            chatWebSocketHandler.sendToUserByUsername(
+                    invitedUser.getUsername(),
+                    new EnvelopeDTO("GROUP_INVITE", data));
+
+            return ResponseEntity.ok(Map.of("message", "Приглашение отправлено"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/invites")
+    public ResponseEntity<?> getMyInvites(@AuthenticationPrincipal String username) {
+        User user = userService.findByUsername(username);
+        List<GroupInvite> invites = groupService.getPendingInvites(user.getId());
+
+        List<Map<String, Object>> result = invites.stream()
+                .map(inv -> {
+                    Map<String, Object> m = new java.util.HashMap<>();
+                    m.put("inviteId", inv.getId());
+                    m.put("groupId", inv.getGroup().getId());
+                    m.put("groupName", inv.getGroup().getName());
+                    m.put("invitedBy", inv.getInvitedBy().getUsername());
+                    return m;
+                })
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/invites/{inviteId}/accept")
+    public ResponseEntity<?> acceptInvite(@PathVariable Long inviteId,
+                                          @AuthenticationPrincipal String username) {
+        try {
+            User user = userService.findByUsername(username);
+            Group group = groupService.acceptInvite(inviteId, user);
+
+            List<Map<String, Object>> channels = groupService.getChannels(group.getId())
+                    .stream()
+                    .map(ch -> Map.<String, Object>of(
+                            "id", ch.getId(),
+                            "name", ch.getName(),
+                            "type", ch.getType().name()))
+                    .collect(Collectors.toList());
+
+            Map<String, Object> data = new java.util.HashMap<>();
+            data.put("groupId", group.getId());
+            data.put("groupName", group.getName());
+            data.put("type", group.getType() != null ? group.getType().name() : "COMMUNITY");
+            data.put("avatarPath", group.getAvatarPath());
+            data.put("channels", channels);
+
+            chatWebSocketHandler.sendToUserByUsername(
+                    username, new EnvelopeDTO("GROUP_JOINED", data));
+
+            // Уведомляем остальных участников что добавился новый
+            notifyGroupMembers(group.getId(), "GROUP_MEMBER_ADDED",
+                    Map.of("groupId", group.getId(), "username", user.getUsername()));
+
+            return ResponseEntity.ok(Map.of("message", "Вы вступили в сообщество"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/invites/{inviteId}/decline")
+    public ResponseEntity<?> declineInvite(@PathVariable Long inviteId,
+                                           @AuthenticationPrincipal String username) {
+        try {
+            User user = userService.findByUsername(username);
+            groupService.declineInvite(inviteId, user);
+            return ResponseEntity.ok(Map.of("message", "Приглашение отклонено"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+        @GetMapping
     public ResponseEntity<?> getMyGroups(@AuthenticationPrincipal String username) {
         User user = userService.findByUsername(username);
         List<GroupMember> memberships = groupService.getMembersByUser(user.getId());
@@ -85,20 +179,6 @@ public class GroupController {
         return ResponseEntity.ok(result);
     }
 
-    @PostMapping("/{groupId}/members")
-    public ResponseEntity<?> addMember(@PathVariable Long groupId,
-                                       @RequestBody Map<String, String> body) {
-        try {
-            User user = userService.findByUsernameAndTag(
-                    body.get("username"), body.get("tag")
-            );
-            groupService.addMember(groupId, user);
-            return ResponseEntity.ok(Map.of("message", "Участник добавлен"));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
-    }
-
     @GetMapping("/{groupId}/members")
     public ResponseEntity<?> getMembers(@PathVariable Long groupId) {
         List<GroupMember> members = groupService.getMembers(groupId);
@@ -119,11 +199,17 @@ public class GroupController {
         try {
             Channel.ChannelType type = Channel.ChannelType.valueOf(body.get("type"));
             Channel channel = groupService.addChannel(groupId, body.get("name"), type);
+
+            notifyGroupMembers(groupId, "CHANNEL_CREATED", Map.of(
+                    "groupId", groupId,
+                    "channelId", channel.getId(),
+                    "channelName", channel.getName(),
+                    "channelType", channel.getType().name()));
+
             return ResponseEntity.ok(Map.of(
                     "id", channel.getId(),
                     "name", channel.getName(),
-                    "type", channel.getType().name()
-            ));
+                    "type", channel.getType().name()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -326,5 +412,20 @@ public class GroupController {
         }
     }
 
+    @DeleteMapping("/{groupId}/channels/{channelId}")
+    public ResponseEntity<?> deleteChannel(@PathVariable Long groupId,
+                                           @PathVariable Long channelId) {
+        try {
+            groupService.deleteChannel(channelId);
+
+            notifyGroupMembers(groupId, "CHANNEL_DELETED", Map.of(
+                    "groupId", groupId,
+                    "channelId", channelId));
+
+            return ResponseEntity.ok(Map.of("message", "Канал удалён"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 
 }
