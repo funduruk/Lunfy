@@ -390,3 +390,11 @@
     -fx-background-color: -fx-color-danger;
     -fx-text-fill: white;
 }
+
+.code-field {
+    -fx-font-size: 22px;
+    -fx-font-family: "JetBrains Mono", monospace;
+    -fx-letter-spacing: 0.3em;
+    -fx-alignment: CENTER;
+    -fx-padding: 14 16;
+}

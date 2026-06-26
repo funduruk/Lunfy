@@ -22,8 +22,10 @@ public class ApiClient {
     @Setter
     private static String token = null;
     @Getter
+    @Setter
     private static String currentUsername = null;
     @Getter
+    @Setter
     private static String currentTag = null;
 
     public static Map<String, Object> post(String path, Map<String, ?> body) throws Exception {

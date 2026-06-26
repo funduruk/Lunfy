@@ -35,6 +35,9 @@ public class User {
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    @Column(name = "email_verified", nullable = false)
+    private boolean emailVerified = false;
+
     public enum UserStatus {
         ONLINE, OFFLINE, DO_NOT_DISTURB
     }

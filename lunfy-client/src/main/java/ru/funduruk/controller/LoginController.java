@@ -52,12 +52,20 @@ public class LoginController extends Controller{
                 Map<String, Object> result = ApiClient.login(username, password);
 
                 javafx.application.Platform.runLater(() -> {
+                    if ("verification_required".equals(result.get("status"))) {
+                        VerifyEmailController.setPending(
+                                (String) result.get("email"),
+                                username,
+                                null
+                        );
+                        SceneManager.setScene("/fxml/VerifyEmailView.fxml", "/css/style.css");
+                        return;
+                    }
+
                     if (result.containsKey("token")) {
-                        // Save data in UserProfile
                         UserProfile profile = UserProfile.getInstance();
                         profile.setUsername((String) result.get("username"));
                         profile.setTag((String) result.get("tag"));
-
                         playLoginSuccessAnimation();
                     } else {
                         statusLabel.setText((String) result.getOrDefault("error", "Ошибка входа"));
@@ -218,5 +226,10 @@ public class LoginController extends Controller{
             );
             scaleOut.playFromStart();
         });
+    }
+
+    @FXML
+    private void handleForgotPassword() {
+        SceneManager.setScene("/fxml/ForgotPasswordView.fxml", "/css/style.css");
     }
 }

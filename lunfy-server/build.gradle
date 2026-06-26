@@ -49,6 +49,9 @@ dependencies {
 
     //camera
     implementation 'com.github.sarxos:webcam-capture:0.3.12'
+
+    //mail
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
 }
 
 tasks.named('test') {

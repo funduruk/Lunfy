@@ -26,8 +26,19 @@ public class UserService {
         user.setTag(tag);
         user.setEmail(email);
         user.setPasswordHash(passwordEncoder.encode(password));
+        user.setEmailVerified(false);
 
         return userRepository.save(user);
+    }
+
+    public User findByEmail(String email) {
+        return userRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new RuntimeException("Пользователь с такой почтой не найден"));
+    }
+
+    public void markEmailVerified(User user) {
+        user.setEmailVerified(true);
+        userRepository.save(user);
     }
 
     public User findByUsername(String username) {
@@ -45,6 +56,11 @@ public class UserService {
     }
 
     public void save(User user) {
+        userRepository.save(user);
+    }
+
+    public void updatePassword(User user, String newPassword) {
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }
 }

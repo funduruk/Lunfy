@@ -134,14 +134,17 @@ public class RegisterController extends Controller{
                 Map<String, Object> result = ApiClient.register(username, email, password);
 
                 javafx.application.Platform.runLater(() -> {
-                    if (result.containsKey("token")) {
-                        UserProfile profile = UserProfile.getInstance();
-                        profile.setUsername((String) result.get("username"));
-                        profile.setTag((String) result.get("tag"));
-
-                        SceneManager.setScene("/fxml/GeneralView.fxml", "/css/style.css");
+                    if ("verification_required".equals(result.get("status"))) {
+                        VerifyEmailController.setPending(
+                                (String) result.get("email"),
+                                (String) result.get("username"),
+                                (String) result.get("tag")
+                        );
+                        SceneManager.setScene("/fxml/VerifyEmailView.fxml", "/css/style.css");
+                    } else if (result.containsKey("error")) {
+                        showError((String) result.get("error"));
                     } else {
-                        showError((String) result.getOrDefault("error", "Ошибка регистрации"));
+                        showError("Неизвестный ответ сервера");
                     }
                 });
             } catch (Exception e) {

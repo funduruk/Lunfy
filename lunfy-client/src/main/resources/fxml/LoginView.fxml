@@ -65,7 +65,8 @@
                             style="-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 0 10 0 0; -fx-font-size: 16px;"/>
                 </StackPane>
                 <Button fx:id="registerBtn" text="Эй! Ты тут впервые?! Создать аккаунт" onAction="#handleRegister" styleClass="button-register"/>
-                <HBox spacing="10" alignment="CENTER">
+                   <Button text="Забыли пароль?" onAction="#handleForgotPassword" styleClass="button-register"/>
+                   <HBox spacing="10" alignment="CENTER">
                     <Button text="Войти" onAction="#handleLogin" styleClass="button-login"/>
                 </HBox>
                 <VBox fx:id="statusBox" styleClass="status-box" visible="false">

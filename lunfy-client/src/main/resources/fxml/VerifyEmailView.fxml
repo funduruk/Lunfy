@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+
+<StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="ru.funduruk.controller.VerifyEmailController"
+           fx:id="root" stylesheets="@../css/style.css">
+
+    <BorderPane fx:id="rootPane">
+
+        <top>
+            <HBox fx:id="titleBar" alignment="CENTER_LEFT" spacing="10" styleClass="title-bar">
+                <Label text="lunfy" styleClass="title-label-bar"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button onAction="#minimize" styleClass="button-bar">
+                    <graphic>
+                        <ImageView fitWidth="16" fitHeight="16" preserveRatio="true">
+                            <Image url="@/image/icon/minimize.png"/>
+                        </ImageView>
+                    </graphic>
+                </Button>
+                <Button onAction="#close" styleClass="button-bar">
+                    <graphic>
+                        <ImageView fitWidth="16" fitHeight="16" preserveRatio="true">
+                            <Image url="@/image/icon/close.png"/>
+                        </ImageView>
+                    </graphic>
+                </Button>
+            </HBox>
+        </top>
+
+        <center>
+            <HBox fx:id="mainBox" styleClass="main-box">
+                <VBox styleClass="login-box">
+                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="hero-tag-wrap">
+                        <Region styleClass="pulse-dot"/>
+                        <Label text="ПОДТВЕРЖДЕНИЕ ПОЧТЫ" styleClass="hero-tag"/>
+                    </HBox>
+
+                    <Label text="Проверьте почту" styleClass="title-label"/>
+                    <Label fx:id="subtitleLabel"
+                           text="Мы отправили код на your@email"
+                           styleClass="title-subtitle"
+                           wrapText="true"/>
+
+                    <TextField fx:id="codeField"
+                               promptText="6-значный код"
+                               styleClass="text-field, code-field"/>
+
+                    <HBox spacing="10" alignment="CENTER">
+                        <Button text="Подтвердить" onAction="#handleVerify" styleClass="button-login"/>
+                    </HBox>
+
+                    <Button fx:id="resendBtn" text="Отправить код ещё раз"
+                            onAction="#handleResend" styleClass="button-register"/>
+
+                    <VBox fx:id="statusBox" styleClass="status-box" visible="false" managed="false">
+                        <Label fx:id="statusLabel" wrapText="true"
+                               style="-fx-text-fill: #ff5c7a;"/>
+                    </VBox>
+                </VBox>
+
+                <VBox alignment="CENTER">
+                    <ImageView fitWidth="250" fitHeight="250" preserveRatio="true">
+                        <Image url="@/image/logo/logo.png"/>
+                    </ImageView>
+                </VBox>
+            </HBox>
+        </center>
+
+    </BorderPane>
+</StackPane>
