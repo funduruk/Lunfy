@@ -8,6 +8,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import ru.funduruk.dialog.AvatarEditorDialog;
 import ru.funduruk.manager.SceneManager;
 import ru.funduruk.model.UserProfile;
 import ru.funduruk.net.ApiClient;
@@ -57,7 +58,7 @@ public class ProfileController extends Controller {
 
     private void loadAvatar(String username) {
         try {
-            String url = "http://localhost:8080/api/users/" + username + "/avatar";
+            String url = ApiClient.HTTP_BASE + "/api/users/" + username + "/avatar";
             Image img = new Image(url, 100, 100, true, true, true);
             img.progressProperty().addListener((obs, oldVal, newVal) -> {
                 if (newVal.doubleValue() >= 1.0 && !img.isError()) {
@@ -93,15 +94,18 @@ public class ProfileController extends Controller {
         File file = chooser.showOpenDialog(avatarContainer.getScene().getWindow());
         if (file == null) return;
 
-        // load to server
+        AvatarEditorDialog editor = new AvatarEditorDialog(file);
+        File editedFile = editor.showAndWait();
+        if (editedFile == null) return;
+
         new Thread(() -> {
             try {
                 String boundary = "----FormBoundary" + System.currentTimeMillis();
                 java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
-                        .uri(java.net.URI.create("http://localhost:8080/api/users/me/avatar"))
+                        .uri(java.net.URI.create(ApiClient.HTTP_BASE + "/api/users/me/avatar"))
                         .header("Authorization", "Bearer " + ApiClient.getToken())
                         .header("Content-Type", "multipart/form-data; boundary=" + boundary)
-                        .POST(buildMultipartBody(file, boundary))
+                        .POST(buildMultipartBody(editedFile, boundary))
                         .build();
 
                 java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
@@ -111,8 +115,12 @@ public class ProfileController extends Controller {
                 System.out.println("User avatar uploaded: " + response.body());
 
                 javafx.application.Platform.runLater(() -> {
-                    // reload avatar
                     loadAvatar(UserProfile.getInstance().getUsername());
+                    javafx.application.Platform.runLater(() -> {
+                        loadAvatar(UserProfile.getInstance().getUsername());
+                        GeneralController gc = GeneralController.getInstance();
+                        if (gc != null) gc.loadMyAvatar();
+                    });
                 });
             } catch (Exception e) {
                 e.printStackTrace();

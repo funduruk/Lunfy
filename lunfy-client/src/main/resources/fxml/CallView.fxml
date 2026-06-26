@@ -17,6 +17,7 @@
                     <StackPane styleClass="participant-avatar-wrap">
                         <Circle radius="56" styleClass="participant-avatar"/>
                         <Label fx:id="myInitial" styleClass="participant-initial"/>
+                        <ImageView fx:id="myAvatar" fitWidth="112" fitHeight="112" preserveRatio="true"/>
                     </StackPane>
                     <Label fx:id="myNameLabel" text="Вы" styleClass="participant-name"/>
                 </VBox>
@@ -25,6 +26,7 @@
                     <StackPane styleClass="participant-avatar-wrap">
                         <Circle radius="56" styleClass="participant-avatar-peer"/>
                         <Label fx:id="peerInitial" styleClass="participant-initial"/>
+                        <ImageView fx:id="peerAvatar" fitWidth="112" fitHeight="112" preserveRatio="true"/>
                     </StackPane>
                     <Label fx:id="peerNameLabel" text="username" styleClass="participant-name"/>
                 </VBox>

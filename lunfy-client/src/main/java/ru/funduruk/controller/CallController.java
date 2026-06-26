@@ -56,6 +56,26 @@ public class CallController {
         CallSoundManager.playRingtone();
     }
 
+    @FXML private ImageView myAvatar;
+    @FXML private ImageView peerAvatar;
+
+    private void loadParticipantAvatar(javafx.scene.image.ImageView target, String username) {
+        if (username == null || username.isEmpty()) return;
+
+        String url = ApiClient.HTTP_BASE + "/api/users/" + username
+                + "/avatar?t=" + System.currentTimeMillis();
+        javafx.scene.image.Image img = new javafx.scene.image.Image(url, 112, 112, true, true, true);
+
+        img.progressProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal.doubleValue() >= 1.0 && !img.isError()) {
+                Platform.runLater(() -> {
+                    target.setImage(img);
+                    target.setClip(new javafx.scene.shape.Circle(56, 56, 56));
+                });
+            }
+        });
+    }
+
     @FXML private Label peerInitial;
     @FXML private Label peerNameLabel;
     @FXML private Label myInitial;
@@ -68,6 +88,8 @@ public class CallController {
         if (!me.isEmpty()) myInitial.setText(me.substring(0, 1).toUpperCase());
         if (peerUser != null && !peerUser.isEmpty())
             peerInitial.setText(peerUser.substring(0, 1).toUpperCase());
+        loadParticipantAvatar(myAvatar, ApiClient.getCurrentUsername());
+        loadParticipantAvatar(peerAvatar, peerUser);
         registerListeners();
     }
 

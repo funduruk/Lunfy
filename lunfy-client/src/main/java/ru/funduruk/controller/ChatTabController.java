@@ -281,7 +281,8 @@ public class ChatTabController {
         container.getChildren().addAll(bg, letter);
 
         try {
-            String url = ApiClient.HTTP_BASE + "/api/users/" + username + "/avatar";
+            String url = ApiClient.HTTP_BASE + "/api/users/" + username
+                    + "/avatar?t=" + System.currentTimeMillis();
             javafx.scene.image.Image img = new javafx.scene.image.Image(
                     url, size, size, true, true, true);
 
@@ -425,12 +426,25 @@ public class ChatTabController {
         chatName.setText(name);
         chatAvatarInitial.setText(name.substring(0, 1).toUpperCase());
 
-        if (avatarPath != null) {
-            chatAvatar.setImage(new Image("file:" + avatarPath));
-            chatAvatarInitial.setVisible(false);
-        } else {
-            chatAvatar.setImage(null);
-            chatAvatarInitial.setVisible(true);
+        chatAvatar.setImage(null);
+        chatAvatarInitial.setVisible(true);
+
+        if (name != null && !name.isEmpty()) {
+            String url = ApiClient.HTTP_BASE + "/api/users/" + name
+                    + "/avatar?t=" + System.currentTimeMillis();
+            Image img = new Image(url, 40, 40, true, true, true);
+
+            img.progressProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal.doubleValue() >= 1.0 && !img.isError()) {
+                    Platform.runLater(() -> {
+                        chatAvatar.setImage(img);
+                        chatAvatar.setFitWidth(40);
+                        chatAvatar.setFitHeight(40);
+                        chatAvatar.setClip(new javafx.scene.shape.Circle(20, 20, 20));
+                        chatAvatarInitial.setVisible(false);
+                    });
+                }
+            });
         }
     }
 

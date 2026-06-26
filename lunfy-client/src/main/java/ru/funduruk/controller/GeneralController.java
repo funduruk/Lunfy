@@ -9,7 +9,9 @@
     import javafx.scene.control.Label;
     import javafx.scene.control.ScrollPane;
     import javafx.scene.control.TextField;
+    import javafx.scene.image.ImageView;
     import javafx.scene.layout.*;
+    import javafx.scene.shape.Circle;
     import javafx.stage.Stage;
     import lombok.Getter;
     import ru.funduruk.manager.NotificationManager;
@@ -96,10 +98,34 @@
 
             loadChatsFromFriends();
             setupCallResize();
+            loadMyAvatar();
         }
 
-        @FXML private javafx.scene.shape.Circle statusDot;
+        @FXML private Circle statusDot;
         @FXML private Label profileStatus;
+        @FXML private ImageView profileAvatar;
+
+        public void loadMyAvatar() {
+            if (profileAvatar == null) return;
+            UserProfile profile = UserProfile.getInstance();
+            String username = profile.getUsername();
+            if (username == null || username.isEmpty()) return;
+
+            String url = ApiClient.HTTP_BASE + "/api/users/" + username
+                    + "/avatar?t=" + System.currentTimeMillis();
+
+            javafx.scene.image.Image img = new javafx.scene.image.Image(
+                    url, 36, 36, true, true, true);
+
+            img.progressProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal.doubleValue() >= 1.0 && !img.isError()) {
+                    Platform.runLater(() -> {
+                        profileAvatar.setImage(img);
+                        profileAvatar.setClip(new javafx.scene.shape.Circle(18, 18, 18));
+                    });
+                }
+            });
+        }
 
         public void updateStatusDisplay(String status) {
             if (profileStatus != null) {

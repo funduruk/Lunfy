@@ -627,7 +627,11 @@ public class GroupViewController {
                 );
                 java.io.File file = chooser.showOpenDialog(groupNameLabel.getScene().getWindow());
                 if (file != null) {
-                    uploadGroupAvatar(file);
+                    ru.funduruk.dialog.AvatarEditorDialog editor = new ru.funduruk.dialog.AvatarEditorDialog(file);
+                    java.io.File editedFile = editor.showAndWait();
+                    if (editedFile != null) {
+                        uploadGroupAvatar(editedFile);
+                    }
                 }
             });
 
