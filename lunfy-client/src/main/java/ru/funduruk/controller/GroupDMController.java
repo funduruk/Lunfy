@@ -38,7 +38,7 @@ public class GroupDMController {
 
         MessageStore.getInstance().ensureChat(groupDM.getId());
 
-        ChatEventBus.setOnMessage(msg -> {
+        ChatEventBus.addMessageListener(msg -> {
             if (groupDM.getId().equals(msg.getChatId())) {
                 Platform.runLater(() -> {
                     MessageStore.getInstance().addMessage(msg.getChatId(), msg);

@@ -53,7 +53,7 @@ public class LoginController extends Controller{
 
                 javafx.application.Platform.runLater(() -> {
                     if (result.containsKey("token")) {
-                        // Сохраняем данные в UserProfile
+                        // Save data in UserProfile
                         UserProfile profile = UserProfile.getInstance();
                         profile.setUsername((String) result.get("username"));
                         profile.setTag((String) result.get("tag"));
@@ -94,17 +94,6 @@ public class LoginController extends Controller{
         super.initialize(rootPane, titleBar);
         setupHoverAnimation(registerBtn);
 
-        String bgPath;
-
-        if(width <= 1280) bgPath = "/image/background/small-lunfy-background.png";
-        else if(width <= 1920) bgPath = "/image/background/medium-lunfy-background.png";
-        else if(width <= 2560) bgPath = "/image/background/large-lunfy-background.png";
-        else bgPath = "/image/background/max-lunfy-background.png";
-
-        Image bgImage = new Image(Objects.requireNonNull(getClass().getResource(bgPath)).toExternalForm());
-        backgroundLogin.setImage(bgImage);
-        backgroundLogin.fitWidthProperty().bind(rootPane.widthProperty());
-        backgroundLogin.fitHeightProperty().bind(rootPane.heightProperty());
         passwordVisibleField.textProperty().bindBidirectional(passwordField.textProperty());
 
     }

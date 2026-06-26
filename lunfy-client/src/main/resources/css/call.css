@@ -1,0 +1,175 @@
+/* ===== CALL.CSS — экран звонка ===== */
+
+.call-root {
+    -fx-background-color: -fx-color-bg-deep;
+}
+
+.call-center {
+    -fx-background-color: transparent;
+}
+
+/* ===== СТАТУС-БАР СВЕРХУ ===== */
+.call-status-bar {
+    -fx-padding: 24 0 16 0;
+}
+
+.call-status {
+    -fx-text-fill: -fx-color-text;
+    -fx-font-size: 16px;
+    -fx-font-weight: 600;
+    -fx-font-family: "Unbounded", "Inter", sans-serif;
+    -fx-padding: 8 20;
+    -fx-background-color: -fx-color-accent-soft;
+    -fx-background-radius: 100;
+    -fx-border-radius: 100;
+    -fx-border-color: -fx-color-border;
+    -fx-border-width: 1;
+}
+
+/* ===== УЧАСТНИКИ ===== */
+.participant-card {
+    -fx-padding: 20;
+}
+
+.participant-avatar-wrap {
+    -fx-effect: dropshadow(gaussian, rgba(124, 92, 255, 0.4), 24, 0.2, 0, 8);
+}
+
+.participant-avatar {
+    -fx-fill: -fx-color-accent;
+}
+
+.participant-avatar-peer {
+    -fx-fill: linear-gradient(to bottom right, #a78bff, #ff5ce0);
+}
+
+.participant-initial {
+    -fx-text-fill: white;
+    -fx-font-weight: 900;
+    -fx-font-size: 42px;
+    -fx-font-family: "Unbounded", "Inter", sans-serif;
+}
+
+.participant-name {
+    -fx-text-fill: -fx-color-text;
+    -fx-font-size: 15px;
+    -fx-font-weight: 500;
+}
+
+/* ===== ЭКРАН (демонстрация) ===== */
+.screen-stack {
+    -fx-background-color: #000;
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+}
+
+/* ===== СВОЁ ВИДЕО (миниатюра в углу) ===== */
+.self-video-stack {
+    -fx-background-color: #000;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: -fx-color-accent;
+    -fx-border-width: 2;
+    -fx-effect: dropshadow(gaussian, rgba(124, 92, 255, 0.5), 16, 0, 0, 4);
+}
+
+/* ===== ВИДЕО СОБЕСЕДНИКА В УГЛУ (при демонстрации экрана) ===== */
+.peer-video-corner {
+    -fx-background-color: #000;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: -fx-color-accent-bright;
+    -fx-border-width: 2;
+    -fx-effect: dropshadow(gaussian, rgba(167, 139, 255, 0.5), 16, 0, 0, 4);
+}
+
+/* ===== ПАНЕЛЬ КНОПОК ===== */
+.call-control-bar {
+    -fx-padding: 28 24;
+    -fx-background-color: transparent;
+}
+
+/* Базовая кнопка звонка */
+.call-btn {
+    -fx-background-radius: 50;
+    -fx-min-width: 56;
+    -fx-min-height: 56;
+    -fx-max-width: 56;
+    -fx-max-height: 56;
+    -fx-font-size: 20px;
+    -fx-cursor: hand;
+    -fx-text-fill: -fx-color-text;
+}
+
+/* Обычные контрол-кнопки (mute / screen / video / mode) */
+.call-btn-control {
+    -fx-background-color: -fx-color-bg-elevated;
+    -fx-border-color: -fx-color-border;
+    -fx-border-width: 1;
+    -fx-border-radius: 50;
+}
+
+.call-btn-control:hover {
+    -fx-background-color: -fx-color-surface;
+    -fx-border-color: -fx-color-accent;
+    -fx-effect: dropshadow(gaussian, rgba(124, 92, 255, 0.3), 12, 0, 0, 0);
+}
+
+/* Активная кнопка (mute включён, экран расшарен и т.д.) */
+.call-btn-active {
+    -fx-background-color: -fx-color-accent;
+    -fx-border-color: -fx-color-accent-bright;
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(gaussian, rgba(124, 92, 255, 0.5), 14, 0, 0, 4);
+}
+
+/* Кнопка принять */
+.call-btn-accept {
+    -fx-background-color: rgba(0, 255, 200, 0.18);
+    -fx-text-fill: -fx-color-online;
+    -fx-border-color: rgba(0, 255, 200, 0.4);
+    -fx-border-width: 1;
+    -fx-border-radius: 50;
+    -fx-font-size: 22px;
+    -fx-font-weight: 700;
+}
+
+.call-btn-accept:hover {
+    -fx-background-color: -fx-color-online;
+    -fx-text-fill: -fx-color-bg-deep;
+    -fx-effect: dropshadow(gaussian, rgba(0, 255, 200, 0.6), 18, 0, 0, 4);
+}
+
+/* Кнопка отклонить (X) */
+.call-btn-reject {
+    -fx-background-color: rgba(255, 92, 122, 0.18);
+    -fx-text-fill: -fx-color-danger;
+    -fx-border-color: rgba(255, 92, 122, 0.4);
+    -fx-border-width: 1;
+    -fx-border-radius: 50;
+    -fx-font-size: 22px;
+    -fx-font-weight: 700;
+}
+
+.call-btn-reject:hover {
+    -fx-background-color: -fx-color-danger;
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(gaussian, rgba(255, 92, 122, 0.5), 16, 0, 0, 4);
+}
+
+/* Кнопка завершить (📞) */
+.call-btn-end {
+    -fx-background-color: -fx-color-danger;
+    -fx-text-fill: white;
+    -fx-border-color: transparent;
+}
+
+.call-btn-end:hover {
+    -fx-background-color: derive(-fx-color-danger, -15%);
+    -fx-effect: dropshadow(gaussian, rgba(255, 92, 122, 0.6), 18, 0, 0, 4);
+}
+
+/* Видео собеседника по центру — скруглённые углы */
+#peerVideoStack > .image-view {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 16, 0, 0, 4);
+}

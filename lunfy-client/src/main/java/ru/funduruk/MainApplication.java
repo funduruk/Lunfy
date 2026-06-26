@@ -14,6 +14,7 @@ public class MainApplication extends Application {
 
     @Override
     public void start(Stage stage) {
+
         Platform.setImplicitExit(false);
         SceneManager.init(stage);
 

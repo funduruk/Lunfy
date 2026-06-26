@@ -70,6 +70,16 @@
                 }
             }));
 
+            ChatEventBus.setOnReconnect(() -> Platform.runLater(() -> {
+                System.out.println(">>> WS восстановлен, перезагружаем открытый чат");
+
+                if (chatController == null) return;
+                String currentChatId = chatController.getCurrentChatId();
+                if (currentChatId == null) return;
+
+                openChat(currentChatId);
+            }));
+
             ChatEventBus.setOnCallOffer(signal -> {
                 Platform.runLater(() -> {
                     if (NotificationManager.isWindowHidden()) {
@@ -603,13 +613,22 @@
                         getClass().getResource("/fxml/CallView.fxml"));
                 callView = loader.load();
                 callController = loader.getController();
+
+                var scene = callContainer.getScene();
+                if (scene != null) {
+                    String callCss = getClass().getResource("/css/call.css").toExternalForm();
+                    if (!scene.getStylesheets().contains(callCss)) {
+                        scene.getStylesheets().add(callCss);
+                    }
+                }
+
                 init.accept(callController);
 
                 callContainer.getChildren().setAll(callView);
                 callContainer.setVisible(true);
                 callContainer.setManaged(true);
 
-                // Показываем handle
+                // show handle
                 callResizeHandle.setVisible(true);
                 callResizeHandle.setManaged(true);
             } catch (Exception e) {
@@ -672,15 +691,25 @@
 
         @FXML
         private void openInvites() {
-            VBox root = new VBox(12);
-            root.setStyle("-fx-padding: 20; -fx-background-color: #1e1b2e;");
+            VBox root = new VBox(20);
+            root.getStyleClass().add("invites-root");
+
+            VBox header = new VBox(6);
+            Label eyebrow = new Label("ВХОДЯЩИЕ");
+            eyebrow.getStyleClass().add("settings-eyebrow");
 
             Label title = new Label("Приглашения в сообщества");
-            title.setStyle("-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;");
+            title.getStyleClass().add("settings-title");
 
-            VBox invitesList = new VBox(8);
-            root.getChildren().addAll(title, invitesList);
+            Label subtitle = new Label("Принимайте приглашения от друзей или отклоняйте их");
+            subtitle.getStyleClass().add("settings-subtitle");
 
+            header.getChildren().addAll(eyebrow, title, subtitle);
+
+            VBox invitesList = new VBox(12);
+            invitesList.getStyleClass().add("invites-list");
+
+            root.getChildren().addAll(header, invitesList);
             contentPane.getChildren().setAll(root);
 
             new Thread(() -> {
@@ -694,7 +723,7 @@
                         invitesList.getChildren().clear();
                         if (invites.isEmpty()) {
                             Label empty = new Label("Нет новых приглашений");
-                            empty.setStyle("-fx-text-fill: #888; -fx-font-size: 13px;");
+                            empty.getStyleClass().add("invites-empty");
                             invitesList.getChildren().add(empty);
                         } else {
                             for (Map<String, Object> inv : invites) {
@@ -713,29 +742,38 @@
             String groupName = (String) inv.get("groupName");
             String invitedBy = (String) inv.get("invitedBy");
 
-            HBox card = new HBox(12);
-            card.setStyle("-fx-background-color: #2d2b40; -fx-padding: 12; -fx-background-radius: 8;");
+            HBox card = new HBox(16);
+            card.getStyleClass().add("invite-card");
             card.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+
+            StackPane avatar = new StackPane();
+            avatar.getStyleClass().add("invite-avatar");
+            javafx.scene.shape.Circle circle = new javafx.scene.shape.Circle(24);
+            circle.getStyleClass().add("invite-avatar-circle");
+            Label initial = new Label(groupName != null && !groupName.isEmpty()
+                    ? groupName.substring(0, 1).toUpperCase() : "?");
+            initial.getStyleClass().add("invite-avatar-initial");
+            avatar.getChildren().addAll(circle, initial);
 
             VBox info = new VBox(4);
             Label name = new Label(groupName);
-            name.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;");
+            name.getStyleClass().add("invite-group-name");
             Label by = new Label("Пригласил: " + invitedBy);
-            by.setStyle("-fx-text-fill: #aaa; -fx-font-size: 11px;");
+            by.getStyleClass().add("invite-by");
             info.getChildren().addAll(name, by);
 
             Region spacer = new Region();
             HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
 
             Button accept = new Button("Принять");
-            accept.setStyle("-fx-background-color: #3ba55d; -fx-text-fill: white; -fx-background-radius: 6; -fx-cursor: hand; -fx-padding: 6 14;");
+            accept.getStyleClass().add("primary-btn");
             accept.setOnAction(e -> respondInvite(inviteId, true, card, parentList));
 
             Button decline = new Button("Отклонить");
-            decline.setStyle("-fx-background-color: #ed4245; -fx-text-fill: white; -fx-background-radius: 6; -fx-cursor: hand; -fx-padding: 6 14;");
+            decline.getStyleClass().add("secondary-btn");
             decline.setOnAction(e -> respondInvite(inviteId, false, card, parentList));
 
-            card.getChildren().addAll(info, spacer, accept, decline);
+            card.getChildren().addAll(avatar, info, spacer, accept, decline);
             return card;
         }
 

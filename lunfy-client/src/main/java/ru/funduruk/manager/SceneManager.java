@@ -12,6 +12,7 @@ import java.util.Objects;
 
 public class SceneManager {
     private static Stage stage;
+    private static final String THEME_CSS = "/css/theme.css";
 
     public static void init(Stage primaryStage) {
         stage = primaryStage;
@@ -20,6 +21,7 @@ public class SceneManager {
     public static void setScene(String fxml, String css) {
         Scene scene;
         Parent root;
+
         try {
             double w = stage.getWidth();
             double h = stage.getHeight();
@@ -28,6 +30,12 @@ public class SceneManager {
             root = loader.load();
 
             scene = new Scene(root, w, h);
+
+            scene.getStylesheets().add(
+                    Objects.requireNonNull(
+                            SceneManager.class.getResource(THEME_CSS)
+                    ).toExternalForm()
+            );
             scene.getStylesheets().add(
                     Objects.requireNonNull(
                             SceneManager.class.getResource(css)
@@ -44,4 +52,4 @@ public class SceneManager {
         stage.setScene(scene);
         fade.play();
     }
-    }
+}

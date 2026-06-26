@@ -1,4 +1,4 @@
-/* ===== CHAT.CSS — импортирует общий стиль ===== */
+/* ===== CHAT.CSS — современный редизайн ===== */
 
 .message-scroll {
     -fx-background: transparent;
@@ -10,45 +10,48 @@
 }
 
 .message-box {
-    -fx-padding: 10;
-    -fx-background-color: #2b2845;
+    -fx-padding: 16;
+    -fx-background-color: -fx-color-bg-deep;
 }
 
+/* ===== ВЕРХНЯЯ ПЛАШКА ЧАТА ===== */
 .chat-top-bar {
-    -fx-background-color: #221f3b;
-    -fx-padding: 10 16;
-    -fx-border-color: #13112b;
+    -fx-background-color: -fx-color-bg;
+    -fx-padding: 14 20;
+    -fx-border-color: -fx-color-border;
     -fx-border-width: 0 0 1 0;
 }
 
 .chat-top-name {
-    -fx-text-fill: white;
-    -fx-font-weight: bold;
-    -fx-font-size: 14px;
+    -fx-text-fill: -fx-color-text;
+    -fx-font-weight: 700;
+    -fx-font-size: 15px;
+    -fx-font-family: "Unbounded", "Inter", sans-serif;
     -fx-cursor: hand;
 }
 
 .chat-top-status {
-    -fx-text-fill: #3ba55d;
+    -fx-text-fill: -fx-color-online;
     -fx-font-size: 11px;
+    -fx-font-family: "JetBrains Mono", "Inter", monospace;
 }
 
 .chat-avatar-container {
     -fx-cursor: hand;
-    -fx-min-width: 36;
-    -fx-min-height: 36;
-    -fx-max-width: 36;
-    -fx-max-height: 36;
+    -fx-min-width: 40;
+    -fx-min-height: 40;
+    -fx-max-width: 40;
+    -fx-max-height: 40;
 }
 
 .chat-avatar-circle {
-    -fx-fill: #5865f2;
+    -fx-fill: -fx-color-accent;
 }
 
 .chat-avatar-initial {
     -fx-text-fill: white;
-    -fx-font-weight: bold;
-    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-font-size: 15px;
 }
 
 .chat-name-box {
@@ -56,91 +59,123 @@
 }
 
 .chat-top-btn {
-    -fx-background-color: rgba(255,255,255,0.06);
-    -fx-text-fill: #aaa;
+    -fx-background-color: -fx-color-bg-elevated;
+    -fx-text-fill: -fx-color-text-dim;
     -fx-font-size: 15px;
     -fx-cursor: hand;
-    -fx-padding: 6 10;
-    -fx-background-radius: 8;
-    -fx-min-width: 36;
-    -fx-min-height: 36;
+    -fx-padding: 8 12;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: -fx-color-border;
+    -fx-border-width: 1;
+    -fx-min-width: 38;
+    -fx-min-height: 38;
 }
 
 .chat-top-btn:hover {
-    -fx-background-color: rgba(255,255,255,0.12);
+    -fx-background-color: -fx-color-accent-soft;
+    -fx-border-color: -fx-color-accent;
+    -fx-text-fill: -fx-color-text;
+}
+
+/* ===== ПУЗЫРИ СООБЩЕНИЙ ===== */
+.message-bubble {
+    -fx-background-radius: 14;
+    -fx-padding: 8 14 10 14;
+    -fx-text-fill: -fx-color-text;
+    -fx-font-size: 14px;
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 8, 0, 0, 2);
+}
+
+.message-bubble-mine {
+    -fx-background-color: -fx-color-accent;
     -fx-text-fill: white;
 }
 
-.chat-item {
-    -fx-padding: 6 10;
-    -fx-background-radius: 6;
-    -fx-cursor: hand;
-    -fx-text-fill: #aaa;
-    -fx-font-size: 13px;
-}
-
-.chat-item:hover {
-    -fx-background-color: rgba(255,255,255,0.07);
-    -fx-text-fill: white;
-}
-
-/* TextArea — поле ввода сообщения */
-.text-area {
-    -fx-background-color: rgba(255,255,255,0.07);
-    -fx-background-radius: 10;
-    -fx-border-radius: 10;
-    -fx-border-color: rgba(255,255,255,0.08);
+.message-bubble-other {
+    -fx-background-color: -fx-color-bg-elevated;
+    -fx-border-color: -fx-color-border;
     -fx-border-width: 1;
-    -fx-text-fill: white;
-    -fx-font-size: 13px;
-    -fx-font-family: "Segoe UI";
+    -fx-border-radius: 14;
 }
 
-.text-area .content {
-    -fx-background-color: transparent;
-    -fx-text-fill: white;
+/* Метаданные ВНУТРИ пузыря */
+.message-meta-mine {
+    -fx-text-fill: rgba(255, 255, 255, 0.7);
+    -fx-font-size: 10px;
+    -fx-font-family: "JetBrains Mono", monospace;
 }
 
-.text-area:focused {
-    -fx-border-color: #5865f2;
+.message-sender-mine {
+    -fx-text-fill: rgba(255, 255, 255, 0.85);
+    -fx-font-size: 11px;
+    -fx-font-weight: 600;
+    -fx-font-family: "JetBrains Mono", monospace;
 }
 
-/* Убираем стандартный фон скроллпейна внутри TextArea */
-.text-area .scroll-pane {
-    -fx-background-color: transparent;
+.message-meta-other {
+    -fx-text-fill: -fx-color-text-muted;
+    -fx-font-size: 10px;
+    -fx-font-family: "JetBrains Mono", monospace;
 }
 
-.text-area .scroll-pane .viewport {
-    -fx-background-color: transparent;
+.message-sender-other {
+    -fx-text-fill: -fx-color-accent-bright;
+    -fx-font-size: 11px;
+    -fx-font-weight: 600;
+    -fx-font-family: "JetBrains Mono", monospace;
 }
 
-.text-area .scroll-pane .content {
-    -fx-background-color: transparent;
-}
-
-.message-input {
-    -fx-background-color: rgba(255,255,255,0.07);
-    -fx-background-radius: 10;
-    -fx-border-radius: 10;
-    -fx-border-color: rgba(255,255,255,0.08);
+/* ===== ПОЛЕ ВВОДА ===== */
+.text-area, .message-input {
+    -fx-background-color: -fx-color-bg-elevated;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-color: -fx-color-border;
     -fx-border-width: 1;
-    -fx-text-fill: white;
-    -fx-prompt-text-fill: #555;
-    -fx-font-size: 13px;
-    -fx-font-family: "Segoe UI";
+    -fx-text-fill: -fx-color-text;
+    -fx-prompt-text-fill: -fx-color-text-muted;
+    -fx-font-size: 14px;
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
+    -fx-padding: 4;
 }
 
+.text-area .content,
 .message-input .content {
     -fx-background-color: transparent;
-    -fx-text-fill: white;
+    -fx-text-fill: -fx-color-text;
 }
 
+.text-area:focused,
 .message-input:focused {
-    -fx-border-color: #5865f2;
+    -fx-border-color: -fx-color-accent;
+    -fx-effect: dropshadow(gaussian, rgba(124, 92, 255, 0.3), 10, 0, 0, 0);
 }
 
+.text-area .scroll-pane,
+.text-area .scroll-pane .viewport,
+.text-area .scroll-pane .content,
 .message-input .scroll-pane,
 .message-input .scroll-pane .viewport,
 .message-input .scroll-pane .content {
     -fx-background-color: transparent;
+}
+
+/* Кнопка отправки сообщения */
+#sendButton {
+    -fx-background-color: -fx-color-accent;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-cursor: hand;
+    -fx-padding: 10 18;
+    -fx-min-width: 50;
+}
+
+#sendButton:hover {
+    -fx-background-color: -fx-color-accent-bright;
+    -fx-effect: dropshadow(gaussian, rgba(124, 92, 255, 0.5), 12, 0, 0, 4);
 }

@@ -3,56 +3,62 @@
 <?import javafx.scene.control.*?>
 <?import javafx.geometry.Insets?>
 
-<VBox xmlns:fx="http://javafx.com/fxml"
-      fx:controller="ru.funduruk.controller.SettingsController"
-      spacing="20"
-      style="-fx-background-color: #1e1b2e; -fx-padding: 30;">
+<ScrollPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="ru.funduruk.controller.SettingsController"
+            styleClass="settings-scroll"
+            fitToWidth="true">
+    <VBox spacing="28" styleClass="settings-root">
+        <padding><Insets top="40" right="40" bottom="40" left="40"/></padding>
 
-    <Label text="Настройки звука"
-           style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;"/>
+        <!-- Заголовок -->
+        <VBox spacing="6">
+            <Label text="НАСТРОЙКИ" styleClass="settings-eyebrow"/>
+            <Label text="Звук и устройства" styleClass="settings-title"/>
+            <Label text="Выберите устройства ввода и вывода, настройте громкость"
+                   styleClass="settings-subtitle"/>
+        </VBox>
 
-    <!-- Микрофон -->
-    <VBox spacing="8">
-        <Label text="Устройство ввода (микрофон)"
-               style="-fx-text-fill: #aaa; -fx-font-size: 12px;"/>
-        <ComboBox fx:id="micCombo" prefWidth="400"
-                  style="-fx-background-color: #2d2b40; -fx-text-fill: white;"/>
+        <!-- ВВОД -->
+        <VBox spacing="14" styleClass="settings-card">
+            <Label text="УСТРОЙСТВО ВВОДА" styleClass="settings-section-label"/>
+
+            <VBox spacing="6">
+                <Label text="Микрофон" styleClass="field-label"/>
+                <ComboBox fx:id="micCombo" maxWidth="Infinity" styleClass="settings-combo"/>
+            </VBox>
+
+            <VBox spacing="8">
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="Громкость микрофона" styleClass="field-label"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="micVolumeLabel" text="100%" styleClass="settings-value"/>
+                </HBox>
+                <Slider fx:id="micVolumeSlider" min="0" max="100" value="100"
+                        maxWidth="Infinity" styleClass="settings-slider"/>
+            </VBox>
+        </VBox>
+
+        <!-- ВЫВОД -->
+        <VBox spacing="14" styleClass="settings-card">
+            <Label text="УСТРОЙСТВО ВЫВОДА" styleClass="settings-section-label"/>
+
+            <VBox spacing="6">
+                <Label text="Колонки / наушники" styleClass="field-label"/>
+                <ComboBox fx:id="speakerCombo" maxWidth="Infinity" styleClass="settings-combo"/>
+            </VBox>
+
+            <VBox spacing="8">
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="Громкость входящих" styleClass="field-label"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="speakerVolumeLabel" text="100%" styleClass="settings-value"/>
+                </HBox>
+                <Slider fx:id="speakerVolumeSlider" min="0" max="100" value="100"
+                        maxWidth="Infinity" styleClass="settings-slider"/>
+            </VBox>
+        </VBox>
+
+        <Label text="Изменения применяются сразу. Для нового микрофона перезапустите активный звонок."
+               styleClass="settings-hint"/>
     </VBox>
-
-    <!-- Громкость микрофона -->
-    <VBox spacing="8">
-        <HBox spacing="10" alignment="CENTER_LEFT">
-            <Label text="Громкость микрофона:"
-                   style="-fx-text-fill: #aaa; -fx-font-size: 12px;"/>
-            <Label fx:id="micVolumeLabel" text="100%"
-                   style="-fx-text-fill: white; -fx-font-size: 12px;"/>
-        </HBox>
-        <Slider fx:id="micVolumeSlider" min="0" max="100" value="100" prefWidth="400"/>
-    </VBox>
-
-    <Separator/>
-
-    <!-- Колонки -->
-    <VBox spacing="8">
-        <Label text="Устройство вывода (колонки/наушники)"
-               style="-fx-text-fill: #aaa; -fx-font-size: 12px;"/>
-        <ComboBox fx:id="speakerCombo" prefWidth="400"
-                  style="-fx-background-color: #2d2b40; -fx-text-fill: white;"/>
-    </VBox>
-
-    <!-- Громкость входящих -->
-    <VBox spacing="8">
-        <HBox spacing="10" alignment="CENTER_LEFT">
-            <Label text="Громкость входящих:"
-                   style="-fx-text-fill: #aaa; -fx-font-size: 12px;"/>
-            <Label fx:id="speakerVolumeLabel" text="100%"
-                   style="-fx-text-fill: white; -fx-font-size: 12px;"/>
-        </HBox>
-        <Slider fx:id="speakerVolumeSlider" min="0" max="100" value="100" prefWidth="400"/>
-    </VBox>
-
-    <Region VBox.vgrow="ALWAYS"/>
-
-    <Label text="Изменения применяются сразу. Для нового микрофона перезапустите активный звонок."
-           style="-fx-text-fill: #888; -fx-font-size: 11px;"/>
-</VBox>
+</ScrollPane>

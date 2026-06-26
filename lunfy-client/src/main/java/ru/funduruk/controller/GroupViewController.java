@@ -71,7 +71,7 @@ public class GroupViewController {
                     }
                 } else if ("GROUP_ROLE_CHANGED".equals(type)) {
                     loadMembersFromServer(group.getId());
-                } else if ("GROUP_MEMBER_ADDED".equals(type)) {  // ← добавь
+                } else if ("GROUP_MEMBER_ADDED".equals(type)) {
                     loadMembersFromServer(group.getId());
                 }
             });
@@ -92,17 +92,17 @@ public class GroupViewController {
             voiceChannelList.getChildren().add(buildChannelItem(ch));
         }
 
-        // Buttons add channels only for admin
-        // Show always, check role after load members
-        Button addText = new Button("+ Текстовый канал");
-        addText.setStyle("-fx-background-color: transparent; -fx-text-fill: #aaa; -fx-font-size: 11px; -fx-cursor: hand;");
+        Button addText = new Button("+ Добавить канал");
+        addText.getStyleClass().add("channel-add-btn");
+        addText.setMaxWidth(Double.MAX_VALUE);
         addText.setOnAction(e -> showAddChannelPopup(false));
         addText.setVisible(false);
         addText.setId("addTextBtn");
         textChannelList.getChildren().add(addText);
 
-        Button addVoice = new Button("+ Голосовой канал");
-        addVoice.setStyle("-fx-background-color: transparent; -fx-text-fill: #aaa; -fx-font-size: 11px; -fx-cursor: hand;");
+        Button addVoice = new Button("+ Добавить канал");
+        addVoice.getStyleClass().add("channel-add-btn");
+        addVoice.setMaxWidth(Double.MAX_VALUE);
         addVoice.setOnAction(e -> showAddChannelPopup(true));
         addVoice.setVisible(false);
         addVoice.setId("addVoiceBtn");
@@ -115,10 +115,10 @@ public class GroupViewController {
         row.getStyleClass().add("channel-item");
 
         Label icon = new Label(channel.isVoice() ? "🔊" : "#");
-        icon.setStyle("-fx-text-fill: #aaa; -fx-font-size: 14px;");
+        icon.getStyleClass().add("channel-icon");
 
         Label name = new Label(channel.getName());
-        name.setStyle("-fx-text-fill: #ccc; -fx-font-size: 13px;");
+        name.getStyleClass().add("channel-name");
 
         row.getChildren().addAll(icon, name);
         row.setOnMouseClicked(e -> {
@@ -336,11 +336,10 @@ public class GroupViewController {
         row.getStyleClass().add("member-item");
 
         Circle dot = new Circle(5);
-        dot.setStyle(member.isOnline() ? "-fx-fill: #3ba55d;" : "-fx-fill: #747f8d;");
+        dot.getStyleClass().add(member.isOnline() ? "member-dot-online" : "member-dot-offline");
 
         Label name = new Label(member.getUsername());
-        name.setStyle("-fx-text-fill: " + (member.isAdmin() ? "#f0b132;" : "#ccc;") +
-                " -fx-font-size: 12px;");
+        name.getStyleClass().add(member.isAdmin() ? "member-name-admin" : "member-name");
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);

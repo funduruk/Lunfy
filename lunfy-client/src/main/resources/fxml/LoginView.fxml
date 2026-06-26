@@ -9,10 +9,7 @@
            fx:id="root" stylesheets="@../css/style.css" >
 
 <BorderPane fx:id="rootPane">
-    <ImageView fx:id="backgroundLogin"
-               fitWidth="900"
-               fitHeight="600">
-    </ImageView>
+
 
 <top>
         <HBox fx:id="titleBar" alignment="CENTER_LEFT" spacing="10" styleClass="title-bar">
@@ -51,23 +48,28 @@
     <center>
         <HBox fx:id="mainBox" styleClass="main-box">
            <VBox fx:id="loginWrapper">
-            <VBox fx:id="loginBox" styleClass="login-box">
-                <Label text="Welcome to lunfy" style="-fx-font-size: 24px; -fx-text-fill: white;"/>
-                <TextField fx:id="usernameField" promptText="Username" styleClass="text-field"/>
+               <VBox fx:id="loginBox" styleClass="login-box">
+                   <HBox alignment="CENTER_LEFT" spacing="8" styleClass="hero-tag-wrap">
+                       <Region styleClass="pulse-dot"/>
+                       <Label text="ОБЩАЙТЕСЬ БЕЗ ГРАНИЦ" styleClass="hero-tag"/>
+                   </HBox>
+                   <Label text="С возвращением!" styleClass="title-label"/>
+                   <Label text="Войдите в свой аккаунт Lunfy" styleClass="title-subtitle"/>
+                <TextField fx:id="usernameField" promptText="Имя пользователя" styleClass="text-field"/>
                 <StackPane>
-                    <PasswordField fx:id="passwordField" promptText="Password" styleClass="password-field"/>
-                    <TextField fx:id="passwordVisibleField" promptText="Password" styleClass="password-field"
+                    <PasswordField fx:id="passwordField" promptText="Пароль" styleClass="password-field"/>
+                    <TextField fx:id="passwordVisibleField" promptText="Пароль" styleClass="password-field"
                                visible="false" managed="false"/>
                     <Button fx:id="eyeButton" text="👁" onAction="#togglePasswordVisibility"
                             StackPane.alignment="CENTER_RIGHT"
                             style="-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 0 10 0 0; -fx-font-size: 16px;"/>
                 </StackPane>
-                <Button fx:id="registerBtn" text="Hey, are you here for the first time?" onAction="#handleRegister" styleClass="button-register"/>
+                <Button fx:id="registerBtn" text="Эй! Ты тут впервые?! Создать аккаунт" onAction="#handleRegister" styleClass="button-register"/>
                 <HBox spacing="10" alignment="CENTER">
-                    <Button text="Login" onAction="#handleLogin" styleClass="button-login"/>
+                    <Button text="Войти" onAction="#handleLogin" styleClass="button-login"/>
                 </HBox>
                 <VBox fx:id="statusBox" styleClass="status-box" visible="false">
-                    <Label fx:id="statusLabel" style="-fx-text-fill: red;"/>
+                    <Label fx:id="statusLabel" wrapText="true" style="-fx-text-fill: #ff5c7a;"/>
                 </VBox>
             </VBox>
            </VBox>

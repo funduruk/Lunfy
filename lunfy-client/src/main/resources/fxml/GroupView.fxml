@@ -6,7 +6,6 @@
       fx:controller="ru.funduruk.controller.GroupViewController"
       styleClass="group-view">
 
-    <!-- Left Panel: Channels -->
     <VBox fx:id="channelPanel" styleClass="channel-pane" prefWidth="200" minWidth="200">
         <HBox styleClass="group-name-bar" alignment="CENTER_LEFT">
             <Label fx:id="groupNameLabel" text="Группа" styleClass="group-name-label"/>
@@ -32,13 +31,12 @@
                     styleClass="panel-toggle-btn"/>
             <Label text="УЧАСТНИКИ" styleClass="channel-category"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <!-- Кнопка добавления участника -->
             <Button text="+" onAction="#addMember" styleClass="panel-toggle-btn"/>
         </HBox>
         <Label fx:id="membersCountLabel" text="" styleClass="members-role-label"/>
-        <Label text="— Администраторы —" styleClass="members-role-label"/>
+        <Label text="Администраторы" styleClass="members-role-label"/>
         <VBox fx:id="adminsList" spacing="2"/>
-        <Label text="— Участники —" styleClass="members-role-label"/>
+        <Label text="Участники" styleClass="members-role-label"/>
         <VBox fx:id="membersList" spacing="4"/>
     </VBox>
 

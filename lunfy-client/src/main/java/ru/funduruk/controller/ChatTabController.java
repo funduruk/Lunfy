@@ -6,11 +6,13 @@ import javafx.animation.PauseTransition;
 import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
@@ -26,6 +28,10 @@ import ru.funduruk.net.ApiClient;
 import ru.funduruk.net.ChatEventBus;
 import ru.funduruk.net.WSClient;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+
 public class ChatTabController {
     private static final Logger log = LoggerFactory.getLogger(ChatTabController.class);
     private final Label typingIndicator = new Label("Friend is typing...");
@@ -40,8 +46,8 @@ public class ChatTabController {
     public static ChatTabController instance;
 
     private long lastTypingSent = 0;
+    @Getter
     private String currentChatId = null;
-
 
     @FXML
     public void initialize() {
@@ -70,7 +76,7 @@ public class ChatTabController {
             }
         });
 
-        ChatEventBus.setOnMessage(msg -> {
+        ChatEventBus.addMessageListener(msg -> {
             Platform.runLater(() -> {
                 MessageStore.getInstance().addMessage(msg.getChatId(), msg);
 
@@ -174,81 +180,84 @@ public class ChatTabController {
     private void addMessage(MessageDTO msg) {
         boolean mine = MY_USER_ID.equals(msg.getSender());
 
-        String time = java.time.Instant.ofEpochMilli(msg.getTimestamp())
-                .atZone(java.time.ZoneId.systemDefault())
-                .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
+        String time = Instant.ofEpochMilli(msg.getTimestamp())
+                .atZone(ZoneId.systemDefault())
+                .format(DateTimeFormatter.ofPattern("HH:mm"));
 
-        HBox metaBox = new HBox(6);
-        metaBox.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(metaBox, javafx.scene.layout.Priority.ALWAYS);
         Label senderLabel = new Label(msg.getSender());
-        senderLabel.setStyle("-fx-text-fill: #ffffff; -fx-font-size: 10px;");
+        senderLabel.getStyleClass().add(
+                mine ? "message-sender-mine" : "message-sender-other"
+        );
+
         Label timeLabel = new Label(time);
-        timeLabel.setStyle("-fx-text-fill: #ffffff; -fx-font-size: 10px;");
-        metaBox.getChildren().addAll(senderLabel, timeLabel);
+        timeLabel.getStyleClass().add(
+                mine ? "message-meta-mine" : "message-meta-other"
+        );
+
+        HBox metaBox = new HBox(8, senderLabel, timeLabel);
+        metaBox.setAlignment(mine ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
 
         Label messageLabel = new Label(msg.getText());
         messageLabel.setWrapText(true);
-        messageLabel.setMaxWidth(300);
-        messageLabel.setStyle(mine
-                ? "-fx-background-color: #31638a; -fx-text-fill: white; -fx-padding: 6 10; -fx-background-radius: 12;"
-                : "-fx-background-color: #221E33; -fx-text-fill: white; -fx-padding: 6 10; -fx-background-radius: 12;"
+        messageLabel.setMaxWidth(320);
+        messageLabel.setStyle(
+                "-fx-text-fill: " + (mine ? "white" : "#ffffff") +
+                        "; -fx-font-size: 14px;"
         );
 
-        HBox messageWrapper = new HBox(messageLabel);
-        messageWrapper.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(messageWrapper, javafx.scene.layout.Priority.ALWAYS);
-        messageWrapper.setAlignment(mine ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
+        // Bubble only text
+        VBox bubble = new VBox(messageLabel);
+        bubble.setMaxWidth(360);
+        bubble.getStyleClass().addAll(
+                "message-bubble",
+                mine ? "message-bubble-mine" : "message-bubble-other"
+        );
 
-        VBox vbox = new VBox(2);
-        vbox.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(vbox, javafx.scene.layout.Priority.ALWAYS);
-        vbox.getChildren().addAll(metaBox, messageWrapper);
+        VBox messageContainer = new VBox(2);
+        messageContainer.setAlignment(
+                mine ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT
+        );
+        messageContainer.getChildren().addAll(metaBox, bubble);
 
         HBox wrapper = new HBox(8);
-        wrapper.setPadding(new javafx.geometry.Insets(4, 10, 4, 10));
-        HBox.setHgrow(wrapper, javafx.scene.layout.Priority.ALWAYS);
+        wrapper.setPadding(new Insets(4, 10, 4, 10));
         wrapper.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(wrapper, Priority.ALWAYS);
 
         if (mine) {
             wrapper.setAlignment(Pos.CENTER_RIGHT);
-            metaBox.setAlignment(Pos.CENTER_RIGHT);
-            wrapper.getChildren().add(vbox);
+            wrapper.getChildren().add(messageContainer);
         } else {
             wrapper.setAlignment(Pos.CENTER_LEFT);
-            metaBox.setAlignment(Pos.CENTER_LEFT);
 
             StackPane avatar = buildUserAvatar(msg.getSender(), 32);
-            wrapper.getChildren().addAll(avatar, vbox);
+
+            VBox leftBlock = new VBox(2);
+            leftBlock.getChildren().addAll(metaBox, bubble);
+
+            wrapper.getChildren().addAll(avatar, leftBlock);
         }
 
         ContextMenu contextMenu = new ContextMenu();
         MenuItem deleteItem = new MenuItem("🗑 Удалить сообщение");
-        deleteItem.setStyle("-fx-text-fill: #ed4245;");
         deleteItem.setOnAction(e -> deleteMessage(msg, wrapper));
 
-        boolean canDelete = mine || isAdminInCurrentChat();
-        if (canDelete) {
+        if (mine || isAdminInCurrentChat()) {
             contextMenu.getItems().add(deleteItem);
         }
 
-        if (!contextMenu.getItems().isEmpty()) {
-            wrapper.setOnMouseClicked(e -> {
-                if (e.getButton() == javafx.scene.input.MouseButton.SECONDARY) {
-                    contextMenu.show(wrapper, e.getScreenX(), e.getScreenY());
-                }
-            });
-        }
-
-        wrapper.setOnMouseClicked(e -> {
-            if (e.getButton() == javafx.scene.input.MouseButton.SECONDARY) {
+        wrapper.setOnContextMenuRequested(e -> {
+            if (!contextMenu.getItems().isEmpty()) {
                 contextMenu.show(wrapper, e.getScreenX(), e.getScreenY());
             }
         });
 
         int idx = chatList.getChildren().indexOf(typingIndicator);
-        if (idx >= 0) chatList.getChildren().add(idx, wrapper);
-        else chatList.getChildren().add(wrapper);
+
+        if (idx >= 0)
+            chatList.getChildren().add(idx, wrapper);
+        else
+            chatList.getChildren().add(wrapper);
 
         playAppearAnimation(wrapper);
         scrollToBottom();

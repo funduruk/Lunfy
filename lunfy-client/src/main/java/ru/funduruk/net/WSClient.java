@@ -13,7 +13,16 @@ public class WSClient {
     private static WebSocketClient client;
     private static final ObjectMapper mapper = new ObjectMapper();
 
+    private static String lastUrl;
+    private static volatile boolean shouldReconnect = true;
+
     public static void connect(String url) {
+        lastUrl = url;
+        shouldReconnect = true;
+        doConnect();
+    }
+
+    public static void doConnect() {
 
         if (client != null && client.isOpen()) {
             System.out.println("Already connected, skipping");
@@ -21,11 +30,12 @@ public class WSClient {
         }
 
         try {
-            client = new WebSocketClient(new URI(url)) {
+            client = new WebSocketClient(new URI(lastUrl)) {
 
                 @Override
                 public void onOpen(ServerHandshake handshake) {
                     System.out.println("Connected");
+                    ChatEventBus.fireReconnect();
                 }
 
                 @Override
@@ -142,6 +152,13 @@ public class WSClient {
                 @Override
                 public void onClose(int code, String reason, boolean remote) {
                     System.out.println("Disconnected: " + reason);
+                    if (shouldReconnect) {
+                        new Thread(() -> {
+                            try { Thread.sleep(2000); } catch (InterruptedException ignored) {}
+                            System.out.println(">>> Переподключение к WebSocket...");
+                            doConnect();
+                        }, "ws-reconnect").start();
+                    }
                 }
 
                 @Override
@@ -154,6 +171,13 @@ public class WSClient {
 
         } catch (Exception e) {
             e.printStackTrace();
+
+            if (shouldReconnect) {
+                new Thread(() -> {
+                    try { Thread.sleep(2000); } catch (InterruptedException ignored) {}
+                    doConnect();
+                }, "ws-reconnect").start();
+            }
         }
     }
 
@@ -169,6 +193,13 @@ public class WSClient {
 
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public static void disconnect() {
+        shouldReconnect = false;
+        if (client != null && client.isOpen()) {
+            client.close();
         }
     }
 }

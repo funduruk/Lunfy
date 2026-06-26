@@ -136,6 +136,8 @@ public class CallController {
     private void toggleMute() {
         muted = !muted;
         muteBtn.setText(muted ? "🔇" : "🎤");
+        if (muted) muteBtn.getStyleClass().add("call-btn-active");
+        else muteBtn.getStyleClass().remove("call-btn-active");
         if (audioCall != null) audioCall.setMuted(muted);
     }
 
@@ -147,6 +149,7 @@ public class CallController {
         if (!sharing) {
             sharing = true;
             screenBtn.setText("🛑");
+            screenBtn.getStyleClass().add("call-btn-active");
             WSClient.send(new EnvelopeDTO("SCREEN_SHARE_START",
                     new ScreenFrameDTO(ApiClient.getCurrentUsername(), peerUser, chatId, "")));
             screenShare = new ScreenShare(ApiClient.getCurrentUsername(), peerUser, chatId);
@@ -154,6 +157,7 @@ public class CallController {
         } else {
             sharing = false;
             screenBtn.setText("🖥");
+            screenBtn.getStyleClass().remove("call-btn-active");
             if (screenShare != null) { screenShare.stop(); screenShare = null; }
             WSClient.send(new EnvelopeDTO("SCREEN_SHARE_STOP",
                     new ScreenFrameDTO(ApiClient.getCurrentUsername(), peerUser, chatId, "")));
@@ -166,15 +170,15 @@ public class CallController {
 
     private void showScreen() {
         screenStack.setVisible(true); screenStack.setManaged(true);
-        participantsBox.setVisible(false); participantsBox.setManaged(false);
         screenImageView.fitWidthProperty().bind(screenStack.widthProperty());
         screenImageView.fitHeightProperty().bind(screenStack.heightProperty());
+        updateCenterLayout();
         repositionPeerVideo();
     }
 
     private void hideScreen() {
-        screenStack.setVisible(false); screenStack.setManaged(false);
         screenImageView.setImage(null);
+        updateCenterLayout();
         repositionPeerVideo();
     }
 
@@ -225,6 +229,7 @@ public class CallController {
         if (!videoOn) {
             videoOn = true;
             videoBtn.setText("🚫");
+            videoBtn.getStyleClass().add("call-btn-active");
             WSClient.send(new EnvelopeDTO("VIDEO_START",
                     new VideoFrameDTO(ApiClient.getCurrentUsername(), peerUser, chatId, "")));
 
@@ -238,6 +243,7 @@ public class CallController {
         } else {
             videoOn = false;
             videoBtn.setText("📹");
+            videoBtn.getStyleClass().remove("call-btn-active");
             if (videoCall != null) { videoCall.stop(); videoCall = null; }
             selfVideoStack.setVisible(false); selfVideoStack.setManaged(false);
             selfVideoView.setImage(null);
@@ -248,6 +254,7 @@ public class CallController {
 
     private void showPeerVideo() {
         peerVideoStack.setVisible(true); peerVideoStack.setManaged(true);
+        updateCenterLayout();
         repositionPeerVideo();
     }
 
@@ -258,6 +265,7 @@ public class CallController {
 
     private void hidePeerVideo() {
         peerVideoStack.setVisible(false); peerVideoStack.setManaged(false);
+        updateCenterLayout();
         peerVideoView.setImage(null);
     }
 
@@ -272,19 +280,25 @@ public class CallController {
         peerVideoView.fitHeightProperty().unbind();
 
         if (screenActive) {
+            // Маленькое окошко в углу при демонстрации
             StackPane.setAlignment(peerVideoStack, javafx.geometry.Pos.TOP_RIGHT);
             peerVideoStack.setMaxSize(220, 165);
-            peerVideoStack.setStyle("-fx-border-color: #5865f2; -fx-border-width: 2; -fx-background-color: black;");
-            peerVideoView.setFitWidth(200);
-            peerVideoView.setFitHeight(150);
+            peerVideoStack.setMinSize(220, 165);
+            peerVideoView.setFitWidth(216);
+            peerVideoView.setFitHeight(161);
             StackPane.setMargin(peerVideoStack, new javafx.geometry.Insets(20, 20, 0, 0));
+            if (!peerVideoStack.getStyleClass().contains("peer-video-corner")) {
+                peerVideoStack.getStyleClass().add("peer-video-corner");
+            }
         } else {
+            // Большое во весь центр
             StackPane.setAlignment(peerVideoStack, javafx.geometry.Pos.CENTER);
             peerVideoStack.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-            peerVideoStack.setStyle("");
+            peerVideoStack.setMinSize(0, 0);
             StackPane.setMargin(peerVideoStack, javafx.geometry.Insets.EMPTY);
             peerVideoView.fitWidthProperty().bind(centerStack.widthProperty().subtract(40));
-            peerVideoView.fitHeightProperty().bind(centerStack.heightProperty().subtract(120));
+            peerVideoView.fitHeightProperty().bind(centerStack.heightProperty().subtract(40));
+            peerVideoStack.getStyleClass().remove("peer-video-corner");
         }
     }
 
@@ -401,6 +415,25 @@ public class CallController {
             toggleModeBtn.setText("🗖");
 
             if (gc != null) gc.setCallContainerHeight(80);
+        }
+    }
+
+    private void updateCenterLayout() {
+        boolean screenActive = screenStack.isVisible();
+        boolean peerVideoActive = peerVideoStack.isVisible();
+
+        if (screenActive) {
+            // Демонстрация экрана — центр занят им, видео собеседника в угол
+            participantsBox.setVisible(false);
+            participantsBox.setManaged(false);
+        } else if (peerVideoActive) {
+            // Видео собеседника на весь центр, аватарки убираем
+            participantsBox.setVisible(false);
+            participantsBox.setManaged(false);
+        } else {
+            // Ничего нет — показываем аватарки
+            participantsBox.setVisible(true);
+            participantsBox.setManaged(true);
         }
     }
 }

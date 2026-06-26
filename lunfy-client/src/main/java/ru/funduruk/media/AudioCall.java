@@ -29,12 +29,12 @@ public class AudioCall {
         this.chatId = chatId;
     }
 
+    private Thread captureThread;
+
     public void start() {
         running = true;
         try {
-            // open micro
             DataLine.Info micInfo = new DataLine.Info(TargetDataLine.class, FORMAT);
-
             AudioSettings s = AudioSettings.getInstance();
             Mixer.Info micMixerInfo = AudioSettings.findMixerInfo(s.getSelectedMicName());
             if (micMixerInfo != null) {
@@ -45,7 +45,6 @@ public class AudioCall {
             micLine.open(FORMAT);
             micLine.start();
 
-            // open speaker
             DataLine.Info speakerInfo = new DataLine.Info(SourceDataLine.class, FORMAT);
             Mixer.Info spkMixerInfo = AudioSettings.findMixerInfo(s.getSelectedSpeakerName());
             if (spkMixerInfo != null) {
@@ -56,7 +55,9 @@ public class AudioCall {
             speakerLine.open(FORMAT);
             speakerLine.start();
 
-            new Thread(this::captureLoop, "audio-capture").start();
+            captureThread = new Thread(this::captureLoop, "audio-capture");
+            captureThread.setDaemon(true);
+            captureThread.start();
 
             System.out.println("AudioCall запущен");
         } catch (LineUnavailableException e) {
@@ -65,10 +66,43 @@ public class AudioCall {
         }
     }
 
+    public void stop() {
+        running = false;
+
+        if (micLine != null) {
+            try { micLine.stop(); } catch (Exception ignored) {}
+            try { micLine.flush(); } catch (Exception ignored) {}
+        }
+
+        if (captureThread != null) {
+            try { captureThread.join(500); } catch (InterruptedException ignored) {}
+            captureThread = null;
+        }
+
+        if (micLine != null) {
+            try { micLine.close(); } catch (Exception ignored) {}
+            micLine = null;
+        }
+        if (speakerLine != null) {
+            try { speakerLine.flush(); } catch (Exception ignored) {}
+            try { speakerLine.stop(); } catch (Exception ignored) {}
+            try { speakerLine.close(); } catch (Exception ignored) {}
+            speakerLine = null;
+        }
+
+        System.out.println("AudioCall остановлен");
+    }
+
     private void captureLoop() {
         byte[] buffer = new byte[1024];
         while (running) {
-            int read = micLine.read(buffer, 0, buffer.length);
+            if (micLine == null) break;
+            int read;
+            try {
+                read = micLine.read(buffer, 0, buffer.length);
+            } catch (Exception e) {
+                break;
+            }
             if (read > 0 && !muted) {
                 byte[] chunk = new byte[read];
                 System.arraycopy(buffer, 0, chunk, 0, read);
@@ -85,20 +119,6 @@ public class AudioCall {
         byte[] data = Base64.getDecoder().decode(base64Data);
         data = applyVolume(data, data.length, AudioSettings.getInstance().getSpeakerVolume());
         speakerLine.write(data, 0, data.length);
-    }
-
-    public void stop() {
-        running = false;
-        if (micLine != null) {
-            micLine.stop();
-            micLine.close();
-        }
-        if (speakerLine != null) {
-            speakerLine.drain();
-            speakerLine.stop();
-            speakerLine.close();
-        }
-        System.out.println("AudioCall остановлен");
     }
 
     private byte[] applyVolume(byte[] data, int length, double volume) {

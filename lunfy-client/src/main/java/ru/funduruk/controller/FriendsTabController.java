@@ -109,7 +109,7 @@ public class FriendsTabController {
                         showError((String) result.get("error"));
                     } else {
                         searchField.clear();
-                        searchField.setStyle("");
+                        searchField.getStyleClass().remove("friends-search-error");
                         loadFriendsFromServer();
                     }
                 });
@@ -133,7 +133,7 @@ public class FriendsTabController {
                 .toList();
 
         if (filtered.isEmpty()) {
-            Label empty = new Label("Empty.. 👀");
+            Label empty = new Label("Никого не вижу..");
             empty.setStyle("-fx-text-fill: #aaa; -fx-padding: 20; -fx-font-size: 13px;");
             friendsList.getChildren().add(empty);
             return;
@@ -151,15 +151,13 @@ public class FriendsTabController {
 
         StackPane avatarStack = new StackPane();
         Circle avatar = new Circle(20);
-        avatar.setStyle("-fx-fill: #5a5480;");
+        avatar.getStyleClass().add("friend-avatar");
 
         Label initials = new Label(friend.getUsername().substring(0, 1).toUpperCase());
-        initials.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
+        initials.getStyleClass().add("friend-avatar-initial");
 
         Circle statusDot = new Circle(6);
-        statusDot.setStyle(friend.isOnline()
-                ? "-fx-fill: #3ba55d;"
-                : "-fx-fill: #747f8d;");
+        statusDot.getStyleClass().add(friend.isOnline() ? "member-dot-online" : "member-dot-offline");
         StackPane.setAlignment(statusDot, Pos.BOTTOM_RIGHT);
         statusDot.setTranslateX(6);
         statusDot.setTranslateY(6);
@@ -168,9 +166,9 @@ public class FriendsTabController {
 
         VBox info = new VBox(2);
         Label nameLabel = new Label(friend.getUsername() + "#" + friend.getTag());
-        nameLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13px;");
+        nameLabel.getStyleClass().add("friend-name");
         Label statusLabel = new Label(friend.getStatus());
-        statusLabel.setStyle("-fx-text-fill: #aaa; -fx-font-size: 11px;");
+        statusLabel.getStyleClass().add("friend-status");
         info.getChildren().addAll(nameLabel, statusLabel);
 
         Region spacer = new Region();
@@ -223,7 +221,9 @@ public class FriendsTabController {
     }
 
     private void showError(String msg) {
-        searchField.setStyle("-fx-border-color: #ff4d4f;");
+        if (!searchField.getStyleClass().contains("friends-search-error")) {
+            searchField.getStyleClass().add("friends-search-error");
+        }
         searchField.setPromptText(msg);
     }
 
@@ -241,16 +241,16 @@ public class FriendsTabController {
                     friendsList.getChildren().clear();
 
                     Label incomingLabel = new Label("ВХОДЯЩИЕ ЗАЯВКИ");
-                    incomingLabel.setStyle("-fx-text-fill: #888; -fx-font-size: 10px; -fx-font-weight: bold; -fx-padding: 8 4 4 4;");
+                    incomingLabel.getStyleClass().add("members-role-label");
                     friendsList.getChildren().add(incomingLabel);
 
                     for (Map<String, Object> req : data) {
-                        HBox row = new HBox(8);
+                        HBox row = new HBox(10);
                         row.setAlignment(Pos.CENTER_LEFT);
-                        row.setStyle("-fx-padding: 4 8;");
+                        row.getStyleClass().add("friend-item");
 
                         Label name = new Label(req.get("from") + "#" + req.get("tag"));
-                        name.setStyle("-fx-text-fill: white; -fx-font-size: 13px;");
+                        name.getStyleClass().add("friend-name");
 
                         Region spacer = new Region();
                         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -258,11 +258,11 @@ public class FriendsTabController {
                         Long id = ((Number) req.get("id")).longValue();
 
                         Button acceptBtn = new Button("✓");
-                        acceptBtn.setStyle("-fx-background-color: #3ba55d; -fx-text-fill: white; -fx-background-radius: 6; -fx-cursor: hand;");
+                        acceptBtn.getStyleClass().add("friend-accept-btn");
                         acceptBtn.setOnAction(e -> acceptRequest(id));
 
                         Button declineBtn = new Button("✕");
-                        declineBtn.setStyle("-fx-background-color: #ed4245; -fx-text-fill: white; -fx-background-radius: 6; -fx-cursor: hand;");
+                        declineBtn.getStyleClass().add("friend-remove-btn");
                         declineBtn.setOnAction(e -> declineRequest(id));
 
                         row.getChildren().addAll(name, spacer, acceptBtn, declineBtn);

@@ -8,30 +8,29 @@
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="ru.funduruk.controller.CallController"
             fx:id="callRoot"
-            style="-fx-background-color: #1a1730;">
+            styleClass="call-root">
 
     <center>
-        <StackPane fx:id="centerStack">
-            <HBox fx:id="participantsBox" alignment="CENTER" spacing="40">
-                <VBox alignment="CENTER" spacing="12">
-                    <StackPane>
-                        <Circle radius="55" style="-fx-fill: #5865f2;"/>
-                        <Label fx:id="myInitial" style="-fx-text-fill: white; -fx-font-size: 40px; -fx-font-weight: bold;"/>
+        <StackPane fx:id="centerStack" styleClass="call-center">
+            <HBox fx:id="participantsBox" alignment="CENTER" spacing="60">
+                <VBox alignment="CENTER" spacing="14" styleClass="participant-card">
+                    <StackPane styleClass="participant-avatar-wrap">
+                        <Circle radius="56" styleClass="participant-avatar"/>
+                        <Label fx:id="myInitial" styleClass="participant-initial"/>
                     </StackPane>
-                    <Label fx:id="myNameLabel" text="Вы" style="-fx-text-fill: white; -fx-font-size: 15px;"/>
+                    <Label fx:id="myNameLabel" text="Вы" styleClass="participant-name"/>
                 </VBox>
 
-                <VBox alignment="CENTER" spacing="12">
-                    <StackPane>
-                        <Circle radius="55" style="-fx-fill: #4752c4;"/>
-                        <Label fx:id="peerInitial" style="-fx-text-fill: white; -fx-font-size: 40px; -fx-font-weight: bold;"/>
+                <VBox alignment="CENTER" spacing="14" styleClass="participant-card">
+                    <StackPane styleClass="participant-avatar-wrap">
+                        <Circle radius="56" styleClass="participant-avatar-peer"/>
+                        <Label fx:id="peerInitial" styleClass="participant-initial"/>
                     </StackPane>
-                    <Label fx:id="peerNameLabel" text="username" style="-fx-text-fill: white; -fx-font-size: 15px;"/>
+                    <Label fx:id="peerNameLabel" text="username" styleClass="participant-name"/>
                 </VBox>
             </HBox>
 
-            <StackPane fx:id="screenStack" visible="false" managed="false"
-                       style="-fx-background-color: black;">
+            <StackPane fx:id="screenStack" visible="false" managed="false" styleClass="screen-stack">
                 <ImageView fx:id="screenImageView" preserveRatio="true"/>
             </StackPane>
             <StackPane fx:id="peerVideoStack" visible="false" managed="false"
@@ -42,40 +41,35 @@
             <StackPane fx:id="selfVideoStack" visible="false" managed="false"
                        maxWidth="200" maxHeight="150"
                        StackPane.alignment="BOTTOM_RIGHT"
-                       style="-fx-background-color: black; -fx-border-color: #5865f2; -fx-border-width: 2;">
-                <padding><javafx.geometry.Insets bottom="20" right="20"/></padding>
+                       styleClass="self-video-stack">
+                <padding><Insets bottom="20" right="20"/></padding>
                 <ImageView fx:id="selfVideoView" fitWidth="180" fitHeight="135" preserveRatio="true"/>
             </StackPane>
         </StackPane>
     </center>
 
     <top>
-        <VBox alignment="CENTER" style="-fx-padding: 20 0 0 0;">
-            <Label fx:id="callStatusLabel" text="Вызов..."
-                   style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;"/>
+        <VBox alignment="CENTER" styleClass="call-status-bar">
+            <Label fx:id="callStatusLabel" text="Вызов..." styleClass="call-status"/>
         </VBox>
     </top>
 
     <bottom>
-        <HBox fx:id="controlBar" alignment="CENTER" spacing="16" style="-fx-padding: 24;">
+        <HBox fx:id="controlBar" alignment="CENTER" spacing="14" styleClass="call-control-bar">
 
-            <!-- Входящий: принять/отклонить -->
-            <Button fx:id="acceptBtn" text="✓" onAction="#accept"
-                    style="-fx-background-color: #3ba55d; -fx-text-fill: white; -fx-background-radius: 50; -fx-min-width: 56; -fx-min-height: 56; -fx-font-size: 22px; -fx-cursor: hand;"/>
-            <Button fx:id="rejectBtn" text="✕" onAction="#reject"
-                    style="-fx-background-color: #ed4245; -fx-text-fill: white; -fx-background-radius: 50; -fx-min-width: 56; -fx-min-height: 56; -fx-font-size: 22px; -fx-cursor: hand;"/>
+            <Button fx:id="acceptBtn" text="✓" onAction="#accept" styleClass="call-btn, call-btn-accept"/>
+            <Button fx:id="rejectBtn" text="✕" onAction="#reject" styleClass="call-btn, call-btn-reject"/>
 
-            <!-- Активный звонок: mute / экран / завершить -->
             <Button fx:id="muteBtn" text="🎤" onAction="#toggleMute" visible="false" managed="false"
-                    style="-fx-background-color: #36344f; -fx-text-fill: white; -fx-background-radius: 50; -fx-min-width: 56; -fx-min-height: 56; -fx-font-size: 20px; -fx-cursor: hand;"/>
+                    styleClass="call-btn, call-btn-control"/>
             <Button fx:id="screenBtn" text="🖥" onAction="#toggleScreenShare" visible="false" managed="false"
-                    style="-fx-background-color: #36344f; -fx-text-fill: white; -fx-background-radius: 50; -fx-min-width: 56; -fx-min-height: 56; -fx-font-size: 20px; -fx-cursor: hand;"/>
+                    styleClass="call-btn, call-btn-control"/>
             <Button fx:id="videoBtn" text="📹" onAction="#toggleVideo" visible="false" managed="false"
-                    style="-fx-background-color: #36344f; -fx-text-fill: white; -fx-background-radius: 50; -fx-min-width: 56; -fx-min-height: 56; -fx-font-size: 20px; -fx-cursor: hand;"/>
-            <Button fx:id="endBtn" text="📞" onAction="#end" visible="false" managed="false"
-                    style="-fx-background-color: #ed4245; -fx-text-fill: white; -fx-background-radius: 50; -fx-min-width: 56; -fx-min-height: 56; -fx-font-size: 20px; -fx-cursor: hand;"/>
+                    styleClass="call-btn, call-btn-control"/>
             <Button fx:id="toggleModeBtn" text="🗕" onAction="#toggleMode" visible="false" managed="false"
-                    style="-fx-background-color: #36344f; -fx-text-fill: white; -fx-background-radius: 50; -fx-min-width: 56; -fx-min-height: 56; -fx-font-size: 18px; -fx-cursor: hand;"/>
+                    styleClass="call-btn, call-btn-control"/>
+            <Button fx:id="endBtn" text="📞" onAction="#end" visible="false" managed="false"
+                    styleClass="call-btn, call-btn-end"/>
         </HBox>
     </bottom>
 </BorderPane>

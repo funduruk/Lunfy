@@ -47,17 +47,6 @@ public class RegisterController extends Controller{
         super.initialize(rootPane, titleBar);
         statusLabel.setWrapText(true);
         statusLabel.setMaxWidth(220);
-        String bgPath;
-
-        if(width <= 1280) bgPath = "/image/background/small-lunfy-background.png";
-        else if(width <= 1920) bgPath = "/image/background/medium-lunfy-background.png";
-        else if(width <= 2560) bgPath = "/image/background/large-lunfy-background.png";
-        else bgPath = "/image/background/max-lunfy-background.png";
-
-        Image bgImage = new Image(Objects.requireNonNull(getClass().getResource(bgPath)).toExternalForm());
-        background.setImage(bgImage);
-        background.fitWidthProperty().bind(rootPane.widthProperty());
-        background.fitHeightProperty().bind(rootPane.heightProperty());
 
 
         FadeTransition fadeIn = new FadeTransition(Duration.millis(200), backBg);

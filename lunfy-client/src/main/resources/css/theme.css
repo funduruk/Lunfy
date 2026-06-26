@@ -1,0 +1,26 @@
+/* ===== THEME.CSS — единая система токенов ===== */
+.root {
+    /* Цвета */
+    -fx-color-bg-deep: #0d0a1f;
+    -fx-color-bg: #13102a;
+    -fx-color-bg-elevated: #1e1b3a;
+    -fx-color-surface: #2a2647;
+    -fx-color-surface-hover: #34305a;
+
+    -fx-color-accent: #7c5cff;
+    -fx-color-accent-bright: #a78bff;
+    -fx-color-accent-soft: rgba(124, 92, 255, 0.15);
+
+    -fx-color-text: #f0eeff;
+    -fx-color-text-dim: #9a96c4;
+    -fx-color-text-muted: #5a5680;
+
+    -fx-color-border: rgba(124, 92, 255, 0.18);
+    -fx-color-pulse: #00ffc8;
+    -fx-color-danger: #ff5c7a;
+    -fx-color-online: #00ffc8;
+
+    /* Шрифты — Inter (тело) + Unbounded (заголовки) */
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
+    -fx-background-color: -fx-color-bg-deep;
+}

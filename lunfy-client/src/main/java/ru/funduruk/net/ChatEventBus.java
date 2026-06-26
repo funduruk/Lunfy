@@ -8,7 +8,18 @@ import java.util.function.Consumer;
 
 public class ChatEventBus {
 
-    private static Consumer<MessageDTO> messageListener;
+    private static final java.util.concurrent.CopyOnWriteArrayList<Consumer<MessageDTO>> messageListeners =
+            new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    public static void addMessageListener(Consumer<MessageDTO> listener) {
+        if (listener != null) messageListeners.add(listener);
+    }
+
+    public static void removeMessageListener(Consumer<MessageDTO> listener) {
+        messageListeners.remove(listener);
+    }
+
+
     private static Consumer<MessageDTO> deleteListener;
     private static Consumer<String> deleteChatListener;
     private static BiConsumer<String, Map<String, Object>> groupMemberUpdateListener;
@@ -30,8 +41,13 @@ public class ChatEventBus {
     private static java.util.function.Consumer<Map<String, Object>> channelDeletedListener;
     private static java.util.function.Consumer<Map<String, Object>> friendRequestListener;
     private static java.util.function.BiConsumer<String, Map<String, Object>> friendUpdateListener;
+    private static Runnable reconnectListener;
 
-    public static void setOnMessage(Consumer<MessageDTO> listener) { messageListener = listener; }
+    public static void setOnMessage(Consumer<MessageDTO> listener) {
+        messageListeners.clear();
+        if (listener != null) messageListeners.add(listener);
+    }
+
     public static void setOnDeleteMessage(Consumer<MessageDTO> listener) { deleteListener = listener; }
     public static void setOnDeleteChat(Consumer<String> listener) { deleteChatListener = listener; }
     public static void setOnGroupDMCreated(Consumer<Map<String, Object>> listener) { groupDMCreatedListener = listener; }
@@ -53,8 +69,13 @@ public class ChatEventBus {
     public static void setOnChannelDeleted(java.util.function.Consumer<Map<String, Object>> l) { channelDeletedListener = l; }
     public static void setOnFriendRequest(java.util.function.Consumer<Map<String, Object>> l) { friendRequestListener = l; }
     public static void setOnFriendUpdate(java.util.function.BiConsumer<String, Map<String, Object>> l) { friendUpdateListener = l; }
+    public static void setOnReconnect(Runnable l) { reconnectListener = l; }
 
-    public static void fireMessage(MessageDTO msg) { if (messageListener != null) { messageListener.accept(msg); } }
+    public static void fireMessage(MessageDTO msg) {
+        for (Consumer<MessageDTO> l : messageListeners) {
+            try { l.accept(msg); } catch (Exception e) { e.printStackTrace(); }
+        }
+    }
     public static void fireDeleteMessage(MessageDTO msg) { if (deleteListener != null) { deleteListener.accept(msg); } }
     public static void fireDeleteChat(String chatId) { if (deleteChatListener != null) { deleteChatListener.accept(chatId); } }
     public static void fireGroupMemberUpdate(String type, Map<String, Object> data) { if (groupMemberUpdateListener != null) { groupMemberUpdateListener.accept(type, data); } }
@@ -76,4 +97,5 @@ public class ChatEventBus {
     public static void fireChannelDeleted(Map<String, Object> d) { if (channelDeletedListener != null) channelDeletedListener.accept(d); }
     public static void fireFriendRequest(Map<String, Object> d) { if (friendRequestListener != null) friendRequestListener.accept(d); }
     public static void fireFriendUpdate(String type, Map<String, Object> d) { if (friendUpdateListener != null) friendUpdateListener.accept(type, d); }
-}
+    public static void fireReconnect() { if (reconnectListener != null) reconnectListener.run(); }
+    }
